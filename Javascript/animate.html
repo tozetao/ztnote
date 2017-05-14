@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>动画测试</title>
+	<style>
+		div{
+			height: 100px;
+			width: 100px;
+			background: #cdc;
+			position: absolute;
+			left: 10px;
+			top: 100px;
+			/*display: none;*/
+			opacity:0;
+		}
+	</style>
+</head>
+<body>
+	<input type="button" value="show" id='show'/>
+	<input type="button" value="hide" id='hide'/>
+	<input type="button" value="slideDown" id='slideDown'/>
+	<input type="button" value="slideUp" id='slideUp'/>
+
+	<input type="button" value="fadeIn" id='fadeIn'/>
+	<input type="button" value="fadeOut" id='fadeOut'/>
+
+	<input type="button" value="animate" id='animate'/>
+	<input type="button" value="stop" id='stop'/>
+	<br/>
+
+	<input type="button" value="myshow" id='myshow'/>
+	<input type="button" value="myhide" id='myhide'/>
+	<div id='div'>
+		i am a div.
+	</div>
+</body>
+</html>
+<script>
+
+/*
+function id(name){
+	return document.getElementById(name);
+}
+id('myshow').onclick=function(){
+	function slide(pos){
+		document.getElementById('div').style.opacity=pos;
+	}
+	for (var i = 0; i < 10; i++) {
+		var pos=i/10;
+		// var func='slide('+pos+')';
+		setTimeout(function(pos){
+			return function(){
+				slide(pos);
+			};
+		}(pos),i*100);
+	};
+}
+*/
+</script>

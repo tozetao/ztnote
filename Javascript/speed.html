@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>速度动画</title>
+	<style>
+		body,div,span{
+			margin: 0;
+			padding: 0;
+		}
+		#div1{
+			width: 200px;
+			height: 200px;
+			background: red;
+			position: relative;
+			left: -200px;
+			top: 0;
+		}
+		#share{
+			background: blue;
+			width: 20px;
+			height: 50px;
+			position: absolute;
+			left: 200px;
+			top: 75px;
+		}
+	</style>
+</head>
+<body>
+	<div id='div1'>
+		<span id='share'>分享</span>
+	</div>
+	<script>
+		var odiv=document.getElementById('div1');
+		odiv.onmouseover=function(){
+			startMove();
+		}
+		// odiv.onmouseout=function(){
+		// 	endMove();
+		// }
+		var timer=null;
+		function startMove(){
+			clearInterval(timer);	//清除之前的定时器，防止触发多次事件效果。
+			var odiv=document.getElementById('div1');
+
+			timer=setInterval(function(){
+				if(odiv.offsetLeft==0){
+					console.log('li: '+timer);
+					clearInterval(timer);
+				}else{
+					odiv.style.left=odiv.offsetLeft+1+'px';
+				}
+			},1);
+			console.log('wai: '+timer);
+		}
+		/*
+		setInterval()
+			该函数被调用后，会返回一个唯一的id，是区别定时器的标志，可以用来清除定时器。
+			程序执行顺序：先执行函数，再调用定时器
+
+			上面的代码有逻辑问题，每产生一次事件，就会多出一个定时器，当div的left值等于0的时候，只能清除最后一次事件的定时器，其他定时器仍然在继续执行，所以在触发事件的时候，要先清除之前的定时器，clearInterval(timer)。
+
+			有了43行的代码，可以看到，触发多次事件的时候，先前的定时器会被执行清楚掉，只执行最后一次事件产生的定时器。
+		 */
+		function endMove(){
+			clearInterval(timer);
+			var odiv=document.getElementById('div1');
+
+			timer=setInterval(function(){
+				if(odiv.offsetLeft==-200){
+					clearInterval(timer);
+				}else{
+					odiv.style.left=odiv.offsetLeft-10+'px';
+				}
+			},30);
+		}
+	</script>
+</body>
+</html>

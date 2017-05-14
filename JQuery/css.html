@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>jquery demo</title>
+	<script src="./jquery-1.12.0.min.js"></script>
+	<style>
+		div{
+			width: 200px;
+			height:100px;
+			background: pink;
+			margin-top: 20px;
+		}
+		.cls1{
+			width:100px;
+			height: 100px;
+			background: green;
+		}
+	</style>
+</head>
+<body>
+	<input type="button" value="增加css样式" />
+	<input type="button" value="移除css样式" />
+	<div id="first" class='first'></div>
+	<div id="second"><p>hahahah</p></div>
+	<div id="third"></div>
+	<div id="four"></div>
+	<div id="firiv"></div>
+</body>
+</html>
+<script>
+	//选择器
+	$('#first');	//#id
+	$('div');	//#element
+	$('div:first');	//选择器过滤，返回第一个选择器
+	$('div:has(p)');	//内容的过滤
+
+	//css操作
+	/*
+	css(name|pro|[val,fn])
+		可以访问元素对象的属性，也可以对元素对象进行css属性的赋值。
+		name：要访问的属性名称
+		properties：Map，要设置的样式的属性的名/值。
+		name value：name是属性，value是值。
+	*/
+	$('input:first').click(function(){
+		$('#first').addClass('cls1');//添加css样式
+		
+		$('#second').css('color','red');	//改变css属性
+		$('#second').css({'background':'green'});	
+
+		console.log($('#first').css('height'));	//访问元素的height属性
+	});
+
+	$('input:last').click(function(){
+		$('#first').removeClass('cls1');
+	});
+	
+</script>

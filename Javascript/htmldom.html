@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>xml demo</title>
+	<style>
+	div{
+		width: 100px;
+		height: 100px;
+		background: #cdcdcd;
+	}
+	</style>
+</head>
+<body>
+	<div id='first'>
+		first
+	</div>
+	<div style="margin-top:10px;">
+		<p id='p1'>p1</p>
+		<p id='p2'>p2</p>
+	</div>
+</body>
+</html>
+<script>
+	//获取元素对象
+	function id(obj){
+		return document.getElementById(obj);
+	}
+	function tagname(name){
+		return document.getElementsByTagName(name);
+	}
+
+	var firstdiv=id('first');
+	
+	//访问元素内容
+	console.log(firstdiv.innerHTML);
+	//修改html元素内容
+	firstdiv.innerHTML='hahhaha';
+	
+	//创建新的html元素
+	//appendChild()：将新元素作为父元素的最后一个子元素添加
+	var para=document.createElement('p');
+	var node=document.createTextNode('this is text');
+	para.appendChild(node);
+	// firstdiv.appendChild(para);
+	//在指定的已有的子节点之前插入新节点。
+	firstdiv.insertBefore(para,firstdiv.firstChild);
+
+
+	//删除已有的html元素
+	var p1=id('p1');
+	p1.parentNode.removeChild(p1);
+	
+	//替换html元素
+	var txt=document.createTextNode('this is replace');
+	var parent=id('p2').parentNode;
+	parent.replaceChild(txt,id('p2'));
+	
+	
+	// 可以用三个节点属性：parentNode、firstChild 以及 lastChild ，在文档结构中进行导航。
+
+	//改变元素属性
+	//getAttribute()，返回元素的指定属性。
+	
+	//使用事件，html dom允许在事件发生时执行代码
+	//当html元素有事情发生时，浏览器就会生成事件
+		
+
+/*
+bom对象
+	window
+	History
+	Location
+	Screen
+
+html dom
+	HTML DOM 定义了所有 HTML 元素的对象和属性，以及访问它们的方法。
+	DOM将html文档表达为树结构。
+	
+    a. 整个文档是一个文档节点
+    b. 每个 HTML 元素是元素节点
+    c. HTML 元素内的文本是文本节点
+    d. 每个 HTML 属性是属性节点
+    e. 注释是注释节点
+
+	节点树中的节点彼此拥有层级关系。
+	父（parent）、子（child）和同胞（sibling）等术语用于描述这些关系。父节点拥有子节点。同级的子节点被称为同胞（兄弟或姐妹）。
+	
+	Document
+		每个载入浏览器的 HTML 文档都会成为 Document 对象。
+		Document 对象使我们可以从脚本中对 HTML 页面中的所有元素进行访问。
+		提示：Document 对象是 Window 对象的一部分，可通过 window.document 属性对其进行访问。
+
+	Element
+		在html dom中，element对象表示html元素。
+
+	Attribute
+		在html dom中，attr对象表示html属性。
+
+	Event
+		event对象代表事件的状态，比如事件在其中发生的元素、键盘按钮的状态、鼠标的位置、鼠标按钮的状态。
+
+		鼠标/键盘属性
+			button：事件触发时，哪个鼠标按钮被点击
+			clientX
+			screenX
+
+		事件属性
+			onclick
+			...
+
+		ie属性
+			这是ie独有的属性
+
+		标准event属性
+			target
+			bubbles
+
+		标准event方法
+			stopPropagation()：不再派发事件
+dom
+	文档对象模型，document object model
+	dom定义了访问和操作html、xml文档的标准。
+
+	w3c dom标准分为3个部分：core dom、html dom、xml dom
+
+ */
+</script>

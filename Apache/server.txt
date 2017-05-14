@@ -1,0 +1,61 @@
+
+mysql的错误日志
+apache的错误日志
+
+
+apache命令
+	httpd -k install		安装
+	sc delete 服务名		删除apache服务
+
+
+
+cmd内置命令
+	netstat -ano
+
+
+系统内置命令
+	services.msc
+	icon
+	mstsc：链接远程桌面
+
+iis默认断口是80
+方法如下
+1、services.msc，在里面找到一个“World Wide Web Publishing”的服务，把它关掉就可以了。
+
+2、运行进入cmd，输入： "net stop w3svc"
+
+
+我的电脑--管理--服务和应用程序--服务--找到IIS服务项--右键有停止（也可以右键--属性--启动类型--禁用或者手动（这是对于启动IIS而言））
+
+IIS是Internet Information Services的缩写，是一个World Wide Web server。
+
+开始----运行----cmd-----输入 net stop iisadmin
+
+
+首先需要说明的是，Apaceh服务器没有官方的64位版本，只有民间的高手自己制作的。下面是具体的安装步骤。
+
+ 
+
+在csdn  下载64位的Apache服务器。目前的版本是2.2.19，下载之后的压缩包名为httpd-2.2.19-win64.rar；
+
+
+将该包解压至一个目录，如我的目录为E:\Apache2.2.19；
+
+
+修改conf文件夹下的httpd.conf文件：
+
+
+将文件中的/httpd-2.2-x64全部替换为自己的解压目录，如E:/Apache2.2.19，注意这里的路径中必须使用斜杠“/”；
+
+
+将Listen 80改为Listen 8080，若已开启IIS，则80端口就不能用了；
+
+
+将#LoadModule rewrite_module modules/mod_rewrite.so这一行最前面的#去掉。
+
+
+执行安装命令。通过命令行进入自己的安装目录下的bin文件夹，如E:\Apache2.2.19\bin，执行命令httpd.exe -k install，这样就把apache加入了系统服务，默认服务名为Apache2.2。启动服务的命令为httpd.exe -k start。
+测试安装是否成功。开启服务，运行Apache服务器后，打开浏览器输入http://localhost:8080/，如果页面显示It works!，则表示安装成功，Apache服务器可以正常使用。
+
+
+sc delete apache服务名

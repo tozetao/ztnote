@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>css demo</title>
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+	<style>
+		div{
+			width: 100px;
+			height: 100px;
+			background: green;
+		}
+	</style>
+</head>
+
+
+<body>
+	<input type="button" value="点击" />
+	<div id='demo'>
+	</div>
+</body>
+</html>
+<script type="text/javascript">
+	/*
+	(function(win){
+		var $=function(_selector){
+			return new $.prototype.init(_selector);
+		}
+		$.prototype={
+			init : function(_selector){
+				div.selector=document.getElementById(_selector);
+			},
+			selector : null,
+			bind : function(){
+
+			},
+			css : function(){
+				alert(1);
+			}
+		}
+		$.prototype.init.prototype=$.prototype;
+
+		win.$=$;
+	})(window);
+	*/
+	
+	function id(obj){
+		return document.getElementById(obj);
+	}
+	function tagname(name){
+		return document.getElementsByTagName('input');
+	}
+	
+</script>

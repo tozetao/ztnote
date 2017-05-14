@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>event</title>
+	<script src='./jquery-1.12.0.min.js'></script>
+	<style>
+		#div1{
+			width:400px;
+			height:400px;
+			background:#cdcdcd;
+		}
+		#div2{
+			width:300px;
+			height:300px;
+			background:green;
+		}
+		#div3{
+			width:200px;
+			height:200px;
+			background:#369;
+		}
+		#other{
+			width: 100px;
+			height: 100px;
+			background: pink;
+		}
+	</style>
+</head>
+<body>
+	<input type="button" value="jquery事件绑定" />
+	<input type="button" value="jquery事件移除" />
+	<div id='div1'>
+		div1
+		<div id='div2'>
+			div2
+			<div id="div3">
+				div3
+			</div>
+		</div>
+	</div>
+	<div id='other'>i am other</div>
+</body>
+</html>
+<script>
+function id(name){
+	return document.getElementById(name);
+}
+
+function foo(e){
+	//阻止冒泡事件
+	//e.stopPropagation();
+	console.log(this.getAttribute('id'));
+	//return false;//或者return false
+}
+//事件的绑定
+//attachEvent()		addEventListener()
+// id('div1').addEventListener('click',foo,false);//标准浏览器
+id('div1').attachEvent('onclick',foo);
+
+//事件的移除
+//detachEvent()		removeEventListener()
+//id('div1').removeEventListener('click',foo);
+id('div1').detachEvent('onclick',foo);
+
+
+window.onload=function(){
+	id('div1').addEventListener('click',function(event){
+		// event.stopPropagation();
+		alert('div1 maopao');
+	},false);
+	id('div2').addEventListener('click',function(event){
+		// event.stopPropagation();
+		alert('div2 maopao');
+	},false);
+	id('div3').addEventListener('click',function(event){
+		// event.stopPropagation();
+		alert('div3 maopao');
+	},false);
+
+	id('div1').addEventListener('click',function(event){
+		// event.stopPropagation();
+		alert('div1 buzhuo');
+	},true);
+	id('div2').addEventListener('click',function(event){
+		// event.stopPropagation();
+		alert('div2 buzhuo');
+	},true);
+	id('div3').addEventListener('click',function(event){
+		// event.stopPropagation();
+		alert('div3 buzhuo');
+	},true);
+	
+	/*
+		捕捉模型：层级关系的元素，当最内层元素发生事件时，事件会由外往内触发。
+		冒泡模型：层级关系的元素，当最内层元素发生事件时，事件是从内往外扩散。
+
+		但是当自身元素被触发事件时，会按照事件绑定的先后顺序触发。
+	 */
+}
+
+/*
+事件委托
+	相比事件属性，事件委托可以绑定多个处理程序。
+
+ie、标准浏览器区别
+	绑定方法不同
+	绑定多个程序，触发的顺序不同，标准先定义先触发，ie后定义先触发。
+ */
+
+//使用事件停止传播可以屏蔽外层元素的事件
+</script>

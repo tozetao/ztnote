@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>prototype demo</title>
+</head>
+<script type="text/javascript">
+
+	//jquery的实例分析
+	/*
+	//example 1
+	var aQuery=function(){
+		return aQuery.prototype.init();
+	}
+
+	aQuery.prototype={
+		init : function(){
+			return this;
+		},
+		name: function(){}
+	}
+	var a1 = aQuery();
+	// console.log(a1);
+	//将aQuery原型对象指向一个新的对象，该对象拥有一个init方法，用于返回aQuery原型对象自身引用。
+	*/
+	//example2
+	var aQuery=function(){
+		return new aQuery.prototype.init();
+	}
+	aQuery.prototype={
+		init : function(){
+			this.age=19;
+		},
+		name : 'aQuery',
+		age : 3
+	}
+	aQuery.prototype.init.prototype=aQuery.prototype;
+	console.log(aQuery().age);
+	/*
+		1. 将aQuery变量指向一个函数
+		2. 将aQuery函数的原型对象执行一个新的对象
+		3. 将aQuery函数的原型对象的init属性的原型对象 执行 aQuery函数的原型对象
+		4. 执行aQuery函数，以aQuery函数的原型对象的init函数作为构造函数，来实例一个对象。
+
+		note：
+			aQuery()，以init函数作为构造函数来实例对象，由于init函数的原型对象执行了aquery函数的原型对象，所以实例出的对象会基础aQuery原型对象的所有属性和方法。
+	 */
+
+	/*
+		var obj={
+			name:'zhangsan',
+			my : this,
+			run:function(){
+				alert(this.name+'在跑');
+			}
+		};
+		console.log(obj.my);
+		obj.run();
+		//上面的例子中，如果my属性的this指向window对象，run方法中的this指向obj对象
+
+		function demo(){}
+		demo.prototype={
+			init : function(){
+				return this;
+			},
+			age : 20,
+			obj : this,
+		}
+		console.log(demo.prototype.init());	//this指向原型对象
+		var d = new demo();
+		console.log(d.obj);	//this执行window对象
+	*/
+	/*
+	//实例的对象new demo()
+	//函数对象：demo，函数也可以看作是一个对象
+	function demo(){}
+
+	console.log(demo);	//demo.prototype
+
+	var d =new demo();
+	console.log(d);		//d.__proto__
+
+	//demo.prototype = d.__proto__，demo函数和d对象的原型对象都是同一个原型对象。
+	*/
+</script>
+
+<body>
+</body>
+</html>
