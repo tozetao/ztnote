@@ -6,7 +6,20 @@ Git是一个版本控制管理工具，用于备份文件、记录历史、回�
 ## Github的关联配置
 使用Git我们不需要自己部署版本控制服务器，可以将数据存储在Github上面，Github就是一个版本控制的服务器。
 
-具体配置回头写。
+具体配置如下：
+```
+git config --global user.name "humingx"
+git config --global user.email "humingx@yeah.net"
+
+ssh-keygen -t rsa -C "humingx@yeah.net"
+# 生成秘钥
+
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_rsa
+# 添加密钥到ssh-agent
+
+# 最后在github上面配置key即可
+```
 
 ## 基本操作
 
@@ -81,11 +94,10 @@ git checkout -- 123.txt
 版本库存储了很多东西，最重要的就是stage(缓存区)，还有Git为我们创建个一个master分支以及指向master分支的一个指针HEAD。
 
 ### 2. 工作区
-working tree，就是你在电脑上看到的目录。
-
-比如d盘的demo文件是你的版本库，demo下的文件或者以后新建的目录文件都属于工作区的范畴。
+working tree，就是你在电脑上看到的目录。比如d盘的demo文件是你的版本库，demo下的文件或者以后新建的目录文件都属于工作区的范畴。
 
 git add命令实际上是将文件存储到缓存区，而commit命令会将缓存区中的修改提交到当前的分支上。
+add、commit等命令操作的是.git本地仓库，要与github服务器同步需要pull或fetch、push命令
 
 ## 远程仓库管理
 前面说过Git是一个分布式的版本控制系统，所以不需要部署版本控制服务器，而是将文件提交到Github上面，Github你可以理解成一个版本控制服务器，通过将文件同步在服务器中，这样便可以在不同客户端上共享和同步数据了。

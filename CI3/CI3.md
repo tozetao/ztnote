@@ -1,3 +1,6 @@
+## 简介
+轻量级框架，基于mvc构建的框架。除了实现mvc模式之外，拥有系统类库和辅助函数。
+
 ## CI3生命周期
 1. index.php作为入口文件，定义系统常量、加载CI核心文件
 2. 由Routing组件处理请求，如果有缓存使用缓存相应，如果没有执行下一步
@@ -6,16 +9,6 @@
 5. Application Controller加载模型、核心类库、辅助函数以及其他所有处理请求所需的资源；
 6. 渲染视图进行相应。
 
-
-## 控制器
-在ci3中，控制器是整个应用的核心对象，它是一个Application容器对象，负责调度模型资源、视图资源，加载一系列其他组件资源来进行请求的处理。
-
-ci3的控制器继承自CI_Controller类。
-ci3的控制器有俩个概念要注意下，分别是重映射方法与数据输出。
-
-Application Controller对象可以在控制器中访问，也可以通过get_instance()全局方法来获取，因为这个AC对象控制着CI中的所有资源，所以如果要引入类库，就需要创建自己的类库，加载到AC对象，由AC对象调用操作。
-
-注：控制器命名、方法命名、变量和常量命名不要跟CI保留字冲突，因为CI3没有命名空间。
 
 
 ## URL路由
@@ -26,32 +19,53 @@ Application Controller对象可以在控制器中访问，也可以通过get_ins
 
 CI3中的路由支持正则、HTTP动词、回调函数，详细看手册
 
+## 
+
+## 控制器(CI_Controller)
+在ci3中，控制器是整个应用的核心对象，控制器决定了HTTP请求被如何处理。
+CI_Controller控制器对象通过CI_Loader对象来加载和调度其他资源对象，例如模型对象、CI系统类型、CI系统辅助函数。
+
+CI_Loader对象提供接口加载不同资源对象，再通过CI_Controller控制器对象来实例化访问，
+可以将CI_Controller理解为CI超级对象，它所加载的资源可以在Model层和View层使用，如果要在项目其他地方调度这些资源对象，可以使用get_instance()全局方法来获取。
+
+之所以能在View层和Model层调用CI超级对象的资源，是因为CI重写了View和Model对象的__get()方法。
+
+注1：控制器命名、方法命名、变量和常量命名不要跟CI保留字冲突，因为CI3没有命名空间。
+注2：ci3的控制器有俩个概念要注意下，分别是重映射方法与数据输出。
+
 ## 模型
+- 模型加载：CI_Controller::load::model($model_name, $alisa)，$alias是别名
+- 模型调用：CI_Controller::$model_name
 
 
 ## 视图
-ci3并没有自己的模板引擎，需要你自己去引进。
+- 加载：CI_Controller::load::view($view, $data)，$view是视图路径，$data是视图数据
 
 
 ## 类库
-CI系统类库位于system/libraries目录下，大多数情况下我们要在控制器中初始化它，例如：
-```php
-$this->load->library('class_name');
+类库是CI框架内置提供的，可以认为是各种功能组件，当然CI允许你自定义类库、扩展和替换系统类库。
 
-$this->load->library('form_validation');
-```
+目录说明：
+- 核心类库：位于system/libraries目录下
+- 自定义类库：位于application/libraries目录下
+- 扩展核心类型：同自定义类库一样的路径，扩展的核心类型文件名和类名都是以MY_作为前缀来命名，该前缀可修改。
 
-CI的类库提供了各种场景的解决方案，每个解决方案对应一个类，同时配合对应的辅助函数的时候，能够解决大部分的应用问题。
+调度说明
+- 加载：CI_Controller::load::library($library_name);
+- 调用：CI_Controller::$library_name
+
+说明：CI的类库提供了各种场景的解决方案，每个解决方案对应一个类，同时配合对应的辅助函数的时候，能够解决大部分的应用问题。
 
 
 ## 辅助函数
-ci3中提供了大量的辅助函数，这些函数只是处理特定的功能，辅助函数使用需要去手动加载它，当然你也可以自动加载。
+CI内置了大量的辅助函数，辅助函数主要用于处理特定的功能，同样也可以扩展和替换CI中内置的辅助函数。
 
-辅助函数位于system/helpers或者application/helpers目录下，常用的功能大体有：
-**URL辅助函数**
-**表单负数函数**
-**文本辅助函数**
-**cookie辅助函数**
+目录说明：
+- 系统辅助函数：位于system/helpers目录下
+- 自定义辅助函数：位于application/helpers目录下，以_helper结尾命名
+- 扩展辅助函数：以MY_为前缀，辅助函数文件名字来命名，前缀可以修改。
+
+
 
 ## 全局函数
 无须加载便可以使用的函数。
