@@ -9,8 +9,6 @@
 5. Application Controller加载模型、核心类库、辅助函数以及其他所有处理请求所需的资源；
 6. 渲染视图进行相应。
 
-
-
 ## URL路由
 默认CI以段的形式来组织url，即：/class/function/params，分别对应控制器、方法、参数，也能通过定义配置文件使用古老的mvc url。
 但是有时候我们想要改变这种URI的映射方式，这时候就需要使用路由。
@@ -19,9 +17,8 @@
 
 CI3中的路由支持正则、HTTP动词、回调函数，详细看手册
 
-## 
 
-## 控制器(CI_Controller)
+## 控制器(CI_Controller)，CI超级对象
 在ci3中，控制器是整个应用的核心对象，控制器决定了HTTP请求被如何处理。
 CI_Controller控制器对象通过CI_Loader对象来加载和调度其他资源对象，例如模型对象、CI系统类型、CI系统辅助函数。
 
@@ -71,62 +68,35 @@ CI内置了大量的辅助函数，辅助函数主要用于处理特定的功能
 无须加载便可以使用的函数。
 
 
-## Form类库与Form辅助函数
-### 1. Form类库
-Form_validation类提供对form表单的一系列验证，默认该类是对$_POST数组进行验证，大体功能有：
-- 提供默认的验证规则和对应的错误信息
-- 允许自定义验证规则，自定义错误信息
-- 允许将多个验证规则组合配置，定义成一个规则集，在指定的时候调用。
+## Form_Validation类
+### 1. Form_Validation类库
+Form_validation是一个数据验证类，提供各种数据验证规则，它支持：
 
-- 支持表单字段填充
-- 支持指定数组验证
-- 支持错误定界符的更改
+- 验证数据源设置，默认$_POST
+- 灵活的验证规则设置：包括自定义、使用配置文件分组配置
+- 自定义错误提示信息
+- 灵活的获取错误信息
+- 预处理
+- 数组作为数据域处理
 
-**自定义错误提示信息**
-- system/langeuage/english，CI默认使用english包，我们可以自己自定义错误提示信息文件，目录位于：application/language/english/form_validation_lang.php
-
-- 使用form_validation::set_message()方法定义验证规则的错误信息
-
-- 使用form_validation::set_rules()方法的时候定义错误信息
-
-注：变量替代，{fidld}用于替代field label，{param}替换某些验证规则自带参数，例如minlength[5]
-
-**规则集**
-
-对于第三点的说明，例如你有个登陆的form，可以将该form的多个字段的验证规则配置成一个数组，在调用Form_validation对象的时候指定调用。
-
-
-### 2. Form辅助函数
-CI的表单辅助函数能够自动化的创建表单，根据功能分类有：
-- 生成表单标签
-- 生成表单字段标签
-- 根据Form类生成错误信息
-
-**表单填充**
-set_*()系列方法用于在视图界面上的form表单域赋值，默认的会从$_POST对象中查找数据，如果查找不到则使用默认值。
-
-如果有使用到from_validation类的时候，set系列的方法将会去使用form_validation对象中的表单字段的值，而不是执行函数本身，如果from_validation对象找不到则使用默认值。
-
-调用update()方法，无法填充模型对象表示从编辑入口进来，这时候set_*()方法只能使用默认值。成功填充对象但是无法通过验证仍然会返回_form页面，这时候将显示
-
-**错误提示**
-- form_error()
-- validation_errors()
-这俩个函数用于跟form_validation对象来进行错误的提示，函数将会输出form_validation对象的错误提示信息，可以全部输出或者输出指定字段的错误信息。
+与Form_Validation类对应的是Form_Validation辅助函数，具体看手册
 
 
 
-## 安全
-1. 验证数据类型是否正确，包括长度、大小等等
-2. 数据过滤：转义
-
-隐藏重要程序文件，在web根目录站点放置index.php入口文件与资源目录即可
 
 
-## CI的语言文件
-CI_lang提供了一套用于获取语言文件和不同语言的文本来实现国际化，默认CI下载包提供了english语言文件，如果要自定义，需要重新去创建和加载它。
+## CI语言文件
+CI_lang提供了一套用于获取语言文件和不同语言的文本来实现国际化，默认CI框架提供了english语言文件，如果要汉化需要去扩展它。
 
-### 1. 加载原理
-默认的ci会先加载system/language目录下的语言文件，之后会去加载application/language目录下的语言文件，语言类别的加载取决于config.php配置文件，当然你可以在使用的时候去切换它。
+目录说明：
+- system/language：CI框架系统语言类的存放路径
+- application/language：应用语言文件的存放路径
 
-### 2. 使用
+配置：
+application/config/config.php 配置文件中指定默认语言，如果想让你的项目支持多语言，可以在system或application目录下的language目录下创建不同语言文件，再通过config.php文件配置
+
+### 1. 创建语言文件
+语言文件必须以_lang.php结尾，在此文件中，是把一个字符串赋值给名为 $lang 的数组，例如：$lang['language_key'] = 'str';
+
+### 2. 加载
+### 3. 读取
