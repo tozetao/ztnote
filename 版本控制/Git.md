@@ -233,3 +233,38 @@ push命令用于将本地的分支的更新推送到远程主机的分支上，
 
 		注：failed to open http://github.xxx.git，推送失败的问题
 		解决方案：进行代码合并，git pull --rebase origin master，这时候就可以跟新远程库了，注：pull=fetch+merge。
+
+
+## AutoCRLF
+CR是回车，LF是换行符，Windows和Linux的换行符是不一样的，区别如下：
+- windows：\n\r，CRLF
+- Linux：\n，LF
+- MacOS：\r，CR
+
+解决的方法是：
+- 打开命令行，进行设置，如果你是在Windows下开发，建议设置autocrlf为true。
+- 如果你文件编码是UTF8并且包含中文文字，那还是把autocrlf设置为false，并且把所有文件转换为Linux编码（即LF\n），开启safecrlf检查。
+
+### 1. AutoCRLF
+```
+git config --global core.autocrlf true   
+#提交时转换为LF，检出时转换为CRLF
+
+git config --global core.autocrlf input   
+#提交时转换为LF，检出时不转换
+
+git config --global core.autocrlf false
+#提交检出均不转换
+```
+
+### 2. SafeCRLF
+```
+#拒绝提交包含混合换行符的文件
+git config --global core.safecrlf true   
+
+#允许提交包含混合换行符的文件
+git config --global core.safecrlf false   
+
+#提交包含混合换行符的文件时给出警告
+git config --global core.safecrlf warn
+```
