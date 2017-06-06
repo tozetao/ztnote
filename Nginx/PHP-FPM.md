@@ -1,4 +1,4 @@
-## PHP-FPM简介
+## FastCGI
 nginx与php-fpm分别是独立运行的进程，它们之间是通过php-cgi协议来进行通讯的。
 
 CGI是保证web服务器传递过来的数据是标准格式的，web服务器只是内容的分发者，例如nginx服务器，请求的是/index.php，web服务器根据配置文件知道要将该请求分发给php解析器，在转发给php解析器的时候，要传递什么数据，传递数据的格式，这些都是CIG规定的。
@@ -11,12 +11,6 @@ CGI是有性能问题的，对于每个请求它都会创建一个进程，PHP�
 fastcgi会创建一个master进程负责php解析器的配置文件加载和解析、初始化环境，同时会创建多个worker子进程，当请求过来时，master进程会传递给worker进程处理，这样就避免了多次初始化所耗费的资源了，master也可以根据配置文件决定启动几个worker等待处理，这便是fastcgi对进程的管列了。
 
 而php-fpm是fastcig的一个实现，php的解析器实际就是php-cgi，它是一个实现了cgi协议的程序，无法做到进程管理，所以就出现了一些能够调度php-cgi进程的程序，所以php-fpm就是这么个东西。
-
-## 源码安装说明
-- 如果缺少.h头文件，只要安装对应的devel类库即可，例如CURL-Devel
-- make clean：清除编译之前的配置文件和可执行文件
-- ./configure -help：查看配置帮助选项，配合|grep管道符来使用
-- 如果是在虚拟机安装，确保系统时间是正确的
 
 
 ## PHP-FPM编译安装

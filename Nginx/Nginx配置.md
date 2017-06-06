@@ -1,34 +1,33 @@
-## nginx配置文件说明
+## Nginx配置说明
 ```
+# Nginx工作进程数量，即子进程的数量，数量设置要合理，过多会抢占CPU资源
+# 根据CPU数量，CPU核心数量来设置，例如有4个4核心CPU，值设置为14
 worker_processes 1;
-# Nginx工作进程，即Nginx的子进程
-# 主要根据CPU核心数量来设置，子进程过多会抢夺CPU资源，所以值要合理
-# 例如服务器有4个CPU，每个CPU8个核心，值可以设置为32
 
 
-# 进程与连接的特性配置
+# events是进程与连接的特性配置
 events{
-	worker_connection 1024;
 	# 单个子进程最大允许连接数，这里是1024表示允许连接处理1024个请求连接
+	worker_connection 1024;
 }
 
-
-# http服务器配置，当然也可以是其他类型的服务器
+# http是对web服务器的配置
 http{
 	# server是虚拟主机配置段
 	server{
 		listen 80;			# 指定监听的端口
-		server_name z.com;	# 指定监听的域名
+		server_name z.com;	# 指定匹配的域名
 
 		# URL路径解析或文件定位
 		Location /{
+			# 该路径所映射的目录路径
 			root test	
-			# 该路径映射的根目录
+			# 默认访问文件
 			index index.html index.php
 		}
 	}
 	
-	# 基于端口的监听
+	
 	image_server {	
 		listen 2022;
 		server_name z.com;
@@ -37,11 +36,13 @@ http{
 			index index.html;
 		}
 	}
+	# 创建一个图片服务器
 }
+
 ```
 
 ## Nginx案例说明
-基本优化配置：
+### 1. 基本配置优化
 ```
 user  www www;
 
@@ -96,37 +97,31 @@ http
     gzip_proxied   expired no-cache no-store private auth;
     gzip_disable   "MSIE [1-6]\.";
 
-    server_tokens off;
+    #limit_conn_zone $binary_remote_addr zone=perip:10m;
+    ##If enable limit_conn_zone,add "limit_conn perip 10;" to server section.
 
-    #log format
-    log_format  access  '$remote_addr - $remote_user [$time_local] "$request" '
-         '$status $body_bytes_sent "$http_referer" '
-         '"$http_user_agent" $http_x_forwarded_for';
-            access_log off;
+    server_tokens off;
+    access_log off;
 
 	server
-    {
+	{
         listen 80 default_server;
         #listen [::]:80 default_server ipv6only=on;
-        server_name www.zhongchuanxinxi.com;
-        index index.html index.htm index.php main.html;
-        root  /home/wwwroot/default/zc;
+        server_name _;
+        index index.html index.htm index.php;
+        root  /home/wwwroot/default;
 
- 		location /nginx_status
+        #error_page   404   /404.html;
+
+        # Deny access to PHP files in specific directory
+        #location ~ /(wp-content|uploads|wp-includes|images)/.*\.php$ { deny all; }
+
+        include enable-php.conf;
+
+        location /nginx_status
         {
             stub_status on;
             access_log   off;
-        }
-
-        location = /dicegame {
-                #root  /home/wwwroot/default/zc/dicegame;
-        }
-
-        location = /dicetool {
-                #root  /home/wwwroot/default/zc/dicetool;
-        }
-        location / {
-            try_files $uri $uri/ /index.php?$query_string;
         }
 
         location ~ .*\.(gif|jpg|jpeg|png|bmp|swf)$
@@ -139,17 +134,22 @@ http
             expires      12h;
         }
 
+        location ~ /.well-known {
+            allow all;
+        }
+
         location ~ /\.
         {
             deny all;
         }
-        access_log  /home/wwwlogs/access.log  access;
+
+        access_log  /home/wwwlogs/access.log;
     }
 	include vhost/*.conf;
 }
 ```
-
-enable-php.conf：php请求转发配置文件
+### 2. 解析php脚本配置
+enable-php.conf：
 ```
 location ~ [^/]\.php(/|$)
 {
@@ -161,16 +161,21 @@ location ~ [^/]\.php(/|$)
 }
 ```
 
-pathinfo.conf：PATH_INFO配置文件
+pathinfo.conf：
 ```
+# PATH_INFO变量的配置，
 fastcgi_split_path_info ^(.+?\.php)(/.*)$;
 set $path_info $fastcgi_path_info;
 fastcgi_param PATH_INFO       $path_info;
 try_files $fastcgi_script_name =404;
 ```
 
-fastcgi.conf：fastcgi要传递的参数
+
+fastcgi.conf：
 ```
+# Nginx要传递给fastcgi的参数
+fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+fastcgi_param  QUERY_STRING       $query_string;
 fastcgi_param  REQUEST_METHOD     $request_method;
 fastcgi_param  CONTENT_TYPE       $content_type;
 fastcgi_param  CONTENT_LENGTH     $content_length;
@@ -180,6 +185,7 @@ fastcgi_param  REQUEST_URI        $request_uri;
 fastcgi_param  DOCUMENT_URI       $document_uri;
 fastcgi_param  DOCUMENT_ROOT      $document_root;
 fastcgi_param  SERVER_PROTOCOL    $server_protocol;
+fastcgi_param  REQUEST_SCHEME     $scheme;
 fastcgi_param  HTTPS              $https if_not_empty;
 
 fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
@@ -193,13 +199,66 @@ fastcgi_param  SERVER_NAME        $server_name;
 
 # PHP only, required if PHP was built with --enable-force-cgi-redirect
 fastcgi_param  REDIRECT_STATUS    200;
-
-
+fastcgi_param PHP_ADMIN_VALUE "open_basedir=$document_root/:/tmp/:/proc/";
 ```
 
 
-## Demo
-重写：
+### 3. fastcgi_split_path_info命令说明
+fastcgi_split_path_info用于location上下文中，该命令定义捕获$fastcgi_path_info变量值的正则表达式，fastcgi_split_path_info指令是对URI的匹配。
+
+正则表达式匹应该要有俩个捕获(子表达式)，第一个捕获是$fastcgi_script_name变量的值，第二个捕获是$fasccgi_path_info变脸的值。
+
+理解该指令的使用需要理解url在web服务器变量中是什么样子的，
+例如有网址：http://192.168.0.102/blog/index.php?name=lisi，各个变量如下：
+- $document_root：/var/www，网站根目录
+- $fastcgi_script_name：/blog/index.php
+- $script_name：/blog/index.php
+- $request_uri：/blog/index.php?name=lisi
+- $query_string：name=123
+- SCRIPT_FILENAME = $document_root + $fastcig_script_name
+- SCRIPT_NAME = $fastcig_script_name
+
+默认情况下web服务器是没有PATHINFO参数的，所以类似/index.php/user/add是无法访问的，报404错误。
+
+
+PATH_INFO配置1：
+```
+fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+set $path_info $fastcgi_path_info;
+fastcgi_param PATH_INFO $path_info;
+try_files $fastcgi_script_name =404;
+```
+PATH_INFO配置2：
+```
+location ~ \.php {
+	fastcgi_pass   127.0.0.1:9000;
+	fastcgi_index  index.php;
+
+	#先加载默认后解析赋值
+	include        fastcgi_params;
+
+	#正则解析路径
+	set $path_info "";
+	set $real_script_name $fastcgi_script_name;
+	if ($fastcgi_script_name ~ "^(.+?\.php)(/.+)$") {
+		set $real_script_name $1;
+		set $path_info $2;
+	}
+	fastcgi_param PATH_INFO       $path_info;
+	fastcgi_param SCRIPT_FILENAME $document_root$real_script_name;
+	fastcgi_param SCRIPT_NAME     $real_script_name;
+}
+```
+
+进行配置后，服务器变量变化如下，
+例如网址：http://192.168.0.102/blog/index.php/user/add?name=lisi
+
+- SCRIPT_FILENAME：/var/www/blog/index.php
+- SCRIPT_NAME：blog/index.php
+- PATH_INFO：user/add
+- REQUEST_URI：/blog/index.php/user/add?name=lisi
+
+### 4. URL重写，隐藏index.php
 ```
 location / {
      index  index.php index.html index.htm;
@@ -211,10 +270,7 @@ location / {
         #rewrite ^/subdir/(.*)$ /subdir/index.php/$1;
      }
 }
-```
 
-
-```
 location ~ \.php {
     include fastcgi.conf;
 
@@ -234,4 +290,3 @@ location ~ \.php {
     fastcgi_pass   127.0.0.1:9000;
 }
 ```
-
