@@ -42,36 +42,19 @@ location [=|~|~*|^~|@] patt {
 example：精准匹配与普通匹配
 ```conf
 location = / {
-	root /var/www;
-	index index.html;
+	[configuration A]
 }
 # 精准匹配，只匹配"/"
 
 location / {
-	root /var/html;
-	index index.htm;
+	[configuration A]
 }
 # 匹配任何请求，因为所有请求都是以/开始的
 # 但是更长的字符匹配或者正则表达式会优先匹配
 
+
 # blog.com，执行精准匹配
 # blog.com/index.html，执行普通匹配
-```
-
-example：普通匹配和正则匹配
-```
-location / {
-	root /var/html;
-	index index.htm;
-}
-
-location ~ images {
-	root images
-	index index.html
-}
-
-# 如果普通匹配和正则匹配都成功，那么正则匹配会覆盖普通匹配的结果。
-# 正则表达式是按照配置文件从上到下的顺序来进行匹配的，谁先匹配到就先返回结果。
 ```
 
 example：多个普通匹配
@@ -86,12 +69,25 @@ server{
 		root html
 		index index.html
 	}
-
-	location ~ images {
-		root images
-		index index.html
-	}
 }
-# 如果有多个普通匹配一起命中，只会取表达式命中最长的结果匹配作为唯一的结果来执行。
-# 在上述的例子中如果以xxx.com/foo网址进行访问，那么表达式/和/foo都将命中，但是/foo命中的结果较长，所以只想/foo表达式配置的结果。
+# 普通字符匹配下，Nginx会将匹配结果存储起来
+# 如果没有正则匹配，则会取最长字符的普通匹配作为结果返回
+```
+
+example：普通匹配和正则匹配
+```
+location / {
+	[configuration A]
+}
+
+location ~ images {
+	[configuration A]
+}
+
+location ~ images {
+	[configuration A]
+}
+
+# 如果普通匹配和正则匹配都成功，那么正则匹配会覆盖普通匹配的结果。
+# 正则表达式是按照配置文件从上到下的顺序来进行匹配的，谁先匹配到就先返回结果。
 ```
