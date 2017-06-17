@@ -208,17 +208,14 @@ fastcgi_split_path_info用于location上下文中，该命令定义捕获$fastcg
 
 正则表达式匹应该要有俩个捕获(子表达式)，第一个捕获是$fastcgi_script_name变量的值，第二个捕获是$fasccgi_path_info变脸的值。
 
-理解该指令的使用需要理解url在web服务器变量中是什么样子的，
-例如有网址：http://192.168.0.102/blog/index.php?name=lisi，各个变量如下：
-- $document_root：/var/www，网站根目录
-- $fastcgi_script_name：/blog/index.php
-- $script_name：/blog/index.php
-- $request_uri：/blog/index.php?name=lisi
-- $query_string：name=123
-- SCRIPT_FILENAME = $document_root + $fastcig_script_name
-- SCRIPT_NAME = $fastcig_script_name
+理解该指令的使用需要理解url在web服务器变量中是什么样子的，例如http://localhost/index.php/blog/user?name=zhangsan，各个变量如下：
 
-默认情况下web服务器是没有PATHINFO参数的，所以类似/index.php/user/add是无法访问的，报404错误。
+- SCRIPT_FILENAME ： =$document_root + $fastcgi_script_name，document_root是网站根目录(/var/www)，/index.php/blog/user
+- SCRIPT_NAME: =$fastcgi_script_name，/index.php/blog/user
+- REQUEST_URI： =$request_uri，/index.php/blog/user?name=zhangsan，如果你的uri重写过，request_uri仍旧指向第一次访问的uri地址。
+- $query_string：name=zhangsan
+
+默认情况下web服务器是没有PATHINFO参数的，所以在使用支持PATH_INFO的PHP框架时会报错。
 
 
 PATH_INFO配置1：
@@ -251,12 +248,12 @@ location ~ \.php {
 ```
 
 进行配置后，服务器变量变化如下，
-例如网址：http://192.168.0.102/blog/index.php/user/add?name=lisi
-
 - SCRIPT_FILENAME：/var/www/blog/index.php
-- SCRIPT_NAME：blog/index.php
-- PATH_INFO：user/add
+- SCRIPT_NAME：/index.php
+- PATH_INFO：blog/user
 - REQUEST_URI：/blog/index.php/user/add?name=lisi
+
+$fastcgi_script_name被切割分成俩部分，脚本文件后的部分路径是PATH_INFO，剩余的变量则是$fastcgi_script_name的值。
 
 ### 4. URL重写，隐藏index.php
 ```
