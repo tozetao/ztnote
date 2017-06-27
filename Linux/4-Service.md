@@ -140,4 +140,37 @@ netstat -an
 # 查看所有端口号，包括正在连接的、监听中的服务和程序。
 ```
 
-## 源码包服务管理
+## 源码包管理
+chkconfig、service、ntsysv命令是管理rpm包服务的，由于它们是通过扫描/etc/init.d目录下的启动脚本来管理rpm包服务，所以无法管理源码包服务。
+
+### 1. 启动
+- 源码包启动：一般源码包在安装好后，使用绝对路径来调用启动脚本，通过该脚本来管理安装的软件，不同的源码包启动脚本是不同的。
+- service管理启动：ln -s /usr/local/apache2/bin/apachectl /etc/rc.d/init.d，在init.d目录中创建一个软连接，指向apache的启动脚本
+
+### 2. chkconfig管理源码包服务
+vim /etc/init.d/apache
+编辑apache脚本，该脚本实际上是用shell命令来操作apache二进制文件来管理apache服务。
+
+```
+# chkconfig:35 86 76
+# 指定httpd脚本可以被chkconfig命令管理，格式是，chkconfig：运行级别 启动顺序 关闭顺序
+# 35是运行级别，让apache服务在3和5模式下自启动，启动/关闭顺序的编号是在不同运行目录下的软链接文件编号，主要不要跟系统原有编号文件冲突。
+
+# description: source package apache
+# 说明，内容随意
+```
+将上述的内容添加apache脚本目录中第二行位置，这样chkconfig就可以管理源码包服务了。
+
+chkconfig --add apache
+讲源码包添加到chkconfig命令中。
+
+### 3. 启动脚本目录说明
+/etc/rc.d与/etc/init.d
+
+
+/etc/init.d是一个软链接目录，实际指向/etc/rc.d/init.d目录
+
+/etc/rc1-6.d目录
+1-6代表系统启动级别，每个目录下都存储了服务在不同系统级别下的启动顺序和关闭顺序，目录下都是软链接文件，以s开头的文件表示启动，k开头的文件表示关闭。
+
+Linux系统启动时时会根据系统模式来运行对应目录下的s文件，关闭时运行k文件，chkconfig便是这样管理服务的自启动的
