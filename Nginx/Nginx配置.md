@@ -255,6 +255,7 @@ location ~ \.php {
 
 $fastcgi_script_name被切割分成俩部分，脚本文件后的部分路径是PATH_INFO，剩余的变量则是$fastcgi_script_name的值。
 
+
 ### 4. URL重写，隐藏index.php
 ```
 location / {
