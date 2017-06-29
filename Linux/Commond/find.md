@@ -1,13 +1,3 @@
-script -q /dev/stdout -c 'scp remotehost:/path/to/file /local/file' | tee scp.log
-将scp回显结果输出到日志中
-
-
-script scp_transfer.txt
-scp remotehost:/path/to/file /local/file
-exit
-
-cat scp_transfer.txt
-
 ## find命令
 find pathname -options [-print -exec -ok]
 
@@ -49,8 +39,3 @@ find命令将匹配到的文件传递给xargs时，xargs只获取一部分，在
 example：
 > find . -maxdepth 1 -name "t*" |xargs ls -ld
 // find配合xargs使用
-
-
-
-
-CI：如果将index.php的模式设置为生产模式，那么将不会把错误显示到页面，而是显示500错误，然而仍然可以记录错误。
