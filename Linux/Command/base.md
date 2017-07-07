@@ -1,3 +1,118 @@
+### echo
+用于向终端输出字符串，配置-e选项才能才能输出反义字符
+
+example：
+```
+echo 'this is demo';
+
+echo -e "echo 3 lines\n\n\n";
+
+echo 'the log file have be done' > log.txt
+# 重定向输出
+
+echo "hello world\""
+# 引号是一个特殊字符，在输出时需要转义
+```
+
+### read
+read命令用于在标准输入中读取一行，并把输入中的每个字段的值赋予shell变量。
+
+example：
+```
+read name age address
+echo $name;
+echo $age;
+echo $address;
+```
+
+### cat
+显示文件内容，创建文件，还可以用于显示控制字符。
+注：在文件分页处不会停下来，会显示整个文件内容，因此可以把cat命令的输出通过管道符传递到另外一个具有分页功能的命令中。
+
+命令格式：cat [options] filename1...
+
+options选项：
+- -n：由1开始对所有输出的行数编号
+- -b：同-n，只不过对于空白不编号
+- -s：当遇上有连续俩行以上的空白行，就代替为一行的空白行
+- -v：显示非打印字符
+
+example:
+```
+cat file1
+# 显示file1文件内容
+
+cat file1 file2 file3
+# 显示多个文件内容
+
+cat file1 file2 file3 > bigfile
+# 将多个文件的内容重定向到新文件中
+
+$ cat
+hello world
+first
+<ctrl + d>
+$
+# 新建文件
+
+cat /dev/null > file
+# 清空file文件内容
+
+cat -b httpd.conf
+# 输出文件内容并编号
+
+cat -s /etc/X11/XF86Config | sed '/^[[:space:]]*$/d'
+# 使用sec与cat去除空白行
+```
+
+### more
+
+### tee
+读取标准输入的数据，并将内容输出成文件。
+
+格式：tee -options file1 file2 ...
+
+options选项：
+- -a：将内容附加到文件后面，而不覆盖。
+- -i：忽略终端信号
+- --help
+- --version：显示版本信息
+
+example：
+```
+tee teedemo.txt
+# 读取标准输入内容，并输出到文件中。
+
+cat demo.txt |tee file1 file2
+# 显示demo.txt文件内容并把内容复制到其他文件中
+
+ls -l |tee file 
+```
+
+
+### 管道符
+通过管道把一个命令的输出传递给另外一个管道作为输入，管道用竖杆|表示。
+
+格式： 命令1 | 命令2，其中|是管道符
+
+### Linux命令执行顺序
+linux命令执行顺序，||和&&和;
+- command1 && command2：左边的命令执行成功，右边的命令才会执行
+- command1 || command||：左边的命令执行失败，右边的命令才会执行
+- command;command2：命令顺序执行
+
+example：
+```
+cp test.txt test_bak.txt && cat test_bak.txt
+# 拷贝成功则显示拷贝的文件
+
+cata || touch b.txt
+# 第一个命令执行失败，第二个命令会被执行
+
+pwd;date;more d.txt
+```
+
+
 ## linux命令
 linux的命令和参数区分大小写，可以用tab键来补全命令。
 命令格式：command [options] params，command是指令，option是选项，参数可以有多个，如果命令的长度多长，可以用 \ 来换行输入。
