@@ -1,60 +1,170 @@
+### echo
+用于向终端输出字符串，配置-e选项才能才能输出反义字符
+
+example：
+```
+echo 'this is demo';
+
+echo -e "echo 3 lines\n\n\n";
+
+echo 'the log file have be done' > log.txt
+# 重定向输出
+
+echo "hello world\""
+# 引号是一个特殊字符，在输出时需要转义
+```
+
+### read
+read命令用于在标准输入中读取一行，并把输入中的每个字段的值赋予shell变量。
+
+example：
+```
+read name age address
+echo $name;
+echo $age;
+echo $address;
+```
+
+### cat
+显示文件内容，创建文件，还可以用于显示控制字符。
+注：在文件分页处不会停下来，会显示整个文件内容，因此可以把cat命令的输出通过管道符传递到另外一个具有分页功能的命令中。
+
+命令格式：cat [options] filename1...
+
+options选项：
+- -n：由1开始对所有输出的行数编号
+- -b：同-n，只不过对于空白不编号
+- -s：当遇上有连续俩行以上的空白行，就代替为一行的空白行
+- -v：显示非打印字符
+
+example:
+```
+cat file1
+# 显示file1文件内容
+
+cat file1 file2 file3
+# 显示多个文件内容
+
+cat file1 file2 file3 > bigfile
+# 将多个文件的内容重定向到新文件中
+
+$ cat
+hello world
+first
+<ctrl + d>
+$
+# 新建文件
+
+cat /dev/null > file
+# 清空file文件内容
+
+cat -b httpd.conf
+# 输出文件内容并编号
+
+cat -s /etc/X11/XF86Config | sed '/^[[:space:]]*$/d'
+# 使用sec与cat去除空白行
+```
+
+### more
+
+### tee
+读取标准输入的数据，并将内容输出成文件。
+
+格式：tee -options file1 file2 ...
+
+options选项：
+- -a：将内容附加到文件后面，而不覆盖。
+- -i：忽略终端信号
+- --help
+- --version：显示版本信息
+
+example：
+```
+tee teedemo.txt
+# 读取标准输入内容，并输出到文件中。
+
+cat demo.txt |tee file1 file2
+# 显示demo.txt文件内容并把内容复制到其他文件中
+
+ls -l |tee file 
+```
+
+
+### 管道符
+通过管道把一个命令的输出传递给另外一个管道作为输入，管道用竖杆|表示。
+
+格式： 命令1 | 命令2，其中|是管道符
+
+### Linux命令执行顺序
+linux命令执行顺序，||和&&和;
+- command1 && command2：左边的命令执行成功，右边的命令才会执行
+- command1 || command||：左边的命令执行失败，右边的命令才会执行
+- command;command2：命令顺序执行
+
+example：
+```
+cp test.txt test_bak.txt && cat test_bak.txt
+# 拷贝成功则显示拷贝的文件
+
+cata || touch b.txt
+# 第一个命令执行失败，第二个命令会被执行
+
+pwd;date;more d.txt
+```
+
+
 ## linux命令
 linux的命令和参数区分大小写，可以用tab键来补全命令。
 命令格式：command [options] params，command是指令，option是选项，参数可以有多个，如果命令的长度多长，可以用 \ 来换行输入。
 
 注：在linux命令行中，#为root用户，s为普通用户。
 
-## 常用命令
-```
-pwd
-	显示当前工作目录
+## 基础命令
 
+### pwd
+显示当前工作目录
 
-ls
-	显示目录
-	
-	用法：
-		ls [选项] 目录名
+### ls
+ls用于显示目录，ls -options dirctoryname
 
-	选项：
-		-s，显示所有文件，包括隐藏文件
-		-l，文件以长格式显示
-		-t，文件以修改时间先手显示
-		-R，显示目录及下级子目录结构，一般会用tree命令代替
-		-d，显示指定目录
-		-m，横向输出文件夹，并以“，”作分隔符
-		-s，以文件大小排序
+选项：
+- -s，显示所有文件，包括隐藏文件
+- -l，文件以长格式显示
+- -t，文件以修改时间先手显示
+- -R，显示目录及下级子目录结构，一般会用tree命令代替
+- -d，显示指定目录
+- -m，横向输出文件夹，并以“，”作分隔符
+- -s，以文件大小排序
 
-	颜色说明：
-		不同的颜色代表不同的文件。
-		白色：普通文件。
-		红色：压缩文件。
-		蓝色：目录文件
-		浅蓝色：链接文件
-		绿色：可执行文件
+ls命令输出时，不同的颜色代表不同的文件。
+- 白色：普通文件。
+- 红色：压缩文件。
+- 蓝色：目录文件
+- 浅蓝色：链接文件
+- 绿色：可执行文件
 
-mkdir
-	建立目录
-	
-	用法：
+### mkdir
+用法：
 		mkdir [option] 目录名
 	
 	选项：
 		-p，一次性创建整个目录树。
-	
-rmdir
+
+### rmdir
 	删除目录
 	用法：
 	rmdir [参数] 目录名
-
-rm
-	删除文件和文件夹
+### rm
+删除文件和文件夹
 	用法：
 		rm [参数] 	文件
 	参数：
 		-r 删除整个目录树
 		-f 强制执行
 	rm -rf，一定要谨慎使用，有的时候rm -rf /将会把根目录下所有文件删除，所以rm -rf最好用非超级用户来做，因为非超级用户没有很多权限。
+
+```
+
 
 tree
 	显示文件和目录树，能够将目录以一棵树的形式显示出来。
@@ -113,59 +223,8 @@ tail
 	与head相反，是显示结尾几行。
 ```
 
-## 辅助命令
-##### 1. find
-```
-find命令，该命令用于查找文件。
-用法
-	find   path   -option   [-print ]   [ -exec   -ok   command ]   {} \;
 
-参数说明
-	path：是要查找的路径。
-	option：操作选项。
-	-print，将查找到的文件输出到标准输出
-	-exec command {} \; #将查到的文件执行command操作,{} 和 \;之间有空格
-	-ok，和-exec相同，只不过在操作前要询用户
-
-选项说明
-	-name：查找指定命令的文件，也可以使用正则。
-	-mtime n：按照文件更改时间来查询文件，+n指n天之前，-n指n天以内，mtime是指文件内容创建或被修改的时间。
-	-atime n：按文件访问时间来查询
-	-ctime n：按文件创建时间来查询，ctime是指inode信息修改的时间。
-	...
-	更详细的可以根据文件属性来进行查找，具体看手册。
-
-example：
-	find / -ctime 0 #查找从现在到当天0点之间所有创建的文件。
-	find / -name filename -exec ls -l {} \;
-	# -exec用于将查询到的文件做一个命令操作，{}是查询到的文件的意思。
-
-	find / -name lilo.conf
-	#搜索根目录下名为lilo.conf的文件
-
-
-	find /etc -name smb.conf
-	# 快速查找文件
-	# 根据文件名来查找文件如果在大型的linux文件系统中查询，速度会很慢的，所以我们可以猜测文件的大致存储位置，例如一个后缀名为conf的文件时一个配置相关的文件，大体存放在/etc目录下。
-
-
-	find / -name "*abcd*"
-	# 根据部分文件名来查找
-	# 在根目录下，查找名字含有abcd字符的文件。
-	# *是通配符，用于匹配0个或多个字符
-
-	find /etc -size +50000c -and -mtime +1
-	# 使用混合查找方式查找文件
-	# 主要用-and将多个查找参数连接起来组合查询
-	# c字节，m兆，+1是24小时内
-
-	-exec command
-	# 对匹配文件执行command命令，用{}表示匹配的文件，命令形式为：'command' {} \;，这里要注意{}和\;之间的空格。
-	
-	-ok command; 与-exec相同，但是提示确认没个文件的操作。
-```
-
-##### 2. history命令
+### history
 ```
 history
 	用于查看命令的历史记录
@@ -178,7 +237,7 @@ echo $PATH
 该命令用于输出系统环境变量，与windows一样的道理。
 在linux中，你输入的命令系统都会在环境变量中去寻找的。
 
-##### 4. grep
+### grep
 ```
 grep
 	一个强大的文本搜索命令，能使用正则表达式搜索文本，并把内容打印出来。
@@ -205,7 +264,7 @@ example：
 ```
 
 
-## 关机相关命令
+### 关机相关命令
 linux不同于windows系统，它是有运行级别的，各级别如下：
 - 0：系统关机状态
 - 1：单用户工作状态，用于维护
