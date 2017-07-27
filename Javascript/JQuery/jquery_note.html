@@ -1,0 +1,607 @@
+<!-- 
+1. jquery对象和DOM对象
+	1.1 dom对象
+		dom，文档对象模型，每一份dom都可以表示成一棵树，从dom对象中可以看出各个元素之间的关系。
+		example：
+			var p = document.getElementById('demo');
+		如上所示，通过DOM方法得到的对象，就是dom对象。
+
+	1.2 juqery对象
+		var p=$('demo');
+		用juqery选择器得到的对象，就是jquery对象。
+		jquery对象不能使用dom对象中的方法，只能使用jquery对象自己定义的方法。
+		如果dom对象中的方法在jquery库中被改写过，那么可以使用dom对象中的方法。
+
+
+		同样的dom对象不能使用任何jquery对象的方法。
+
+	1.1 dom对象和jquery对象互相转换
+
+		a. 使用索引来进行转换，$('demo')[0]
+		b. $('demo').get(0)，get(index)的方法
+
+		$(document.getElementById('demo'))	//这样就转换成jquery对象了
+		
+	1.2 jquery与其他js库的兼容
+		在需要使用其他库的时候，用jquery.noConflict()释放$的控制器。这时候jquery的$就被使用了，要使用的使用，使用jquery对象，例如jQuery('').xx
+
+		例外跟引入库的先后顺序也有关系的。
+
+2. 选择器
+	jquery的选择器用于获取指定的元素对象。
+
+	2.1 基本选择器
+		a. #id，选择id的元素
+			example：
+				#('#demo').css(attribute,value);
+			说明：
+				#('#demo')，这部分是通过id来获取元素对象，之后通过css方法来更改元素的样式。
+
+		b. .class，类名选择器，同id选择器一样。
+				
+		c. Element，标签选择器
+			跟id、class选择器差不多，只不过换成标签名。
+
+		d. *，选择所有元素
+			会获取html文档中所有元素，不推荐使用，会对整个页面造成影响。
+
+		e. E1,E2,E3,E4...，多重选择器
+			可以通过,号分割，来获取多个元素对象。
+
+	2.2 层次选择器
+		 a. E F，选择E元素所有的后代元素
+			
+		 b. E>F，选择E元素的子元素，子选择器
+		 
+		 c. E+next，选择E元素后紧邻的兄弟元素，等价于.next()
+			example：
+				$('div+p').css 相当于 $('div').next().css();
+
+		 e. E~siblings，选择E元素后的所有兄弟元素，等价于.nextAll()
+			example：
+				<div></div>
+				<p></p>
+				<div></div>
+				<p></p>
+
+				div~p{color:red;}	style中，会因为浏览器的不同而失效
+
+				$('div~p').css()	jquery会帮你解决浏览本版本的问题。
+
+	2.3 表单选择器
+		:input
+			匹配所有 input, textarea, select 和 button 元素
+		:text
+		:password
+		:radio
+		:checkbox
+		:submit
+		:image
+		:reset
+		:button
+		:file
+
+		表单对象属性
+		:enabled
+		:disabled
+		:checked
+		:selected
+	
+	2.4 过滤选择器
+		a. 基本过滤选择器
+			:first	选取第一个元素
+			:last	选取组后一个元素
+			:not()	选取除指定之外的元素
+			:even	偶数选择器
+			:odd	奇数选择器
+			:eq()	选取指定索引的元素
+			:gt()	选取大于指定索引的元素
+			:lt()	选取小于指定索引的元素
+			:header	选取h1、h2、h3、h4、h5、h6标签
+			:animated	选取正在执行动画的元素
+
+			example：
+				<p>第1个p标签</p>
+				<p>第2个p标签</p>
+				<p class='a'>第3个p标签</p>
+				<p>第4个p标签</p>
+				<p>第5个p标签</p>
+
+				$('p:first').css('background','red');
+				//选择p标签中的第一个选择器
+
+				$('p :first').css('background','red');
+				//p :first表示p元素下面的子孙标签中的第一个标签，多加了个空格
+
+				$("p:not('.a')").css('background','red');
+				//选择所有p标签，除了class名是a的p标签
+
+				$('p:even')
+				//选择p标签中偶数的选择器，注意起始是从0开始计数额。
+
+				$('p:odd')
+				//选择p标签中奇数位的选择器，也是从0开始计数的。
+
+				$('p:eq(3)')
+				//选择p标签中索引是3的元素对象，gt、lt也是如此。
+
+				$(':header')
+
+			example for animated：
+				<div style='background:teal;height:100px;width:100px; position:alsoulate; left:0;'></div>
+
+				$('#go').animate({'left','1000'},10000);//让div移动起来
+
+				$(':animated').css();	//会选中正在执行动画的div
+
+		b. 内容过滤
+			:contains()	选取含有文本内容的元素
+			:has()		选择含有指定元素的元素对象
+			:empty()	选择不包含子元素或者文本空元素
+			:parent()	选取含有子元素或者文本的元素
+			
+			example：
+			<p>JavaScript一种直译式脚本语言</p>
+			<p>是一种动态类型、弱类型、基于原型的语言，</p>
+			<p>内置支持类型。</p>
+			<p>它的解释器被称为<strong>JavaScript</strong>引擎</p>
+
+			$('p:contains(\'JavaScript\')')
+			//会选取有JavaScript文本的元素对象，
+
+			$('p:has('strong')')
+			//选取含有strong元素的元素对象
+
+		c. 可见性选择器
+			:hidden	选取所有不可见元素
+			:visible	选取所有可见元素
+
+		d. 属性过滤
+			详见API的attribute属性
+
+		e. 子元素过滤
+			:first-child	选择父元素的第一个元素
+			:last-child		选择父元素的最后一个元素
+			:only-child		选择元素中只包含一个子元素的元素
+			:nth-child(表达式)		选取父元素中第X个元素，X由表达式指定
+			:first-of-type	选取所有相同元素的第一个兄弟元素，1.9
+			:last-of-type	选取所有相同元素最后一个兄弟元素，1.9
+			:nth-last-child(表达式)		选择所有他们父元素的第N个子元素，计数从最后一个元素开始到第一个
+			:only-of-type
+
+			example：
+				<div>
+					<p>i am 1 p</p>
+					<p>i am 2 p</p>
+				</div>
+				$('div p:first-child')
+
+		f. 表单过滤
+	
+	3.2 特殊字符的处理
+		使用转义符转义，有些更特殊的字符需要俩个转移符号。
+
+	3.3 选择器的优化准则
+		a. 优先使用id选择器，id选择器的查找速度最快，其他的选择器需要遍历。
+		b. 在class选择器前添加标签名，例如：$('p.a')，只搜索p标签class名是a的元素。
+		c. 采用find()，而不是上下文查找。
+		d. 链式操作比缓存更快。
+		e. 从左至右的模型，1.3+版本更新，$('.div p.p')比$('div.div .p')速度更快
+
+		find()：查找当前元素对象的子孙元素对象。
+
+3. DOM操作
+	3.1 dom筛选
+		这是作为方法来操作dom对象，之前的过滤选择器是作用于选择器。
+		注：下面的方法都可以组合使用。
+		3.1.1 过滤
+			eq(index|-index)
+			first()
+			last()
+				
+			hasClass(class)
+				判断所匹配的元素是否拥有某个类名，返回bool类型。
+
+			filter(expr|obj|ele|fn)
+				很强大的dom过滤方法，可以根据表达式、对象、选择器、函数来过滤dom对象。
+				
+			is(expr|obj|ele|fn)
+			map(callback)
+			has(expr|ele)
+			not(expr|ele|fn)
+			slice(start,[end])
+
+		3.1.2 查找
+			children([expr])
+				选取子元素
+			closest(e|o|e)1.7*
+				
+			find(e|o|e)
+			next([expr])
+			nextAll([expr])
+			nextUntil([e|e][,f])
+
+			offsetParent()
+				这返回父元素中第一个其position设为relative或者absolute的元素。此方法仅对可见元素有效。
+			parent([expr])
+				选取父元素
+			parents([expr])
+				将查找所有祖辈元素
+
+			parentsUntil([e|e][,f])
+			prev([expr])
+			prevall([expr])
+			prevUntil([e|e][,f])
+
+			siblings([expr])
+				取得当前dom对象的同辈元素对象且满足匹配表达式的元素集合。
+
+		3.1.3 串联
+			add(e|e|h|o[,c])1.9*
+				
+			andSelf()1.8-
+			addBack()1.9+
+			contents()
+				
+			end()
+				回到最近的一个"破坏性"操作之前。即，将匹配的元素列表变为前一次的状态。
+				如果之前没有破坏性操作，则返回一个空集。所谓的"破坏性"就是指任何改变所匹配的jQuery元素的操作。这包括在 Traversing 中任何返回一个jQuery对象的函数--'add', 'andSelf', 'children', 'filter', 'find', 'map', 'next', 'nextAll', 'not', 'parent', 'parents', 'prev', 'prevAll', 'siblings' and 'slice'--再加上 Manipulation 中的 'clone'。
+
+	3.2 常见dom操作
+		创建
+			$('<div>div标签</div>');
+			//用于创建一个div标签
+		内部插入
+			append(content|fn)
+				向每个匹配的元素内部的尾部追加内容。
+				这个操作与对指定的元素执行appendChild方法，将它们添加到文档中的情况类似。
+				$('div').append(obj);
+				//将obj元素附加在div的节点中，
+			appendTo(content)
+				把所有匹配的元素追加到另一个指定的元素元素集合中。
+				实际上，使用这个方法是颠倒了常规的$(A).append(B)的操作，即不是把B追加到A中，而是把A追加到B中。
+
+			prepend(content|fn)
+				向每个匹配的元素内部前置内容。
+				这是向所有匹配元素内部的开始处插入内容的最佳方式。
+			prependTo(content)
+				类似appendto
+
+		外部插入
+			after(content|fn)
+				在每个匹配的元素之后插入内容。
+
+			before(content|fn)
+				在每个匹配的元素之前插入内容
+
+			insertAfter(content)
+			insertBefore(content)
+				这俩个方法只是颠倒了位置。
+
+		包裹
+			wrap(html|ele|fn)
+				把所有匹配的元素用其他元素的结构化标记分别单独包裹起来。
+				<p>this is a demo<p>
+				$('p').wrap('<div></div>');
+				//p标签会被div标签包裹起来。
+
+			unwrap()
+				这个方法将移出元素的父元素。这能快速取消 .wrap()方法的效果。匹配的元素（以及他们的同辈元素）会在DOM结构上替换他们的父元素。
+				
+			wrapAll(html|ele)
+				把所有匹配的元素用其他元素的结构化标签包裹起来。
+				
+			wrapInner(html|ele|fn)
+				将所有匹配的元素的子内容用其他标签包裹。
+				
+		
+		替换
+			replaceWith(content|fn)
+				
+			replaceAll(selector)+
+
+		删除
+			empty()
+				将匹配到的元素的内容清空
+				$('div').empty()
+				//div元素的内容(文本、html标签)被清空了
+
+			remove([expr])
+				将匹配到的元素删除
+				$('p').remove()
+
+			detach([expr])
+				
+		
+		复制
+			clone([Even[,deepEven]])
+				克隆匹配的DOM元素并且选中这些克隆的副本。
+				默认情况下，只克隆匹配的DOM元素，可以给一个参数true，会克隆该DOM对象所以属性和方法，包括被js代码所赋予的属性和方法。
+
+		遍历节点对象
+			在jquery中，你获取的数组元素无需遍历，jquery会帮你遍历所有对象。
+			
+		操作节点属性
+		操作样式
+		获取、设置节点的文本内容和html
+
+4. 属性
+	设置或返回被选元素的属性值。
+
+    4.1 属性
+        attr(name|pro|key,val|fn)
+        removeAttr(name)
+        prop(n|p|k,v|f)
+        removeProp(name)
+
+    4.2 CSS 类
+        addClass(class|fn)
+			为所匹配的元素添加类名
+        removeClass([class|fn])
+			移除类名
+        toggleClass(class|fn[,sw])
+			如果存在就删除一个类，不存在就添加一个类。
+
+    4.3 HTML代码/文本/值
+        html([val|fn])
+			取得第一个匹配元素的html内容。这个函数不能用于XML文档。但可以用于XHTML文档。
+			在一个 HTML 文档中, 我们可以使用 .html() 方法来获取任意一个元素的内容。 如果选择器匹配多于一个的元素，那么只有第一个匹配元素的 HTML 内容会被获取。
+
+        text([val|fn])
+			取得所有匹配元素的文本节点，内容会剔除标签元素。
+			结果是由所有匹配元素包含的文本内容组合起来的文本。这个方法对HTML和XML文档都有效。
+
+        val([val|fn|arr])
+
+5. CSS
+	关于元素对象css样式设置的API
+    5.1 CSS
+        css(name|pro|[,val|fn])1.9*
+			访问或设置匹配元素的样式属性。
+
+        jQuery.cssHooks
+
+    5.2 位置
+        offset([coordinates])
+			获取匹配元素在当前视口的相对偏移。
+			返回的对象包含两个整型属性：top 和 left，以像素计。此方法只对可见元素有效。
+
+        position()
+			相对于offsetParent()的坐标
+		offsetParent()
+			离匹配元素最近的有position属性的元素
+
+        scrollTop([val])
+			获取匹配元素距离滚动轴上方的距离。
+
+        scrollLeft([val])
+
+    5.3 尺寸
+        height([val|fn])
+			返回匹配元素的高度
+        
+		width([val|fn])
+
+        innerHeight()
+			获取第一个匹配元素内部区域高度（包括补白、不包括边框）。
+			此方法对可见和隐藏元素均有效。
+
+        innerWidth()
+        outerHeight([soptions])
+			获取第一个匹配元素外部高度（默认包括补白和边框）。
+			此方法对可见和隐藏元素均有效，若参数是true，会计算margin的值。
+
+        outerWidth([options])
+
+6. 事件
+	事件
+		focus([[data],fn])
+			获得焦点事件，某些元素没有这个事件。
+		blur([[data],fn])
+			失去焦点事件
+
+		change([[data],fn])
+			表单值改变事件
+			当有focus事件的元素的值发生改变的时候，并且触发了blur事件，才算一次change事件。input[file]标签会经常使用。
+		select([[data],fn])
+			表单元素的内容被选中时的事件，只能用于input[text]和textarea元素
+		submit([[data],fn])
+			表单提交事件
+
+		error([[data],fn])
+
+		click([[data],fn])
+			单击，当鼠标左键按下，然后再抬起鼠标左键，才能算一次click事件。
+		dblclick([[data],fn])
+			双击
+		focusin([data],fn)
+			获得焦点事件，同时可作用于父级，即子元素触发事件，那么父元素绑定了focusin事件，也会被触发。
+		focusout([data],fn)
+			失去焦点事件，也可作用于父级。
+		mousedown([[data],fn])
+			鼠标左键按下事件，即鼠标左键按下就触发事件。
+		mouseup([[data],fn])
+			鼠标左键松开事件，即鼠标左键抬起的时候就会触发事件。
+		mouseenter([[data],fn])
+			鼠标进入事件，可以阻止冒泡事件
+		mouseleave([[data],fn])
+			鼠标离开事件，可以阻止冒泡事件
+		mousemove([[data],fn])
+			鼠标移动事件
+		mouseout([[data],fn])
+			鼠标移出事件，即鼠标移除某个元素对象，就会发送的事件。
+		mouseover([[data],fn])
+			鼠标进入事件，即鼠标经过某一个dom节点，就会发生的事件
+
+		keydown([[data],fn])
+			键盘按下事件，只要你一直按着，事件就会被触发。
+		keypress([[data],fn])
+			类似keydown
+		keyup([[data],fn])
+			键盘按下并松开的时候，才会触发事件。
+
+		resize([[data],fn])
+			浏览器窗口改变大小发生的事件。
+		scroll([[data],fn])
+			浏览器滚动条移动时发生的事件
+			$(window).scroll();
+
+		unload([[data],fn])
+
+	事件对象
+		eve.currentTarget
+		eve.data
+		eve.delegateTarget1.7+
+		eve.isDefaultPrevented()
+		eve.isImmediatePropag...()
+		eve.isPropagationStopped()
+		eve.namespace
+
+		eve.pageX
+			获取鼠标相对于文档的y轴坐标
+		eve.pageY
+			获取鼠标相对于文档的y轴坐标
+
+		eve.preventDefault()
+			阻止浏览器标签的默认行为。
+
+		eve.relatedTarget
+		eve.result
+		eve.stopImmediatePro...()
+		eve.stopPropagation()
+			阻止冒泡
+		eve.target
+		eve.timeStamp
+		eve.type
+		eve.which
+			监听键盘输入和鼠标操作。
+
+	页面载入
+		ready(fn)
+		$.holdReady(bool)
+			暂停或恢复ready事件
+
+	事件处理
+		on(eve,[sel],[data],fn)1.7+
+		off(eve,[sel],[fn])1.7+
+
+		one(type,[data],fn)
+			执行一次事件，然后销毁它。
+
+		trigger(type,[data])
+		triggerHandler(type, [data])
+
+		bind(type,[data],fn)
+			为每个匹配元素的特定事件绑定事件处理函数。
+		
+		unbind(t,[d|f])
+			bind()的反向操作，从每一个匹配的元素中删除绑定的事件。
+			如果没有参数，则删除所有绑定的事件。
+			你可以将你用bind()注册的自定义事件取消绑定。
+			如果提供了事件类型作为参数，则只删除该类型的绑定事件。
+			如果把在绑定时传递的处理函数作为第二个参数，则只有这个特定的事件处理函数会被删除。
+
+	事件委派
+		live(type,[data],fn)1.7-
+		die(type,[fn])1.7-
+
+		delegate(s,[t],[d],fn)
+			指定的元素（属于被选元素的子元素）添加一个或多个事件处理程序，并规定当这些事件发生时运行的函数。
+			使用 delegate() 方法的事件处理程序适用于当前或未来的元素（比如由脚本创建的新元素）。
+
+		undelegate([s,[t],fn])
+
+	事件切换
+		hover([over,]out)
+			模拟鼠标进入mouseenter和鼠标离开mouseleave的事件
+			$('p').hover(
+				function(){
+					$(this).css();
+				},
+				function(){
+					$(this).css();
+				}
+			);
+		toggle([spe],[eas],[fn])1.9*
+			模拟事件发生
+			$('p').toggle('click');
+			//若p元素绑定了click事件，那么会自动执行。
+	
+	事件命名空间
+		$('p').bind('click.background',function(){});
+		$('p').bind('click.color',function(){});
+		//绑定事件的时候，增加一个事件名称，可以在移除的时候根据事件名来移除指定的事件。
+		$('p').unbind('click.color');
+		//这样就只移除color的事件。
+
+7. jquery动画
+	7.1 基础动画
+		show()
+		hide(time)
+			time：表示毫秒数
+			str：fast、slow、normal
+		toggle()
+			会自动的切换show()或者hide()方法
+	
+	7.2 滑动
+		slideDown([s],[e],[fn])
+			通过高度变化（向下增大）来动态地显示所有匹配的元素，在显示完成后可选地触发一个回调函数。
+			这个动画效果只调整元素的高度，可以使匹配的元素以“滑动”的方式显示出来。在jQuery 1.3中，上下的padding和margin也会有动画，效果更流畅。
+
+		slideUp([s,[e],[fn]])
+		slideToggle([s],[e],[fn])
+
+	7.3 淡入淡出
+		fadeIn([s],[e],[fn])
+			通过不透明度的变化来实现所有匹配元素的淡入效果，并在动画完成后可选地触发一个回调函数。
+			这个动画只调整元素的不透明度，也就是说所有匹配的元素的高度和宽度不会发生变化。
+		fadeOut([s],[e],[fn])
+		fadeTo([[s],o,[e],[fn]])
+		fadeToggle([s,[e],[fn]])
+
+	7.4 自定义
+		animate(p,[s],[e],[fn])1.8*
+			用于创建自定义动画的函数。
+
+			这个函数的关键在于指定动画形式及结果样式属性对象。这个对象中每个属性都表示一个可以变化的样式属性（如“height”、“top”或“opacity”）。注意：所有指定的属性必须用骆驼形式，比如用marginLeft代替margin-left.
+
+			而每个属性的值表示这个样式属性到多少时动画结束。如果是一个数值，样式属性就会从当前的值渐变到指定的值。如果使用的是“hide”、“show”或“toggle”这样的字符串值，则会为该属性调用默认的动画形式。
+
+			在 jQuery 1.2 中，你可以使用 em 和 % 单位。另外，在 jQuery 1.2 中，你可以通过在属性值前面指定 "<em>+=</em>" 或 "<em>-=</em>" 来让元素做相对运动。
+
+			jQuery 1.3中，如果duration设为0则直接完成动画。而在以前版本中则会执行默认动画。
+
+			jQuery 1.8中，当你使用CSS属性在css()或animate()中，我们将根据浏览器自动加上前缀(在适当的时候)，比如("user-select", "none"); 在Chrome/Safari浏览器中我们将设置为"-webkit-user-select", Firefox会使用"-moz-user-select", IE10将使用"-ms-user-select".
+
+			说明：你在做动画的时候，动画元素本身需要absolute定位。
+
+		stop([c],[j])1.7*
+			停止所有在指定元素上正在运行的动画。
+			如果队列中有等待执行的动画(并且clearQueue没有设为true)，他们将被马上执行
+			clearQueue：
+				false，立即结束当前动画，执行栈中的其他动画。
+				true，立即结束当前动画，并清楚栈中的其他动画。
+			jumpToEnd：
+				true，立即完成当前动画，并继续完成其他队列动画。
+
+		delay(d,[q])
+			
+		finish([queue])1.9+
+
+		dequeue
+			
+
+		说明：jquery会把用户触发的事件用栈存储起来再执行，若用户快速重复的触发事件，则事件会一直执行下去，上面几个方法就是用于停止和清楚栈的事件的。
+
+
+	7.5 设置
+		jQuery.fx.off
+		jQuery.fx.interval
+
+7. ajax
+
+8. json与XML
+
+9. 插件
+
+-->
