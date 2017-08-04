@@ -54,4 +54,6 @@ var tmp = new Object();
 Person.call(tmp, 'p2name');		//改变函数的作用域链
 console.log(tmp.name);
 ```
-执行流程：
+对象创建流程：
+- 创建一个新的对象
+- 将构造函数的作用域赋值给
