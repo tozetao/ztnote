@@ -3,7 +3,7 @@ CSS一个很重要的属性，定义元素的定位类型，主要有以下几�
 
 - static：元素的默认值，没有定位，元素处于正常文档流，忽略top、button、right、left、z-index。
 - absolute：生成绝对定位的元素，相对于static定位以外的第一个父元素进行定位。
-- relative：绝对定位，
+- relative：相对定位，相对于自身所在文档流中的位置进行定位。
 
 
 ### 1. relative

@@ -1,35 +1,33 @@
 ## CSS3 selector
-CSS3是对CSS2的一个扩展，这里主要讲CSS的选择器
+CSS3是对CSS2的一个扩展，这里主要讲CSS3的选择器
 
-### 类型选择器
-类型选择器是指使用html标签的名字来作为选择器，能够统一的对标签进行样式定义。
-
-```html
-div{
-	with:900px;
-}
-```
-
-### 选择器群组，Groups of selectors
-使用逗号分割开不同的选择器，对多个选择器进行统一的样式定义。
-```html
-h1,h2,h3,p{
-	text-align:right;
-	line-height:1.5;
-}
-```
-### 通过选择器
+### 1. 通配符选择器
 使用*字符来代替所有html元素
 
-### 类选择器，Class of selectors
-能够定义通过的样式，以类的形式给元素使用。
-```html
-.container{
-}
+### 2. 类选择器，Class of selectors
+将不同样式定义成一组样式并命名，方便重复使用，CSS3支持多个类选择器应用同一个元素，也支持类选择器在特定标签生效。
 
-# 指定h2标签的title选择器的样式
-h2.title{
-}
+example：
+```html
+<style type="text/css">
+	h2.title{
+		font-size:25px;
+		color:red;
+	}
+	/*
+	  定义h2.title标签的样式，
+	  其他标签使用.title选择器是无效的
+	*/
+</style>
+
+<body class="body">
+	<div class="title">
+		title
+	</div>
+	<h2 class="title">
+		title
+	</h2>
+</body>
 
 # 在css3中元素可以这样使用类选择器
 # 该标签会使用到俩个class选择器的样式
@@ -39,35 +37,150 @@ h2.title{
 .title.brand-name{}
 ```
 
-### Id选择器
-跟类选择器一样，一个文档中不能有同名的id选择器
-
-### 属性选择器，Attribute selectors
-[attribute]，表示选择拥有该属性的元素
-
-[attribute1][attribute2]，同时拥有多个属性
-
-[attribute='value']，选择某个属性等于特定的值，注意是特定。
-
-[attribute~='value']，有的标签属性有多个值，以空格分开，该选择器表示选择拥有该属性拥有这个值得属性标签。
-
-[attribute!='value']，属性的值是=后面的值，或者是以这个value开头的后面带-的值的属性标签。
-
+example2：
 ```html
-[data-album]{
+<style type="text/css">
+	.title{
+		color: lightgreen;
+	}
+	.brand{
+		font-size: 30px;
+	}
+	
+	/* 定位使用多个类选择器的标签 */
+	.title.brand div{
+		background: #cdc;
+		color: yellow;
+	}
+</style>
+<!-- 应用多个选择器 -->
+<div class="title brand">
+	<p>this is content</p>
 
-}
-
-li[data-album]{}
-# 匹配li标签同时有data-album属性
-
-li[data-album="single"]{}
-# 匹配li标签同时又data-album属性且属性值等于single
+	<div class="content">
+		content...
+	</div>
+</div>
 ```
 
-[attribute^='value']，匹配属性值以value开头
-[attribute$='value']，匹配属性值以value结尾的
-[attribute*='value']，属性包含value值得标签
+### 3. 属性选择器，Attribute selectors
+属性选择器可以通过标签的属性值来匹配HTML文档中的标签，这是CSS3的新特性。
+
+- [attribute]：选择拥有该属性的元素
+- [attribute1][attribute2]：选择同时拥有多个属性
+- [attribute = 'value']：选择某个属性拥有特定值的标签
+- [attribute |= 'value']：匹配属性等于value值的标签，或者属性的值以value-开头的标签
+- [attribute ~= 'value']：选择属性拥有多个值的标签，以空格分开。某些标签属性拥有多个值
+- [attribute ^= 'value']：匹配属性值以value开头的标签
+- [attribute $= 'value']：匹配属性值以value结尾的标签
+- [attribute *= 'value']：匹配属性包含value值的标签
+
+example：
+```html
+<style type="text/css">
+	[data-album]{
+		display: inline-block;
+		text-align: center;
+		color: black;
+		padding-right: 20px;
+	}
+	/* 匹配拥有data-album属性的标签 */
+
+	div[data-name][data-age]{
+		width: 50px;
+		height: 50px;
+		background: #d3d;
+	}
+	/* 匹配拥有多个属性的标签 */
+
+	div[data-name|="a"]{
+		width: 150px;
+		height: 150px;
+		background: #cdc;
+		margin-top: 10px;
+	}
+	/* 匹配属性值等于a或等于a-开头值的标签 */
+</style>
+
+<ul>
+	<li data-album="1">1</li>
+	<li data-album="1">2</li>
+	<li data-album="1">3</li>
+</ul>
+<div data-name="lisi" data-age="20"></div>
+<div data-name="a"></div>
+<div data-name="a-123"></div>
+```
+
+### 4. 后裔选择器
+后裔选择器允许通过标签与标签的关系来定位标签元素。
+
+- element1 element2：匹配element1内部所有element2的元素，只要是后代就会被匹配，例如：子孙和子子孙等后代的标签
+- element1 > element2：匹配element1中所有element2子节点，不包括子孙等关系的节点。
+- element1 * element2：不匹配element1中的element2子节点，只会选择element2子节点中的其他后裔节点。
+- element1 + element2：选择临近element1的下一个兄弟元素，如果有其他元素阻隔则无法选择。
+- element1 ~ element2：选择临近element1后的所有兄弟元素，无视其他元素阻隔。
+
+说明：element可以是标签名也可以是选择器名。
+
+example1：
+```html
+<style type="text/css">
+	div p{
+		font-size: 30px;
+		color: #cdc;
+	}
+</style>
+
+<div>
+	<p>title</p>
+	<ul>
+		<li>
+			<p>content.</p>
+		</li>
+	</ul>
+</div>
+<!-- div下所有p元素都被匹配到 -->
+```
+
+example2：> 子后裔选择器
+```html
+<style type="text/css">
+	.container > div{
+		height: 20px;
+		background: lightgreen;
+		margin-bottom: 10px;
+
+	}
+	/* 只匹配div子节点 */
+</style>
+
+<div class="container">
+	<div></div>
+	<div></div>
+	<div>
+		<div></div>
+		<div></div>
+	</div>
+</div>
+<!-- 匹配container div下所有子div元素 -->
+```
+
+example3：~ 后裔选择器
+```html
+<style type="text/css">
+	div ~ p{
+		font-size: 20px;
+		color: yellow;
+	}
+</style>
+
+<div></div>
+<h1>title</h1>
+<p>yellow?</p>
+<p>yellow?</p>
+<p>yellow?</p>
+```
 
 ## 伪类
 浏览器一般会在没有访问的连接上去应用一个:link的伪类，
@@ -178,24 +291,3 @@ p::first-line{}
 
 ::after
 选择元素之后的内容
-
-
-### 后裔选择器
-div img
-用空格分开不同的选择器，这种就是组合类型的选择器。
-它表示选择前面选择器指定的后裔的元素，选择div元素里面的img标签后裔，img标签可以是div标签的子孙元素、子子孙元素。
-
-只要是div img的后裔就会被选择。
-
-div * img{}
-表示不选择子元素，只会选择子元素中的其他后裔。
-
-div > img 
-只会选择div元素中的img儿子元素
-
-
-h1 + h2
-选择+号前面的这个元素的下一个临近的兄弟元素，主要要邻近，如果中间有其他元素阻隔，是无法选择的
-
-h2 ~ h3
-选择~号前面的这个元素的下一个邻近的兄弟元素，无视其他元素阻挡

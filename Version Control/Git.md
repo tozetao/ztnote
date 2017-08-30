@@ -18,7 +18,10 @@ eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_rsa
 # 添加密钥到ssh-agent
 
-# 最后在github上面配置key即可
+# 在github上面配置ssh公有key
+
+ssh -T git@github.com
+# 测试ssh是否可连接
 ```
 
 ## 基本操作
