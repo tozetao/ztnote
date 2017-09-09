@@ -1,5 +1,62 @@
+## 预定义变量
+Nginx预定了一些变量，这些变量定义了服务器环境信息、请求信息、url等信息；
+在conf文件中定义fastcgi参数，是为了让php-fmp进程知道如何解析这些信息，例如下面定义的配置，将会被解析并封装到$_SERVER变量中。
+
+常见的预定义变量有：
+
+fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+fastcgi_param  QUERY_STRING       $query_string;
+fastcgi_param  REQUEST_METHOD     $request_method;
+fastcgi_param  CONTENT_TYPE       $content_type;
+fastcgi_param  CONTENT_LENGTH     $content_length;
+
+fastcgi_param  SCRIPT_NAME        $fastcgi_script_name;
+fastcgi_param  REQUEST_URI        $request_uri;
+fastcgi_param  DOCUMENT_URI       $document_uri;
+fastcgi_param  DOCUMENT_ROOT      $document_root;
+fastcgi_param  SERVER_PROTOCOL    $server_protocol;
+fastcgi_param  REQUEST_SCHEME     $scheme;
+fastcgi_param  HTTPS              $https if_not_empty;
+
+fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+fastcgi_param  SERVER_SOFTWARE    nginx/$nginx_version;
+
+fastcgi_param  REMOTE_ADDR        $remote_addr;
+fastcgi_param  REMOTE_PORT        $remote_port;
+fastcgi_param  SERVER_ADDR        $server_addr;
+fastcgi_param  SERVER_PORT        $server_port;
+fastcgi_param  SERVER_NAME        $server_name;
+
+
 ## Rewrite
-所谓rewrite无论在apache或nginx，指的是将通过正则表达式去匹配URI，然后替换掉成你想要的URI，再进行重定向的事情。
+rewrite_module允许正则替换URI，返回页面重定向和按条件选择配置。
+rewrite_module模块指令按以下规则顺序处理：
+1. 处理在server级别中定义的模块指令
+2. 为请求查找lcation
+3. 处理在选中的location中定义的模块指令，如果有指令改变了URI，按新的URI查找Location，这个过程循环至多到10次，之后nginx返回500错误。
+
+
+
+rewrite module模块包括以下指令：
+- break
+- if
+- rewrite
+- rewrite_log
+- set
+- uninitialized_variable_warn 
+
+### break
+- 默认值：-
+- 上下文：server,location,if
+- 作用：停止处理这一轮请求的模块指令，例如：
+
+```
+if($slow) {
+	limit_rate 10k;
+	break;
+}
+```
+
 
 ### 1. rewrite指令
 常用命令，最常见的是正则表达式，其次是rewrite重写命令。
