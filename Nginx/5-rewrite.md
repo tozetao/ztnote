@@ -1,27 +1,125 @@
+## 预定义变量
+Nginx预定了一些变量，这些变量定义了服务器环境信息、请求信息、url等信息；
+在conf文件中定义fastcgi参数，是为了让php-fmp进程知道如何解析这些信息，例如下面定义的配置，将会被解析并封装到$_SERVER变量中。
+
+常见的预定义变量有：
+```
+fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+fastcgi_param  QUERY_STRING       $query_string;
+
+fastcgi_param  REQUEST_METHOD     $request_method;
+fastcgi_param  CONTENT_TYPE       $content_type;
+fastcgi_param  CONTENT_LENGTH     $content_length;
+
+fastcgi_param  SCRIPT_NAME        $fastcgi_script_name;
+fastcgi_param  REQUEST_URI        $request_uri;
+fastcgi_param  DOCUMENT_URI       $document_uri;
+fastcgi_param  DOCUMENT_ROOT      $document_root;
+fastcgi_param  SERVER_PROTOCOL    $server_protocol;
+fastcgi_param  REQUEST_SCHEME     $scheme;
+fastcgi_param  HTTPS              $https if_not_empty;
+
+fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+fastcgi_param  SERVER_SOFTWARE    nginx/$nginx_version;
+
+fastcgi_param  REMOTE_ADDR        $remote_addr;
+fastcgi_param  REMOTE_PORT        $remote_port;
+fastcgi_param  SERVER_ADDR        $server_addr;
+fastcgi_param  SERVER_PORT        $server_port;
+fastcgi_param  SERVER_NAME        $server_name;
+```
+
+- $uri：当前请求的URI，不包括参数。
+- $request_uri：从客户端请求发送过来的原生URI，包括参数
+- $request_file_name：请求文件名，不包括参数，它是磁盘上的绝对路径。
+
+- $fastcgi_script_name：当前请求的脚本文件名，它是指执行fastcgi程序的脚本文件名，如果请求被重写过那么fastcgi_name指的是重写后的脚本文件名。
+- $query_string：URI参数，如果URI被重写过，参数将包括原生URI参数和重写URI参数
+- $document_root：web根目录，绝对路径
+
+注1：$uri变量在手册中说明是代表着重写后的URI，可在测试中URI被重写过，$uri仍然代表着原生URI，并不是改变后的URI。
+
+example:
+```
+# nginx conf
+location ~ /test/a.php
+{
+	rewrite /test/a.php /test/b.php?param=$uri&request_uri=$request_uri&request_filename=$request_filename last;
+	break;
+}
+
+# example: url = localhost/test/a.php?age=20
+# 
+# uri: /test/a.php
+# request_uri: /test/a.php?age=20
+# request_filename: web根目录/test/a.php
+# 
+# 注：如果url中的uri后面有PATHINFO之类的目录，PATH也会附带在上述几个参数中，例如url是: localhost/test/a.php/user/add?age=20
+
+# example: url = location/rewrite/test
+# uri: /rewrite/test
+# request_uri: /rewrite/test
+# request_filename: web根目录/rewrite/test
+
+```
+
 ## Rewrite
-所谓rewrite无论在apache或nginx，指的是将通过正则表达式去匹配URI，然后替换掉成你想要的URI，再进行重定向的事情。
+rewrite_module允许正则替换URI，返回页面重定向和按条件选择配置。
+rewrite_module模块指令按以下规则顺序处理：
+1. 处理在server级别中定义的模块指令
+2. 为请求查找lcation
+3. 处理在选中的location中定义的模块指令，如果有指令改变了URI，按新的URI查找Location，这个过程循环至多到10次，之后nginx返回500错误。
 
-### 1. rewrite指令
-常用命令，最常见的是正则表达式，其次是rewrite重写命令。
+
+
+rewrite module模块包括以下指令：
+- break
+- if
+- rewrite
+- rewrite_log
+- set
+- uninitialized_variable_warn 
+
+### break
+- 默认值：-
+- 上下文：server,location,if
+- 作用：停止处理这一轮请求的ngx_http_rewrite_module模块指令，例如：
 ```
-rewrite指令
-	语法：rewrite regex replacement [flag]
-	默认值：无
-	作用域：server、location、if
-
-参数说明
-	regex：正则表达式
-	replacement：要重写的地址
-	flag：一些额外选项
-	作用域：指令所能生效的范围
-
-使用说明
-	如果regex（正则表达式）匹配URI，URI就按照replacement进行重写。
-	在apache中.htaccess文件中的重写模块的正则表达式所匹配的URI似乎是跟.htaccess文件所处的位置有关系，不知道nginx有什么不同。
-
+if($slow) {
+	limit_rate 10k;
+	break;
+}
 ```
 
-### 2. if指令
+
+### rewrite
+- 语法: rewrite regex replacement [flag]
+- 默认值: -
+- 上下文: server, location, if
+
+regex是正则表达式，replacement是要替换URI的参数。
+
+如果指定的正则表达式能匹配URI，此URI将会被replacement参数的字符串改写，rewrite指令按其在配置文件中出现的顺序执行。
+
+flag指令能终止后续指令的执行。
+
+如果replacement包含新的参数，以往的请求参数将会附带添加到新参数后面，如果不希望这样，在replacement参数后面加一个?就可以避免，例如: rewrite ^/user/(.*)$ /show?user=$1? last;
+
+如果正则表达式包含字符}或者字符:，整个表达式应该被包含在单引号或者双引号之中。
+
+flag
+- last: 停止当前这一轮的rewrite指令执行，并使用改变后的uri做新的location匹配 
+- break: 停止当前这一轮的rewrite指令执行，使用改变后的uri去查找可执行的程序文件并执行
+
+flag example:
+```
+location /flag/test {
+	rewrite /flag/test /flag/b.php break;
+}
+# 虽然uri重写成flag/b.php文件，可是该脚本文件不会执行，因为break指令终止了使用重写后的uri来做新的location匹配。
+```
+
+### if指令
 语法：
 ```
 if (express){
