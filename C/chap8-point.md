@@ -268,3 +268,40 @@ pc = buffer;
 //将pc指针指向buffer
 //可以将pc指针指向其他的内存地址，但是不能用字符串直接赋值，如果是赋值的方式，意味着对"hello"字面常量进行修改，而常量是不允许修改的。
 ```
+
+
+### 指针与函数
+指针做函数参数
+
+- C++会将函数的形参数组名作为数组指针变量来处理
+example:
+```c
+void rank(int *q1, int *q2)
+{
+	int temp;
+	if(*q1 < *q2)
+	{
+		temp = *q;
+		*p = *q;
+		*q = temp;
+	}
+}
+
+//将形参数组名作为指针变量来处理
+void sum(int array[]){}
+
+int main()
+{
+	int a,b,*p1,*p2;
+	cin >> a >> b;
+	p1 = &a;
+	p2 = &b;
+	rank(p1, p2);
+	cout << a << ': ' << b << endl;
+}
+```
+- 限制指针实参的功能
+
+
+
+指针做函数返回值
