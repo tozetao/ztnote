@@ -271,9 +271,7 @@ pc = buffer;
 
 
 ### 指针与函数
-指针做函数参数
-
-- C++会将函数的形参数组名作为数组指针变量来处理
+- 指针做函数参数
 example:
 ```c
 void rank(int *q1, int *q2)
@@ -287,9 +285,6 @@ void rank(int *q1, int *q2)
 	}
 }
 
-//将形参数组名作为指针变量来处理
-void sum(int array[]){}
-
 int main()
 {
 	int a,b,*p1,*p2;
@@ -300,8 +295,113 @@ int main()
 	cout << a << ': ' << b << endl;
 }
 ```
-- 限制指针实参的功能
 
+- C++会将函数的形参数组名作为数组指针变量来处理
+```c
+//将形参数组名作为指针变量来处理
+int sum(int array[], int length)
+{
+    for(int i=0; i<10-1; i++)
+    {
+        *(array+1) = *array + *(array+1);
+        array++;
+    }
+    return *array;
+}
 
+vomd main()
+{
+    int a[10] = {1,2,3,4,5,6,7,8,9,10};
+    cout << sum(a, 10) << endl;
+}
+```
 
-指针做函数返回值
+- 指向符号常量的指针
+```c
+//定义常量指针，限制指针实参的功能，避免影响外部实参变量的值
+int sum(const int array[], int length)
+{
+    *(array+1) = *array + *(array+1);
+    //error，由于是常量，无法修改值 
+}
+
+int main()
+{
+    int a = 10;
+    //定义符号常量指针
+    const int *p = &a;
+    
+    
+    const int c=15;
+    const int d=27;
+    int e=39;
+    
+    const int *p = &a;  //允许
+    p = &d;    //允许
+    *p = 18;    //error
+    
+    p = &e;     //允许
+    *p = 99;    //error 
+    return 0;
+}
+```
+
+- 指针做函数返回值
+```c
+//int (*arr)[4]，这种方式的定义也可以
+int *get(int arr[][4], int n, int m)
+{
+    int *pt;
+    pt = *(arr+n-1)+m-1;
+    return (pt);
+}
+
+int main()
+{
+    int a[4][4] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+    int *temp = get(a, 2, 3);
+    cout << *temp << endl;
+}
+```
+
+example：局部变量的生命周期
+```c
+int *getvalue1()
+{
+    int value1=20;
+    return &value1;
+}
+
+int main()
+{
+    int *p = null;
+    p = getvalue1();
+    cout << *p << endl; //未知
+}
+```
+由于value1变量是局部变量，在getvalue1()函数调用完毕后就会被释放，所以会输出未知的值。如果想要在函数内返回的指针变量能够使用，可以返回定义在文件中的全局变量，全局变量的生命周期是在整个文件中的。
+
+- 静态局部变量：函数中定义的变量的值不会随着函数的调用结束后而消失，即其占用的存储空间不会被释放，在下一次函数调用时仍然可以使用
+```c
+void function()
+{
+    int a = 0;
+    //定义一个静态局部变量
+    static int b = 0;
+
+    a = a + 1;
+    b = b + 1;
+    cout << "a = " << a << endl;
+    cout << "b = " << b << endl;
+}
+
+int main()
+{
+    for(int i=0; i<5; i++)
+    {
+        function();
+        cout << "call again" << endl;
+    }
+    return 0;
+}
+```
