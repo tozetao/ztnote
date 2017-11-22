@@ -68,3 +68,88 @@ int main()
     return 0;
 }
 ```
+
+
+### 赋值运算符重载
+如果要将基本类型赋值给对象类型的话，需要对赋值运算符进行重载。
+
+- 赋值运算符只能重载为成员函数，无法重载为普通函数。
+```c
+//一个长度可变的字符串类
+class String
+{
+    private:
+        char * str;
+
+    public:
+        String():str(null){}
+   
+        const char * c_str()
+        {
+            return str;
+        }
+   
+        char * operator=(const char *s)
+        {
+            if(str){
+                delete []str;
+            }
+
+            if(s){
+                str = new char[strlen(s)+1];
+                strcopy(str, s);
+            }else{
+                str = null;
+            }
+            return str;
+        }
+        
+        ~String(){
+            if(str) delete []str;
+        }
+}
+
+int man()
+{
+    String s;
+    s = "hello world";
+    //相当于s.operator("hello world");
+
+    cout << s.c_str() << endl;
+
+    String s2 = "qwer"; //error，这是声明语句，并不是赋值语句，所以会报错。
+}
+```
+
+- 浅拷贝：逐个字节的复制工作
+```c
+int main()
+{
+    String s1, s2;
+    s1 = "this";
+    s2 = "that";
+        
+    s1 = s2;
+    
+}
+```
+上面的代码中，s2赋值给s1中调用了赋值重载函数，这里只是一次简单的字节复制工作，俩个对象都是指向相同的指针，这样当对象都被销毁时就会调用俩次析构函数去销毁同一片内存空间俩次，这会造成程序的异常的。
+
+- 深拷贝：将一个对象中指针指向的内容，复制到另外一个对象指针成员指向的地方
+```c
+//要完成深拷贝，添加下面的成员函数
+String & operator = (const String &s)
+{
+    //避免自己赋值给自己
+    if(str == s.str) return *this;
+    
+    if(str) delete []str;
+    str = new char[strlen(s.str) + 1];
+    strcpy(str, s.str);
+    return *this;
+}
+```
+
+缺陷：上述String类的复制构造函数也会发生浅拷贝现象，为了防止多次释放同一块内存空间，需要进行深拷贝。
+
+### 运算符重载为友元
