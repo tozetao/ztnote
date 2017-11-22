@@ -103,3 +103,57 @@ void B::func1()
 {}
 ```
 
+### 成员对象
+一个类的成员变量是另一个类的对象，这种成员变量叫做成员对象，
+而包含这种成员对象的类叫做封闭类。
+
+```c
+class CTyre
+{
+    private:
+        int radius;
+        int width;
+    
+    public:
+        //这是另外一种对成员变量赋值的方法
+        Ctype(int w, int r):radius(r),width(w){}
+};
+
+class CEngine
+{};
+
+class Car
+{
+    private:
+        int price;
+        CTyre tyre;
+        CEngine;
+
+    public:
+        Car(int p, int tr, int tw);        
+}
+
+Car::Car(int p, int tr, int tw):price(p),tyre(tr, tw){};
+
+int main()
+{
+    Car car(20000, 17, 225);
+    return 0;
+}
+```
+
+上面代码这种初始化成员变量的方式叫做添加初始化列表，
+成员对象初始化列表中的参数可以是：
+- 任意复杂的表达式
+- 函数/变量/表达式中的函数，变量必须有定义
+
+当封闭类对象生成时，构造函数初始化过程如下：
+- 执行所有成员对象的构造函数
+- 成员对象的构造函数执行顺序与在类中定义的顺序一致
+- 执行封闭类的构造函数
+
+当封闭类对象消亡时，析构函数调用过程如下：
+- 先执行封闭类的析构函数
+- 再执行成员对象的析构函数，调用顺序与构造函数相反
+
+封闭类与成员对象构造函数和析构函数的调用顺序其实是一个入栈和出栈的过程。
