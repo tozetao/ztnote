@@ -130,7 +130,6 @@ int main()
     s2 = "that";
         
     s1 = s2;
-    
 }
 ```
 上面的代码中，s2赋值给s1中调用了赋值重载函数，这里只是一次简单的字节复制工作，俩个对象都是指向相同的指针，这样当对象都被销毁时就会调用俩次析构函数去销毁同一片内存空间俩次，这会造成程序的异常的。
@@ -153,3 +152,61 @@ String & operator = (const String &s)
 缺陷：上述String类的复制构造函数也会发生浅拷贝现象，为了防止多次释放同一块内存空间，需要进行深拷贝。
 
 ### 运算符重载为友元
+
+
+example：长度可变的整型数组类
+```c
+class CArray
+{
+	int size;
+	int *ptr;
+	
+	public:
+		CArray(int s = 0);
+		Carray(CArray &a);
+		~CArray();
+
+		void push(int v);	//
+
+		int length(){
+			return size;
+		}
+		
+		//运算符重载
+		CArray & operator=(const Carray &a);
+		
+		//[]运算符重载
+		//[]是双目运算符，中括号外是左操作数，括号内是右操作数
+		//返回类型是int引用，这是为了实现a[i] = 4的赋值成功
+		int & CArray::operator[](int i){
+			return ptr[i];
+		}
+};
+
+CArray::CArray(int s):size(s)
+{
+	if(s == 0
+	{
+		ptr = null;
+	}else
+	{
+		ptr = new int[s];
+	}
+}
+
+//复制构造函数
+CArray::CArray(CArray &a)
+{
+	if(!a.ptr)
+	{
+		ptr = null;
+		size = 0;
+		return;
+	}
+	ptr = new int[a.size];
+	memcpy(ptr, a.ptr, sizeof(int) * a.size);
+	size = s.size;
+}
+
+ubt 
+```
