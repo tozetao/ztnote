@@ -21,7 +21,9 @@ int i = 5;
 //其实是俩条语句，声明int i，再给i赋值
 ```
 
-- 在对一个变量赋值时，俩边的数据类型不一致，赋值时就会进行隐式的类型转换，右边操作数的类型将会转换为左边变量的类型。
+在对一个变量赋值时，俩边的数据类型不一致，赋值时就会进行隐式的类型转换，右边操作数的类型将会转换为左边变量的类型。
+
+example：
 ```c
 int main(){
 	int i = 3.123456;
@@ -57,6 +59,32 @@ long l = s;		//-1
 ```
 
 - 符号位处理，有符号数和无符号数之间相互转换的话，位数将直接赋值。例如一个有符号位的负数赋值到一个无符号位的数字时，最高位的符号位将会变成数字位，转换过程后数值会变大。
+```c
+unsigend short s = -1;
+cout << s << endls;		//2^16+(-1)
+```
+
+### 表达式的类型转换
+不仅仅在赋值时如果俩边数据类型不同将会发生类型转换，在表达式中如果类型不同也会发生类型转换，规则如下：
+
+首先是横向的转换：
+- char/short -> int：在一个表达式中如果有char型或short型的操作数，都会将其转换成int型再参与运算。
+- float -> double：表达式如果有一个float型，都会将其转成double型，再参与运算
+
+然后是纵向的转换：
+- int -> unsigned -> long -> double
+- int -> unsigned：如果一个int型的操作数与一个unsigned型的操作数进行运算，会将int转成unsigned，再进行运算，结果也是unsigned
+- unsigned -> unsigned long：如果一个unsigned与一个unsigned long int型进行计算时，会将unsigned转换成unsigned long int型
+- int -> long -> double：右边箭头的数据类型比左边箭头的数据类型级别高，左边的数据类型将会转成右边的数据类型。
+
+```c
+int i = -5;
+unsigned k = 10;
+
+cout << k+i << endl;
+//该表达式在运行是，会先将i转换成unsigned int，然后再参与运算。
+```
+总结：在表达式中不要混用有符号型和无符号型。
 
 ### 算术运算符
 算术运算符即包括加、减、乘、除和取模5种运算。
@@ -68,17 +96,6 @@ long l = s;		//-1
 
 算数运算符的优先级：
 - 算数运算符的优先级是先乘除，后加减，模运算的优先级跟乘除相同。
-
-表达式的类型转换：
-(横向的转换)
-- char/short -> int：在一个表达式中如果有char型或short型的操作数，都会将其转换成int型再参与运算。
-- float -> double：表达式如果有一个float型，都会将其转成double型，再参与运算
-
-(纵向的转换)
-- int -> unsigned -> long -> double
-- int -> unsigned：如果一个int型的操作数与一个unsigned型的操作数进行运算，会将int转成unsigned，再进行运算，结果也是unsigned
-- unsigned -> unsigned long：如果一个unsigned与一个unsigned long int型进行计算时，会将unsigned转换成unsigned long int型
-- int -> long -> double：右边箭头的数据类型比左边箭头的数据类型级别高，左边的数据类型将会转成右边的数据类型。
 
 
 ### 自增与自减
@@ -166,7 +183,6 @@ example:
 a = 3*5, a*4;
 //先求3*5表达式，然后求出a的值，再执行a*4表达式，整个表达式的值是60，a是15
 ```
-
 
 
 ### 混合运算符的优先级
