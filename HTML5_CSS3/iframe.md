@@ -25,3 +25,6 @@ var iframe_document = iframe.contentWindow.document || iframe.contentDocument;
 //父文档的document对象
 var pdocument = window.parent.document
 ```
+
+登录页面避免session失效问题
+- if(window.top !== window.self){ window.top.location = window.location;}
