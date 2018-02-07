@@ -10,14 +10,11 @@ CSS3是对CSS2的一个扩展，这里主要讲CSS3的选择器
 example：
 ```html
 <style type="text/css">
+	/*定义h2.title标签的样式， 其他标签使用.title选择器是无效的*/
 	h2.title{
 		font-size:25px;
 		color:red;
 	}
-	/*
-	  定义h2.title标签的样式，
-	  其他标签使用.title选择器是无效的
-	*/
 </style>
 
 <body class="body">
@@ -28,13 +25,6 @@ example：
 		title
 	</h2>
 </body>
-
-# 在css3中元素可以这样使用类选择器
-# 该标签会使用到俩个class选择器的样式
-<div class='title brand-name'></div>
-
-# 也能以组合的形式单独指定元素样式
-.title.brand-name{}
 ```
 
 example2：
@@ -47,7 +37,7 @@ example2：
 		font-size: 30px;
 	}
 	
-	/* 定位使用多个类选择器的标签 */
+	/* 组合样式来定义div的样式，注意.title.brand中间是没有空格的 */
 	.title.brand div{
 		background: #cdc;
 		color: yellow;
