@@ -172,7 +172,44 @@ example3：~ 后裔选择器
 <p>yellow?</p>
 ```
 
-## 伪类
+
+
+### before/after伪类
+before和after是附着在元素前后的伪元素，伪元素是不在dom中生成的，而是浏览器渲染css时画上去的，所以在浏览器上查看元素是看不到伪类的HTML结果的。
+
+在伪元素的样式上可以通过content属性设置伪元素的内容，默认伪元素是行内显示的，也可以将其设置为块元素显示。
+
+content：该属性在css2.1中引入，配合before、after伪类来为元素插入内容，值可以是
+- string：如果是空字符或者none，是不会显示的。
+- attr
+- url
+
+example1:
+```html
+<style>
+    .demo{
+        font-style: normal;
+        font-weight: normal;
+    }
+
+    .demo:before{
+        content: 'before ';
+    }
+
+    .demo:after{
+        content: ' after';
+        width: 100%;
+        height: 100%;
+        border: 1px solid;
+    }
+</style>
+
+
+<i class="demo">cotent</i>
+```
+
+### 选择器伪类
+
 浏览器一般会在没有访问的连接上去应用一个:link的伪类，
 在访问后的连接上会应用一个:visited的伪类，
 
@@ -275,9 +312,3 @@ p::first-line{}
 ::first-letter{}
 匹配段落第一行第一个字
 
-
-::before
-选中元素之前地方，
-
-::after
-选择元素之后的内容
