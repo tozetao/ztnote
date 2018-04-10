@@ -1,10 +1,16 @@
 #### CGI
 
-CGI，全称是公共网关接口（Common Gateway Interface），它是HTTP服务器与机器上的程序进行通讯时的一种规范。
+CGI，全称是公共网关接口（Common Gateway Interface），它是HTTP服务器与机器上的程序进行通讯时的一种规范，CGI程序可以用任何一种语言实现，只要有输入、输出和环境变量。
 
-CGI程序是运行在网络服务器上的，CGI可以用任何一种语言实现，只要有输入、输出和环境变量，例如PHP/C/perl等。
+CGI保证了web服务器传递过来的数据是标准格式的，web服务器只是内容的分发者，而不是处理者。
 
-CGI执行流程：
+例如Nginx服务器，假设某个请求是/index.php，web服务器根据配置文件知道要将该请求分发给php解析器，在转发给php解析器的时候，要传递什么数据，传递数据的格式，这些都是CIG规定的。
+
+php解析器也就是CIG程序在收到数据后，会解析php.ini文件，初始化环境处理请求，再以CGI规定的格式返回处理的结果，这大体是web服务器与php-cgi解析器的交互过程。
+
+
+
+CGI执行流程演示：
 
 ```c
 //CGI程序，/usr/local/cgi/helo
@@ -24,12 +30,18 @@ CGI性能问题
 
 
 
+
 #### fastCGI
+
+fastcig是提高CGI性能的一种实现，避免php-cgi程序处理每次处理请求的初始化过程造成的资源浪费。
+
+fastcgi会创建一个master进程负责php解析器的配置文件加载和解析、初始化环境，同时会创建多个worker子进程，当请求过来时，master进程会传递给worker进程处理，这样就避免了多次初始化所耗费的资源了，master也可以根据配置文件决定启动几个worker等待处理，这便是fastcgi对进程的管理了。
 
 fastCGI是一个CGI进程管理容器，原理如下：
 
 - fastCGI会启动一个master进程，master进程负责PHP-CGI程序的php.ini解析，执行环境的初始化，同时fastCGI启动多个worker进程。
-- 当请求过来时，master进程会将请求转发给worker进程处理，这样就避免了CGI程序初始化的资源重复问题
+- 当请求过来时，master进程会将请求转发给worker进程处理，这样就避免了CGI程序初始化的资源浪费问题
+
 
 
 
@@ -57,7 +69,7 @@ note：⽬前PHP-FPM是内置于PHP的。
 
   如果是Nginx服务器，PHP是作为服务常驻在内存中，为Nginx提供服务。
 
-  PHP-FPM会启动多个CGI进程，这是进程可以同时处理多个请求。
+  nginx与php-fpm分别是独立运行的进程，它们之间是通过php-cgi协议来进行通讯的。
 
 php-fpm与mod_php的区别
 

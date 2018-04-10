@@ -36,26 +36,25 @@
 
 #### 启动管理
 
-通过sbin目录的二进制文件管理Nginx：
+Nginx的管理除了用sbin目录下的nginx二进制文件外开可以使用kill命令配置进程信号来管理。
+
+sbin目录二进制文件管理：
 - 启动：sbin/nginx
 - 重启：sbin/nginx -s reload
 - 关闭：sbin/nginx -s stop
 
-进程信号：
-
+Nginx进程信号：
 - INT：快速杀死进程
 - HUP：改变配置文件，平滑的重读配置文件
 - USR1：重读日志文件，在日志按月/日分割时有用
 - USR2：平滑的升级
 - WINCH：优雅关闭旧的进程(配合USR2来进行升级)
 
-使用kill命令配合进程信号来管理Nginx：
-- 重启
+配合kill命令管理Nginx：
+- 重启：kill -HUP 进程id；kill -HUP `more /nginx/logs/nginx.pid`
+- 关闭：kill -INT 进程id
 
-  kill -HUP 进程id
 
-  kill -HUP \`more /nginx/logs/nginx.pid`
 
-- 关闭
+### PHP-FPM
 
-  kill -INT 进程id
