@@ -54,7 +54,3 @@ Nginx进程信号：
 - 重启：kill -HUP 进程id；kill -HUP `more /nginx/logs/nginx.pid`
 - 关闭：kill -INT 进程id
 
-
-
-### PHP-FPM
-
