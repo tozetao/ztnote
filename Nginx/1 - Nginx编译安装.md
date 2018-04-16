@@ -43,14 +43,29 @@ sbin目录二进制文件管理：
 - 重启：sbin/nginx -s reload
 - 关闭：sbin/nginx -s stop
 
-Nginx进程信号：
+
+
+进程信号
+
 - INT：快速杀死进程
 - HUP：改变配置文件，平滑的重读配置文件
 - USR1：重读日志文件，在日志按月/日分割时有用
 - USR2：平滑的升级
 - WINCH：优雅关闭旧的进程(配合USR2来进行升级)
 
-配合kill命令管理Nginx：
-- 重启：kill -HUP 进程id；kill -HUP `more /nginx/logs/nginx.pid`
-- 关闭：kill -INT 进程id
+
+
+通过进程信号来平滑的重启Nginx
+
+- kill -HUP \`more  /usr/local/nginx/nginx.pid`
+
+
+- kill -USR2 \`more  /usr/local/nginx/nginx.pid`
+
+  USR2将会重新启动一份Nginx master/worker进程，原有master/worker进程仍然会存在的。
+
+
+- kill -INT 进程id
+
+  关系Nginx进程
 
