@@ -1,5 +1,26 @@
 ### 变量的作用域链
 
+var关键字声明的变量，如果是在函数内声明的，变量是挂载在当前函数对象上的；如果是全局声明，那么变量是挂载在全局对象window对象上的。
+
+```javascript
+var x = 'global';
+
+function outside(){
+    var x = 'outside';
+    
+    function inner(){
+        var x = 'inner';
+        console.log(x);
+    }
+    
+    console.log(x);
+}
+
+outside();
+```
+
+
+
 ### 变量提升
 Javascript程序并不全是一行一行指向的，代码的执行会有俩个阶段：
 1. 在编译阶段会进行词法解析
@@ -29,68 +50,83 @@ show();		//error
 var show = function(){}
 ```
 
+
+
 提升规则：
+
 - 编译阶段会将函数声明和使用var关键字声明的变量提升到各自当前的作用域
 
-```javascript
-show();
-function show(){
-	console.log(a);
-	var a = '123';
-}
+  ```javascript
+  //编译前
+  show();
+  function show(){
+  	console.log(a);
+  	var a = '123';
+  }
 
-//编译阶段
-function show(){
-	var a;
-	console.log(a);
-	a = '123';
-}
-show();
-```
+  //编译阶段
+  function show(){
+  	var a;
+  	console.log(a);
+  	a = '123';
+  }
+  show();
+  ```
+
+  ​
+
 
 - 如果变量声明与函数声明是相同的，函数声明会被优先提升
 
-```javascript
-show();		//first
-function show(){
-	console.log('first');	
-}
+  ```javascript
+  show();		//输出：first
 
-var show;
-show = function(){
-	console.log('second');
-}
-```
+  //show()函数与show变量同时存在的情况
+  function show(){
+  	console.log('first');	
+  }
+
+  var show;
+  show = function(){
+  	console.log('second');
+  }
+  ```
+
 
 - 如果有多个同名的函数声明，后面的函数会覆盖前面的函数声明
+
 - 没有var声明的变量是不会进行提升的
 
-```
-function show(){
-	console.log(a);
-	a = '123';
-}
-show();
-```
+  ```javascript
+  function show(){
+  	console.log(a);
+  	a = '123';
+  }
 
-- 变量提升的作用域与变量作用域链是俩个概念，变量提升的作用域是以大括号来区分的。
+  show();		//error
+  ```
 
-```javascript
-var a = true;
-show();		//undefined
+  ​
 
-if(a){
-    function show(){
-        console.log(123);
-    }
-}else{
-    function show(){
-        console.log(456);
-    }
-}
 
-show();		//123，输出123而非456
-```
+- 变量提升的作用域是以大括号来区分的。在这点上，变量提升的作用域与变量作用域链是俩个概念
+
+  ```javascript
+  var a = true;
+  show();		//undefined
+
+  if(a){
+      function show(){
+          console.log(123);
+      }
+  }else{
+      function show(){
+          console.log(456);
+      }
+  }
+
+  show();		//123，输出123而非456
+  ```
 
 
 
@@ -124,6 +160,8 @@ btn.addEventListener('click', function(){
 - 方法如果被哪个对象调用，this就指向该对象
 
 
+
+
 ### 面向对象
 JavaScript没有类的概念，它的对象可以认为是一些无需属性的集合。
 
@@ -140,6 +178,8 @@ function Person(){
 3. 执行构造函数代码
 
 缺点：在使用new操作符声明一个对象时，每个对象都会有自己的属性和函数，不同对象之间的函数表达式是不同的，这就造成了内存浪费。
+
+
 
 ### 原型对象(Prorotype)
 原型对象是每个函数都拥有的一个单独的对象，它具有以下特点：
@@ -174,12 +214,17 @@ p1.show = function(){
 console.log(p1.show == p2.show);	//false
 ```
 
+
+
 ### 原型链
+
 在JavaScript的函数中一切都是对象，最顶级的对象是Object对象，所有对象都是从Object继承而来的。
 
 Object函数由自己的原型对象，该原型对象也有隐式的原型对象__proto__，指向了null，该原型对象也有constructor属性，指向了Object构造函数。
 
 当通过new操作符创建是一个实例对象时，通过该实例对象的隐式原型属性寻找原型对象，再通过原型对象的隐式原型属性寻找其父类的原型对象，从底部通过隐式原型属性依次向上寻找原型对象的过程就叫做原型链。
+
+
 
 
 ### 函数表达式
