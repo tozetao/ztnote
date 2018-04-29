@@ -260,7 +260,9 @@ Object函数由自己的原型对象，该原型对象也有隐式的原型对�
 ```
 
 ### 闭包
-闭包一般会有俩个函数，在函数内部返回函数叫做闭包，也可以不返回函数。
+在函数中，将另外一个函数作为返回值，这种函数就叫做闭包。闭包最大的好处在于可以绑定闭包函数外部函数的参数和变量，它的作用域是在定义的时候形成的。
+
+注：闭包函数可以作为变量返回或者不返回。
 
 example：
 ```
@@ -271,31 +273,102 @@ function show(){
 }
 ```
 
+
+
 - 闭包作用域的形式是在定时的时候形成的，通过该方式可以绑定闭包函数外部的变量，例如：
 
-example：
-```
-function show(){
-	var a = 18;
-	return function(){
-		return a;
-	}
-}
+  ```javascript
+  function show(){
+  	var a = 18;
+  	return function(){
+  		return a;
+  	}
+  }
 
-//以这种方式返回a变量，它是不会被释放的。
-```
-example：闭包实现计数器
-```
-function count(){
-	var i = 0;
-	return function(){
-		return ++i;
-	}
-}
-```
+  //以这种方式返回a变量，它是不会被释放的。
+  ```
 
-闭包是实现模块化编程一个很重要的概念，例如：
-```
+
+
+- 不要绑定后续会发生变化的变量
+
+  ```javascript
+  function count(){
+  	var arr = new Array();
+
+  	for(var i=1; i<=3; i++){
+  		arr.push(function () {
+  			return i*i;
+  		});
+  	}
+
+  	return arr;
+  }
+
+  var result = count();
+
+  var f1 = result[0];
+  var f2 = result[1];
+  var f3 = result[2];
+
+  console.log(f1());
+  console.log(f2());
+  console.log(f3());	//16
+  ```
+
+  可以看到上述输出都是16，改进的代码如下：
+
+  ```javascript
+  function review_count(){
+  	var arr = new Array();
+
+  	for(var i=1; i<=3; i++){
+  		arr.push((function (number) {
+  			return function () {
+  				return number*number;
+  			}
+  		})(i));
+  	}
+
+  	return arr;
+  }
+
+  var result = review_count();
+
+  var f1 = result[0];
+  var f2 = result[1];
+  var f3 = result[2];
+
+  console.log(f1());
+  console.log(f2());
+  console.log(f3());
+  ```
+
+
+
+- 闭包是携带状态的函数，且这些状态对外隐藏
+
+  ```javascript
+  //example：闭包实现计数器
+  var counter = function(){
+  	var i = 0;
+
+  	return function(){
+  		return i++;
+  	}
+  }();
+
+  console.log(counter());
+  console.log(counter());
+  console.log(counter());
+  ```
+
+
+
+
+
+闭包是实现模块化编程一个很重要的概念，由于闭包对外隐藏细节，所以可以将window对象传入函数中，对外提供接口，例如：
+```javascript
 (function(window){
 	funciton show(){
 		//body

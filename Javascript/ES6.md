@@ -109,3 +109,33 @@ console.log(PI);	//3.14
   var {name, single=true} = person;
   ```
 
+
+
+
+
+
+### Arrow Function
+
+箭头函数，它相当于匿名函数，并且简化了定义的方式。
+
+examples:
+
+```javascript
+var f  = x => x*x;
+//只有一个表达式，不用小括号()和大括号{}
+
+(x, y) => x * y;
+
+var sum = (x, y, ...rest) => {
+    var i, sum = x+y;
+    
+    for(var i=0; i<rest.length; i++){
+        sum += rest[i];
+    }
+    
+    return sum;
+}
+```
+
+
+
