@@ -211,14 +211,49 @@ TCP连接的断开有4次握手。。。这一部分再看。
 
 TCP的半关闭指的是只断开其中一个流。
 
+断开输入流意味着套接字无法接受数据，即使数据在输入缓冲区中也会被清除；断开输出流意味着无法传输数据，但是输出缓冲区的数据仍然会被发送
+
 
 
 ### API
 
 ```c
-#include <sys/socket.h>
-int shutdown(int sock, int howto);
 
+
+int shutdown(int sock, int howto);
+//文件头：#include <sys/socket.h>
+//sock：需要断开的套接字
+//howto：断开类型，SHUT_RD是断开输入流，SHUT_WR断开输出流，SHUT_RDWR：同时断开I/O流
+
+
+
+struct hostent * gethostbyname(const char *hostname);
+//根据域名获取IP地址
+//文件头：#include <netdb.h>
+//hostent 结构 
+struct hostent
+{
+    char * h_name;
+    //官方网域名
+    
+    char ** h_aliases;
+    //其他域名
+    
+    int h_addrtype;
+    //网络协议的类型
+    
+    int h_length;
+    //ip字节长度，
+    
+    char ** h_addr_list;
+    //IP地址列表，有可能把多个IP地址映射到同一个域名，因此是IP地址列表
+}
+
+struct hostent * gethostbyaddr(const char *addr, socklen_t len, int family);
+//文件头：netdb.h
+//addr：含有IP地址信息的in_addr结构体指针
+//len：向第一个参数传递的地址信息的字节数，IPv4为4，IPv6为16
+//family：地址族信息，AF_INET，AF_INET6
 ```
 
 
