@@ -195,9 +195,27 @@ TCP在实际通信过程中也会经过3次对话过程，简称三次握手（T
 
 
 
-套接字的断开
+套接字连接的断开
 
-TCP连接的断开有4次握手。。。这一部分再看。
+套接字的断开经由4次过程：
+
+- 主机A向主机B发送断开连接的信息
+
+  FIN  SEQ  5000  ACK  -
+
+- 主机B向主机A发送确认收到断开连接的信息
+
+  ACK  SEQ  7500  ACK  5001
+
+- 主机B向主机A发送可以断开连接的消息
+
+  FIN   SEQ  7501  ACK  5001
+
+- 主机A同样发出确认消息
+
+  ACK  SEQ  5001  ACK  7502
+
+
 
 
 
@@ -212,6 +230,113 @@ TCP连接的断开有4次握手。。。这一部分再看。
 TCP的半关闭指的是只断开其中一个流。
 
 断开输入流意味着套接字无法接受数据，即使数据在输入缓冲区中也会被清除；断开输出流意味着无法传输数据，但是输出缓冲区的数据仍然会被发送
+
+
+
+
+
+### Socket选项
+
+套接字是可以设置的，主要分为3层设置：
+
+- IPPROTO_IP
+
+  IP层，设置IP协议相关事项
+
+- IPPROTO_TCP
+
+  设置TCP协议相关事项
+
+- SOL_SOCKET
+
+  套接字相关的通用选项
+
+
+
+SOL_SOCKET层相关选项：
+
+- SO_TYPE
+
+  套接字的类型
+
+- SO_SNDBUF
+
+  输出缓冲区大小配置，可用于更改输出缓冲区的大小。
+
+- SO_REVBUF
+
+  输入缓冲区大小配置，可读写
+
+
+
+SO_REUSEADDR和Time-wait状态
+
+- Time-wait状态
+
+  俩个套接字连接时，先断开连接的套接字，即先发送FIN消息的套接字会处于Time-wait状态。
+
+  例如主机A是服务端，主机B是客户端，当主机A发送FIN消息后，套接字会经过四次握手过程而非立即消除，所以这时候主机A的套接字仍然会占用端口，因此会发生bind()失败现象。
+
+- Time-wati状态的作用
+
+  套接字在断开连接是经过四次握手的，假设经过三次握手后主机A在向主机B发送最后一次ACK消息，这时候立即中断，那么该ACK消息就会丢失。
+
+  这时候主机B会认为自己发送的FIN消息（SEQ 7502  ACK  5001）未抵达主机A，继而继续重传，相反主机A的套接字处于Time-wait状态则会向主机B重传最后一条ACK消息，从而结束这次套接字的连接。
+
+SO_REUSEADDR选项可将Time-wait状态下的套接字端口号重新分配给新的套接字，该选项默认值为0.
+
+注：客户端套接字也有Time-wait状态的，只不过由于客户端套接字端口是随机绑定的。
+
+
+
+Nagle算法
+
+Nagle算法应用于TCP层，是为了防止数据包过多而发生网络过载。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+相关API
+
+```c
+#include <sys/socket.h>
+
+int getsockopt(int sock, int level, int optname, void *optval, socklen_t *optlen);
+//sock：套接字文件描述符
+//level：要查看的可选项的协议层
+//optname：要查看的可选项名
+//optval：保存查看结果的缓冲地址值
+//optlen：向参数optval传递缓冲大小
+
+int setsockopt(int sock, int level, int optname, const void *optval, socklen_t optlen);
+//sock：用于更改的套接字
+//level
+//optval：保存要更改的选项的缓冲地址值
+//optlen：向optval参数传递的可选项信息的字节数
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -250,6 +375,7 @@ struct hostent
 }
 
 struct hostent * gethostbyaddr(const char *addr, socklen_t len, int family);
+//根据IP地址获取域名
 //文件头：netdb.h
 //addr：含有IP地址信息的in_addr结构体指针
 //len：向第一个参数传递的地址信息的字节数，IPv4为4，IPv6为16
