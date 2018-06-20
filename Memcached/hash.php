@@ -1,8 +1,4 @@
 <?php
-/**
- * 一致性哈希算法实现
- */
-
 
 // 将字符串转成0-2^32整数的接口
 interface hash{
@@ -18,9 +14,7 @@ interface distribution{
 	// public function addNode($node);
 }
 
-/**
-* 取模分布式算法
-*/
+//取模分布算法
 class Moder implements hash,distribution
 {
 	protected $_nodes = array();	//节点数组
@@ -63,9 +57,7 @@ class Moder implements hash,distribution
 	}
 }
 
-/**
-* 一致性哈希算法实现
-*/
+//一致性哈希算法实现
 class Consistent implements hash,distribution
 {
 	protected $_nodes = array();
@@ -149,10 +141,31 @@ class Consistent implements hash,distribution
 // echo $con->lookup('address'), "\n";
 
 // Moder测试
-$moder = new Moder();
-$moder->addNode('a');
-$moder->addNode('b');
-$moder->addNode('c');
-$key = 'name';
-echo $moder->_hash($key), "\n";
-echo $moder->lookup($key), "\n";
+// $moder = new Moder();
+// $moder->addNode('a');
+// $moder->addNode('b');
+// $moder->addNode('c');
+// $key = 'name';
+// echo $moder->_hash($key), "\n";
+// echo $moder->lookup($key), "\n";
+
+
+
+/*
+接口定义：
+	addNode($server_key)
+		添加服务器节点
+	
+	deleteNode()
+		删除服务器节点
+
+	lookup($request_key)
+		路由一个请求
+
+	$virtual_node_list
+		服务器虚拟节点列表，通过虚拟节点寻找真实节点
+*/
+
+/**
+ * 分发接口
+ */
