@@ -338,7 +338,313 @@ blpop是lpop的阻塞版本，b是blocking，锁定的意思。
 
   
 
-
-
 list数据类型可以用于模拟栈、队列、消息队列和有限集合等。
 
+
+
+## 集合
+
+集合（set）类型可以用于保存多个字符串元素，集合不允许有重复元素并且集合中的元素是无序的。
+
+一个集合最多支持$2^{32}-1$个元素，集合支持增删改查，也支持交集、差集和并集操作。
+
+
+
+### sadd
+
+将一个或多个member元素添加到集合中，以存在于集合中的member元素将被忽略。
+
+- 时间复杂度
+
+  O(1)
+
+- 语法
+
+  > sadd key member [member...]
+
+
+
+### srem
+
+移除key中的一个或多个元素，不存在的元素将会被忽略，成功将返回移除元素的数量。
+
+- 时间复杂度
+
+  O(1)
+
+- 语法
+
+  > srem key member [member...]
+
+
+
+### scard
+
+计算元素个数。
+
+- 时间复杂度
+
+  O(1)，redis内部变量会记录集合元素的个数，不会进行遍历。
+
+- 语法
+
+  > scrad key
+
+
+
+### sismember
+
+判断member元素是否存在于集合中。
+
+- 时间复杂度
+
+  O(1)
+
+- 语法
+
+  > sismember key member 
+
+
+
+### srandmember
+
+随机从集合返回指定个数的元素
+
+- 时间复杂度
+
+  O(1)
+
+- 语法
+
+  > srandmember key [count]
+
+
+
+### spop
+
+从集合中随机弹出元素
+
+- 时间复杂度
+
+  O(1)
+
+- spop key [count]
+
+
+
+### smembers
+
+返回集合set中的所有成员，不存在的key被视为空集合。
+
+- 时间复杂度
+
+  O(N)
+
+- 语法
+
+  > spop key [count]
+
+
+
+### sinter
+
+返回多个集合的交集
+
+- 时间复杂度
+
+  O(N*M)，这是最差情况，N为给定集合中基数最小的集合，M为给定集合的个数
+
+- 语法
+
+  > sinter key [key...]
+
+
+
+### sunion
+
+返回多个集合的并集。
+
+- 时间复杂度
+
+  O(N)，N是给定所有集合的成员数量之和
+
+- 语法
+
+  > sunion key [key...]
+
+
+
+### sdiff
+
+返回多个集合的差集
+
+- 时间复杂度
+
+  O(N)，N是所有给定集合的成员数量之和。
+
+- 语法
+
+  > sdiff key [key...]
+
+
+
+### 内部数据结构
+
+集合类型的内部数据结构实现有俩种：
+
+- intset
+
+  整数集合，当集合中的元素都是整数且元素个数小于set-maxintset-entries配置时（默认512）个，redis会选用intset作为集合的内部实现
+
+- hashtable
+
+  当集合类型无法满足intset集合的要求时，将会使用hashtable
+
+
+
+### 场景
+
+- sdd=Tagging（标签）
+- spop/srandmember=Random item（生成随机数，比如抽奖）
+- sadd+sinter=Social Graph（社交需求）
+
+
+
+## 有序集合
+
+有序集合是给每个元素设置一个分数（score）作为排序依据的集合，它不允许有重复元素。有序集合提供了获取指定分数和元素范围查询、计算成员排名等功能。
+
+
+
+### zadd
+
+- 时间复杂度
+
+  O(logN)，N是有序集合的元素个数
+
+- 语法
+
+  > zadd key \[NX|XX\]  \[CH\]  [INCR]  score member [score member]
+
+  NX：member必须不存在，才可以设置成功
+
+  XX：member必须存在，才可以设置更改，用于更新
+
+  CH：返回此次操作后，有序集合元素和分数发生变化的个数
+
+  INCR：对score增加
+
+将一个或多个member元素及其score值加入到有序集合中。
+
+如果member元素已经是有序集合的成员，那么更新这个member的score值，并通过重新插入这个member元素来保证该元素在正确的位置上。
+
+注：score可以是整数或双精度浮点数。
+
+
+
+### zcard
+
+计算成员个数。
+
+- 时间复杂度
+
+  O(1)
+
+- 语法
+
+  > zcard key
+
+
+
+### zscore
+
+计算某个成员的分数。
+
+- 时间复杂度
+
+  O(1)
+
+- 语法
+
+  > zscore key member
+
+
+
+### zrank
+
+计算成员的排名。
+
+- 时间复杂度
+
+  O(logN)
+
+- 语法
+
+  > zrank key member
+
+返回有序集合中成员member的排名，其中有序集合成员按score值递增（从小到大）的顺序排列。
+
+
+
+### zrevrank
+
+计算成员的排名。
+
+返回有序集合中成员member的排名，其中有序集合成员按score值递减，从大到小的顺序排列。
+
+- 时间复杂度
+
+  O(logN)
+
+- 语法
+
+  > zrevrank key member
+
+
+
+### zrem
+
+删除成员
+
+- 时间复杂度
+
+  O(logN)
+
+- 语法
+
+  > zrem key member [member...]
+
+
+
+### zincrby
+
+增加成员的分数
+
+- 时间复杂度
+
+  O(logN)
+
+- 语法
+
+  > zincrby  key incrementmember
+
+  为有序集合key的成员member加上增量increment
+
+
+
+### zrange
+
+返回指定排名范围内的成员。
+
+- 时间复杂度
+
+  
+
+
+
+### 场景
+
+- 点赞
+- 积分系统
+- 分页
+- 排序
