@@ -237,3 +237,19 @@ https://www.cnblogs.com/yjf512/archive/2010/11/04/1868899.html
 锁
 
 http://www.cnblogs.com/yjf512/p/6597814.html
+
+
+
+
+
+
+
+tag表
+
+user表
+
+tag_user表
+
+
+
+将tag的id当做key，用户的id当做偏移量，进行setbit操作

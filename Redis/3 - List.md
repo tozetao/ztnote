@@ -202,7 +202,7 @@ blpop是lpop的阻塞版本，b是blocking，锁定的意思。
 
 - linkedlist
 
-  链表
+  双端链表
 
 - quicklist
 
