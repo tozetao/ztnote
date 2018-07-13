@@ -72,6 +72,20 @@ incr是原子性操作，能够对key的值进行自增，结果有3种：
 - 值是整数返回自增结果
 - key不存在将会按照值为0进行自增，结果返回1
 
+  incrby命令指定增加值的大小。
+
+
+
+### decr
+
+decr是原子性操作，能够对key 的值进行自减，结果又3种：
+
+- 值不是整数返回错误
+- 值是整数返回自减结果
+- key不存在会当做0处理进行自减，结果返回-1
+
+decrby命令可以指定减少值得大小
+
 
 
 ### append
@@ -81,6 +95,28 @@ incr是原子性操作，能够对key的值进行自增，结果有3种：
 - 语法
 
   > append key
+
+
+
+###setrange
+
+将从start偏移量开始的子串设置为给定值。如果当前字符串的长度不能满足写入长度的要求，redis会使用null字符进行扩充，然后再执行写入或更新操作。
+
+- 语法
+
+  > setrange  key  offset  value
+
+- example
+
+  > add  content  'hello'
+  >
+  > setrange  content  10  "is my demo"
+
+
+
+### getrange
+
+处理字符串子串的命令，获取一个由偏移量start至偏移量end范围内的子字符串，在使用getrange命令读取字符串的时候，超出字符串长度的数据会默认为null字符。
 
 
 

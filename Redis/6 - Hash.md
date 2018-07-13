@@ -6,11 +6,21 @@ redis的散列可以存储键值对的数据，基本等价于HashTable。
 
 ### hset
 
+设置散列中的一个键值对
+
+- 语法
+
+  > hset  key-name  key  name
+
 
 
 ### hget
 
+获取散列中指定键的值
 
+- 语法
+
+  > hget  key-name  key
 
 
 
@@ -62,21 +72,53 @@ redis的散列可以存储键值对的数据，基本等价于HashTable。
 
   > hexists  key-name  key
 
+
+
 ### hkeys
 
+返回散列中键的集合。
+
+- 语法
+
+  > hkeys  key-name
 
 
-### hvalues
+
+### hvals
+
+返回散列中值的集合。
+
+- 语法
+
+  > hval  key-name
 
 
 
 ### hgetall
 
+获取散列中的所有键值对
+
+- 语法
+
+  > hgetall  key-name
+
 
 
 ### hincrby
 
+对散列中指定键的值加上一个指定的整数。
+
+- 语法
+
+  > hincrby  key-name  key  increment
+
 
 
 ### hincrbyfloat
+
+对散列中指定键的值加上一个指定的浮点数。
+
+- 语法
+
+  > hincrbyfloat  key-name  key  increment
 
