@@ -1,10 +1,8 @@
-
-
 ## Set
 
-集合（set）类型可以用于保存多个字符串元素，集合不允许有重复元素并且集合中的元素是无序的。
+集合（set）类型以无序的方式来存储多个不同的元素，集合不允许有重复元素，支持插入、移除，将元素从一个集合移动到另外一个集合中；也支持多个集合之间的交集、并集和差集操作。
 
-一个集合最多支持$2^{32}-1$个元素，集合支持增删改查，也支持交集、差集和并集操作。
+一个集合最多支持$2^{32}-1$个元素。
 
 
 
@@ -36,6 +34,22 @@
 
 
 
+### sismember
+
+判断member元素是否存在于集合中。
+
+- 时间复杂度
+
+  O(1)
+
+- 语法
+
+  > sismember key member 
+
+
+
+
+
 ### scard
 
 计算元素个数。
@@ -50,17 +64,15 @@
 
 
 
-### sismember
+### spop
 
-判断member元素是否存在于集合中。
+从集合中随机弹出元素
 
 - 时间复杂度
 
   O(1)
 
-- 语法
-
-  > sismember key member 
+- spop key [count]
 
 
 
@@ -78,18 +90,6 @@
 
 
 
-### spop
-
-从集合中随机弹出元素
-
-- 时间复杂度
-
-  O(1)
-
-- spop key [count]
-
-
-
 ### smembers
 
 返回集合set中的所有成员，不存在的key被视为空集合。
@@ -101,6 +101,18 @@
 - 语法
 
   > spop key [count]
+
+
+
+### smove
+
+从source-key集合中移除member成员并将其添加到dist-key集合中，
+
+成功返回1，失败返回0.
+
+- 语法
+
+  > smove  source-key  dist-key  member
 
 
 
@@ -116,6 +128,8 @@
 
   > sinter key [key...]
 
+sinterstore：与sinter命令效果相同，不同的是会把结果存储到指定的key中。
+
 
 
 ### sunion
@@ -130,11 +144,13 @@
 
   > sunion key [key...]
 
+sunionstore：与sunion命令效果相同，同样会把结果存储到指定的key中。
+
 
 
 ### sdiff
 
-返回多个集合的差集
+返回多个集合的差集，即返回存在于第一个集合中，但是不存在于其他集合中的元素。
 
 - 时间复杂度
 
@@ -143,6 +159,16 @@
 - 语法
 
   > sdiff key [key...]
+
+
+
+### sdiffstore
+
+将存在于第一个集合中但是不存在于其他集合中的元素插入到dist-key集合中。
+
+- 语法
+
+  > sdiffstore  dist-key   key1  [key2...]
 
 
 
