@@ -95,7 +95,7 @@ redis的命令大体可以分为4类：
 
 
 
-### EXPIRE
+### expire
 
 设置给定key的生存时间，当key过期时，将会被自动删除。
 
@@ -109,6 +109,46 @@ redis的命令大体可以分为4类：
 
 
 
+### expireat
+
+将给定键的过期时间设置为给定的unix时间戳
+
+- 语法
+
+  > expireat  key-name  timestamp
+
+
+
+### pexpire
+
+让给定的键在毫秒数之后过期
+
+- 语法
+
+  > pexpire  key-name  milliseconds
+
+
+
+### pexpireat
+
+设置指定的键在一个毫秒级精度的时间戳过期。
+
+- 语法
+
+  > pexpireat  key-name  timestamp-milliseconds
+
+
+
+### persist
+
+移除键的过期时间
+
+- 语法
+
+  > persist  key-name
+
+
+
 ### TTL
 
 返回一个key的剩余的生存时间。
@@ -118,6 +158,18 @@ redis的命令大体可以分为4类：
 - 语法
 
   > ttl key
+
+
+
+### pttl
+
+查看给定的键距离过期时间还有多少毫秒
+
+- 语法
+
+  > pttl  key-name
+
+
 
 
 
@@ -161,3 +213,4 @@ redis的命令大体可以分为4类：
 
   > sort  source-key  \[by pattern]  \[limit  offset  count]  \[GET  pattern]  \[GET  pattern...]  \[ASC|DESC]  \[ALPHA]  \[STORE  dest-key]  
 
+### 
