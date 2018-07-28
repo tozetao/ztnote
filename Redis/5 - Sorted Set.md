@@ -215,6 +215,24 @@ zrangebyscore可以返回指定score范围内的成员，包括min和max在内�
 
 
 
+区间与无线
+
+min和max可以是-inf和inf，这样一来就可以在不知道有序集合最小分数和最大分数值的情况下使用zremrangebyscore命令，-inf代表最小分数值，inf代表最大分数值。
+
+默认情况下区间的取值是闭区间（小于等于或大于等于），你可以在参数前加（符号来选择可用的开区间，例如：
+
+> zremrangebyscore  zet  1  5
+
+返回大于等于1小于等于5分数值的元素。
+
+> zremrangebyscore  zet  (1  5
+
+返回大于1小于等于5分数值的元素。
+
+
+
+
+
 ### zunionstore
 
 计算给定的一个或多个有序集的并集，注意是并集而不是交集。
