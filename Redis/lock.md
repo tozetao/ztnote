@@ -167,7 +167,54 @@ function releaseLock($key, $uuid)
 
 实现
 
-使用有序集合实现，key是uuid，分数值是当前时间戳，用以实现锁的过期时间。
+使用有序集合实现，key是uuid，分数值是当前时间戳，用以实现锁的过期时间，存在的成员数量等于使用资源的客户端数量。
 
-存在的成员数量等于使用资源的客户端数量，客户端在获取锁的时候会往有序集合中添加成员，然后再判断添加的成员的排名，判断当前客户端是否有加锁成功。如果成功会返回成员的uuid，如果失败返回null。
+- 加锁
+
+  客户端在获取锁的时候会往有序集合中添加成员，成员的排名意味着获取锁的当前客户端数量。
+
+  如果成员的排名在限制使用资源的客户端数量之内，那么表示获取锁成功，返回uuid，否则删除已添加的成员并返回false。
+
+- 过期实现
+
+  在每次去获取资源锁的时候，移除有序集合中过期的成员
+
+```php
+function acquireSemaphore($key, $limit, $timeout=10)
+{
+    $uuid = uniqid();
+    $now = time();
+    
+    $redis = getRedis();
+    $redis->multi();
+    
+    //移除过期的成员
+    $redis->zremrangebyscore($key, '-inf', $now-$timeout);
+    $redis->zadd($key, $uuid, $now);
+    $redis->zrank($key, $uuid);
+    if($redis->exec()[-1] < $limit)
+        return $uuid;
+    
+    $redis->zrem($key, $uuid);
+    return false;
+}
+
+function releaseLock($key, $uuid)
+{
+    $redis = getRedis();
+    return $redis->zrem($key, $uuid);
+}
+```
+
+
+
+这是一个不公平的信号量。
+
+客户端在去获取信号量的时候，会假定每个进程访问到的系统时间是相同的，这一假设在多主机环境下不成立；例如对于系统A和系统B，系统A比系统B快10毫秒，如果系统A获得最后一个信号量，系统B只需要在这10毫秒内尝试获取锁就可以在A不知情的情况下抢占原本属于A的信号量。
+
+
+
+公平信号量
+
+
 
