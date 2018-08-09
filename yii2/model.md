@@ -83,3 +83,20 @@ return Customer::find()->joinWith([
     ])->all();
 ```
 
+
+
+
+
+
+
+ActiveForm
+	begin
+
+支持的配置属性
+	options：配置表单标签的属性
+
+	fieldConfig：统一配置字段
+		template：配置字段的模板html
+		labelOptions：配置字段label	的属性
+
+https://asset-packagist.org
