@@ -1,44 +1,10 @@
+### 单位概念
+
 px、em、rem都是长度单位。
 
-px：像素长度单位，像素px是相对于显示器分辨率而言的。
+px：pixel，像素长度单位，是屏幕上显示数据的最基本的点。
 
-
-
-### rem
-
-root em，简称rem。
-
-rem是css3新增的一个相对单位，rem在为元素设定长度大小时，是相对于HTML根元素font-size设置的大小。例如HTML元素font-size是16px，那么1rem就等于16px。
-
-
-
-设计稿/视觉稿
-
-web app应用的设计效果图，由于应用页面会运行在不同机器屏幕上，所以设计稿会以一个基准的手机屏幕大小来进行设计。
-
-注：设计稿是以分辨率来表示尺寸大小的。
-
-
-
-rem基准值
-
-要使用rem布局的话，就需要根据屏幕的大小来确定root元素的基准值。
-
-rem基准值 = 手机屏幕宽度 / 10，除以10是不想让rem基准值过大，当然也不可以不除；例如iPhone6的屏幕宽度是375px，rem基准值 = 375px/10 = 37.5px。
-
-- window.innerWidth，获取屏幕宽度
-
-
-
-rem应用
-
-使用rem时需要手动的去计算rem的具体大小，例如rem基准值是32px，一个元素的宽度是100px，那么该元素宽度 = 100px/32px，等于3.125rem。
-
-在实际的应用中，会使用前端构建工具来计算rem应用值，例如使用scss工具，通过定义function来计算。
-
-> @function px2rem($px){ $rem : 37.5px; @return ($px/$rem) + rem;} 
-
-注：$rem是基准值
+pt：point，专用的印刷单位"磅"，它是一个绝对大小。
 
 
 
@@ -56,49 +22,105 @@ DRP是设备像素比，DPR = 物理像素 / 设备独立像素
 
   可以认为是计算机中的一个点，这个点表示由程序使用的虚拟像素（例如css像素），有时把设备独立像素称为逻辑像素。
 
-> window.devicePixelRatio，获取设备像素宽度
+在iPhone6上，设备宽度和高度为375pt\*667pt，可以理解为设备独立像素；而其dpr为2，根据公式可以得知它的物理像素为750pt\*1334pt，例如：
 
-简单的说，手机屏幕的尺寸对应逻辑像素，而物理像素与手机使用的屏幕有关。
+```css
+witdh: 2px;
+height: 2px;
+```
 
-在iPhone6上，屏幕宽度是375px，即逻辑像素的大小，而它的物理像素是750px，所以它的DRP值为2。也就是说一个逻辑像素，在x轴和y轴上，各需要俩个物理像素来显示。
+该css样式在不同屏幕上，css像素呈现的物理尺寸是一样的，不同的是css像素所对应的物理像素具数是不一样的。在普通屏幕上1个css像素对应1个物理像素，而在Retina屏幕下，1个css像素对应4个物理像素。
 
-大部分设计稿采用iPhone6的屏幕来进行设计，所以分辨率大小为：750 * 1334 ，而前端开发在计算元素的尺寸大小时，通常会除以DPR值的大小，计算出元素在屏幕上的实际尺寸大小。
+
+
+由于DPR的原因，设计稿会采用手机的物理像素来进行设计，比如基于iPhone6，设计稿会以650px宽度作为单位进行设计。而前端开发在计算元素的尺寸大小时，通常会除以DPR值的大小，计算出元素在屏幕上的实际尺寸大小。
+
+```javascript
+window.devicePixelRatio
+// 设备像素宽度比
+
+window.documentElement.clientWidth
+// 设备的宽度
+
+window.innerWidth
+// 获取屏幕宽度
+```
+
+
+
+### rem
+
+root em，简称rem。
+
+rem是css3新增的一个相对单位，rem在为元素设定长度大小时，是相对于HTML根元素font-size设置的大小。例如HTML元素font-size是16px，那么1rem就等于16px。
+
+
+
+rem基准值
+
+使用rem布局的话，就需要根据屏幕的大小来确定root元素的基准值。
+
+rem基准值 = 手机屏幕宽度 / 10，除以10是不想让rem基准值过大，当然也不可以不除。例如iPhone6的屏幕宽度是375px，rem基准值 = 375px/10 = 37.5px。
+
+
+
+rem应用
+
+确定rem基准值后，页面中的元素都可以通过rem单位来进行设置，它们会根据html元素的font-size大小值做相应的计算，从而实现屏幕的适配效果。
+
+例如rem基准值是32px，一个元素的宽度是100px，那么该元素宽度 = 100px/32px，等于3.125rem。在实际的应用中，会使用前端构建工具来计算rem应用值，例如使用scss工具，通过定义function来计算。
+
+```css
+/* $rem是基准值 */
+@function px2rem($px){ $rem : 37.5px; @return ($px/$rem) + rem;} 
+```
+
+注：直接应用会有一个缺陷，即像素1px问题。
 
 
 
 rem进阶
 
-在明白DPR后，计算rem基准值时，我们会使用
-
-viewport
-
-scale
+视觉稿大部分是基于iPhone的，因此视觉稿的尺寸是对应物理像素的，在使用设计稿时会将标注的尺寸/2来进行css编码，然而在实际中是可以直接使用设计稿的尺寸来进行编码的。
 
 
 
-拿到了dpr之后，我们就可以在viewport meta头里，取消让浏览器自动缩放页面，而自己去设置viewport的content例如（这里之所以要设置viewport是因为我们要实现border1px的效果，加入我给border设置了1px，在scale的影响下，高清屏中就会显示成0.5px的效果）
+```html
+<meta name="viewport" content="width=device-width," />
+```
 
-meta.setAttribute('content', 'initial-scale='+ 1/dpr + ', maximum-scale='+ 1/dpr + ', minimum-scale='+ 1/dpr + ', user-scalable=no');
+- width
 
+  指定viewport的宽度
 
+- device-width
 
-设置完之后配合rem，修改
-
-@function px2rem($px){ $rem : 75px; @return ($px/$rem) + rem;}
-
-双倍75，这样就可以完全按照视觉稿上的尺寸来了。不用在/2了，这样做的好处是：
-
-1. 解决了图片高清问题。
-2. 解决了border 1px问题（我们设置的1px，在iphone上，由于viewport的scale是0.5，所以就自然缩放成0.5px）
-   
-
-在iphone6下的例子：
-
-我们使用动态设置viewport，在iphone6下，scale会被设置成1/2即0.5，其他手机是1/1即1.
-
-meta.setAttribute('content', 'initial-scale='+ 1/dpr + ', maximum-scale='+ 1/dpr + ', minimum-scale='+ 1/dpr + ', user-scalable=no');
+  指设备逻辑像素宽度，device-width = 物理像素 / (DPR * scale)，例如iPhone6的物理像素宽度是750，DPR为2，如果scale值为1，那么设备逻辑像素宽度为375；如果scale值为0.5，设备逻辑像素宽度为750.
 
 
+
+为了让设计稿与页面大小（设备独立像素）保持一致，可以根据DPR的值，来动态的设置viewport的scale来动态的改变页面大小，flexible.js便是采用这种解决方案的。
+
+- 保证页面大小与物理像素大小一致
+
+  ```javascript
+  var scale = 1 / devicePixelRatio;
+  document.querySelector('meta[name="viewport"]').setAttribute('content','initial-scale=' + scale + ', maximum-scale=' + scale + ', minimum-scale=' + scale + ', user-scalable=no');
+  ```
+
+- 动态计算html的font-size
+
+  ```javascript
+  document.documentElement.style.fontSize = document.documentElement.clientWidth / 10 + 'px';
+  ```
+
+布局的时候，各元素的css尺寸 = 设计稿尺寸 / (设计稿横向分辨率 / 10)，font-size可能需要额外的媒介查询，并且font-size不使用rem，这一点跟网易是一样的。 
+
+
+
+
+
+参考：
 
 https://www.cnblogs.com/well-nice/p/5509589.html
 
