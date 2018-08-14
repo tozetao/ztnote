@@ -504,3 +504,31 @@ vue单文件组件与vue-loader
 生成环境下的配置
 
 spa是单页面应用，也就是说通过webpack编译后的产出是单个html文件和其他js、css等资源文件。
+
+
+
+
+
+Vue对象的生命周期
+
+- created
+
+  
+
+- mounted
+
+  vue对象被挂载到dom节点上触发
+
+- activated
+
+  对象被激活时触发，
+
+- destroyed
+
+  对象被销毁是触发
+
+
+
+如果没有开启缓存，函数触发顺序为：created => mounted => destoryed;
+
+在开启缓存时，组件会被缓存在内存中，第一次访问组件时函数触发顺序为：created => mounted => activated，之后再次访问组件时将会一直触发activated函数，直到该组件被销毁。

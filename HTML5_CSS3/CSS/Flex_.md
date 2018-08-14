@@ -24,7 +24,7 @@ align-items
 
 aligen-content
 
-定义多跟轴线的对齐方式，如果项目如有一根轴线，该属性不起作用。
+定义多跟轴线的对齐方式，如果项目如有一根主轴线，该属性不起作用。flex-wrap属性为wrap，如果项目超出容器大小将会换行，这时候就会有多根主轴线了。
 
 
 
@@ -74,67 +74,126 @@ flex-basis
 }
 ```
 
-它可以设为跟width或height属性一样的值，即项目占据固定的空间大小。
+可以理解为设置项目的占据主轴的宽度。
 
 
 
-缩写
+flex缩写
 
 flex是flex-grow、flex-shrink、flex-basis3个属性的缩写，默认值为0 1 auto，后俩个属性可选。
 
 
 
+align-self
 
+定义单个项目与其他项目不一样的对齐方式，可覆盖align-items属性。
+
+默认值auto，表示继承自父类的align-items属性，如果没有父元素则等同于`stretch`。 
+
+
+
+
+
+- 注意：子元素是float、clear和vertical-align属性失效，而不会影响margin和padding。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+example：
 
 ```html
-
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-      }
-
-      .box {
+<style>
+    .grid {
         display: flex;
-
-        /* width: 600px; */
-        width: 100%;
-        height: 600px;
-        background: #cdc;
-        padding: 10px;
-
-        /* flex-direction: column; */
         justify-content: space-between;
-      }
+        align-content: space-between;
 
-      .item {
-        background: burlywood;  
-        width: 200px;
-        height: 200px;
-      }
-    </style>
-</head>
+        background: #cdc;
+    }
 
-<body>
-    <div class="box">
-      <span class="item"></span>
-      <!-- <div style="background: yellowgreen; height: 200px; flex: 1;"></div> -->
-      <span class="item"></span>
-    </div>
+    .grid-cell {
+        flex: 1;
+        background: yellow;
+        height: 50px;
+        line-height: 50px;
+    }
 
-    <!-- <div style="display: flex; flex-direction: column; justify-content: space-between; background: yellowgreen; height: 100%;">
-          <span style="width: 20px; height: 20px; background: tomato;"></span>
-          <span style="width: 20px; height: 20px; background: tomato;"></span>
-        </div> -->
-</body>
-</html>
+    .space {
+        margin-left: 10px;
+    }
+</style>
+<div class="grid">
+    <div class="grid-cell">1/2</div>
+    <div class="grid-cell space">1/2</div>
+    <div class="grid-cell space">1/2</div>
+    <div class="grid-cell space">1/2</div>
+</div>
 ```
 
 
+
+
+
+
+
+padding问题
+
+在容器width为100%时，针对容器设置padding，项目有固定宽度时，容器的宽度会溢出，这时候需要改变盒子模型对于宽度的计算方式，box-sizing
+
+有趣的是如果不设置容器的宽度，让浏览器来自己计算则不会出现该问题。
+
+```html
+<style>
+    html, body{
+        margin: 0;
+        padding: 0;
+    }
+
+    .box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        width: 100%;
+        box-sizing: border-box;
+
+        padding: 10px;
+        background: #cdc;
+    }
+
+    .item {
+        width: 50px;
+        height: 30px;
+        background: yellow;
+    }
+</style>
+
+<div class="box">
+    <div class="item">1</div>
+    <div class="item">2</div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+参考链接：
 
 http://www.ruanyifeng.com/blog/2015/07/flex-examples.html
 
