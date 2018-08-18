@@ -148,23 +148,13 @@ function releaseLock($key, $uuid)
 
 
 
-
-
-考虑的问题
-
-如何判断客户端已获得锁。
-
-如何处理客户端获取锁之后奔溃的情况。
-
-如何处理锁超时情况。
-
-
+### 不公平信号量
 
 > 加锁的实现
 
 需要一个集合存储成功获取锁的成员，同时获取锁的成员也需要有超时时间来避免死锁，因此采用有序集合才实现信号量锁。
 
-有序集合的成员是uuid，分值是当前时间戳，用以实现锁的过期时间，集合中成员的数量等于成功获取信号量锁的客户端数量。
+有序集合的成员是uuid，分值是当前时间戳，用以实现锁的过期时间，集合中成员的数量等于成功获取信号量锁的数量。
 
 客户端申请加锁时会向有序集合中添加成员，如果所添加的成员的排名未超过允许同时使用的资源数量限制，那么表示加锁成功，否则加锁失败。添加的成员为uuid，分值为当前操作时间戳。
 
@@ -212,129 +202,113 @@ function releaseLock($key, $uuid)
 
 
 
+缺陷
 
+这是一个不公平的信号量，客户端在去获取信号量的时候，会假定每个进程访问到的系统时间是相同的，如果客户端是不同的机器，这一假设不成立。
 
-这是一个不公平的信号量。
-
-客户端在去获取信号量的时候，会假定每个进程访问到的系统时间是相同的，这一假设在多主机环境下不成立；例如对于系统A和系统B，系统A比系统B快10毫秒，如果系统A获得最后一个信号量，系统B只需要在这10毫秒内尝试获取锁就可以在A不知情的情况下抢占原本属于A的信号量。
-
-
-
-公平信号量
-
-当各个系统的系统时间并不完全相同时，前面的基本信号量就会出现问题。时间运行慢的系统上的客户端可以偷走时间运行快的客户端已经取得的信号量，导致信号量变得不公平。
+例如对于系统A和系统B，系统A比系统B快10毫秒，如果系统A获得最后一个信号量，系统B只需要在这10毫秒内尝试获取锁就可以在A不知情的情况下抢占原本属于A的信号量，也就是说有可能会获取超出数量限制的信号量。
 
 
 
-一个计数器：用于确保最先对计数器执行自增操作的客户端能够获得信号量。
+### 公平信号量
 
-一个有序集合：存储信号量拥有者，key是uuid，value是计算器产生的值。
-
-
-
-从超时的有序集合中移除过期元素。
-
-对超时有序集合、拥有信号量集合执行交集计算，并将计算结果保存到信号量拥有者有序集合里面，覆盖有序集合中原有的数据。
-
-首先交集计算只会保留相同的元素，先移除过期元素再将俩个集合进行交集计算，那么拥有信号量的集合存储的就是未过期的元素了。
+由于使用时间戳来进行排名会造成不公平信号量，因此需要一个计数器对每个信号量分配一个唯一的ID，根据该ID来进行排名。
 
 
 
+使用的数据结构：
 
+- 一个计数器
 
-公平信号量
+  为每个客户端获取信号量时分配一个唯一的ID
 
-上个版本的基本信号量，当各个系统的时间不一致时就会出现不公平的情况，时间运行慢的系统可能会偷走时间运行快的系统的信号量。
+- 一个键是uuid，分值是时间戳的有序集合，用以实现过期时间
 
-
-
-需要的数据结构
-
-一个计数器，用于对信号量进行排名
-
-一个有序集合，存储信号量的超时时间，key是uuid，值是信号量的时间戳。
-
-一个有序集合：存储信号量的计数器，key是uuid，值是计数器
-
-这俩个集合都存储着信号量拥有者
+- 一个键是uuid，分值是计数器ID的有序集合，用以实现排名，限制同时可获取的信号量的数量。
 
 
 
-实现
+> 加锁实现
 
-- 从超时有序集合中移除过期的元素，即移除过期的信号量
-- 使用超时有序集合与信号量有序集合进行交集计算，并将结果存储到信号量有序集合中。由于超时有序集合中移除了过期元素，所以交集计算的结果都是未过期的信号量
-- 即计数器进行自增操作并将结果存储到信号量有序集合中，同时将时间戳存储到超时有序集合中。
-- 在完成上述操作后，检查当前添加的标识符在信号量有序集合中的排名，如果排名在允许使用信号量个数限制下，则表示客户端取的信号量，相反客户端未取的信号量，需要从集合中移除相关的元素。
+客户端在获取一个信号量时，会经过以下逻辑：
 
-通过另外一个集合来计算信号量是否在可使用数量限制之内，就避免了因为各个系统时间戳不相同造成的不公平现象。
+- 移除时间戳有序集合中过期的信号量
+
+- 对时间戳有序集合与计数器有序集合做交集操作，并将交集的过期存储到计数器有序集合中。
+
+  因为在时间戳有序集合中移除了过期的信号量，而计数器有序集合过期的信号量没有移除，通过交集操作不仅移除了计数器有序集合中过期的信号量，也统一了俩个集合中的成员。
+
+- 为信号量分配计数器ID，将计数器ID存储到计数器有序集合，将信号量的时间戳存储到时间戳有序集合中。
+
+- 检查当前信号量在计数器有序集合中的排名，如果满足同时访问信号量数量的限制，则获取成功，返回uuid；否则获取失败，需要从集合中移除相关的元素
 
 ```php
-function getRedis()
+function lock($key, $limit = 5, $expire = 10)
 {
-    return new Redis('127.0.0.1');
-}
+    $lock = acquireLock('counter', 10);
 
-function acquire_fair_semaphore($key, $limit, $timeout = 10)
-{
-    $redis = getRedis();
-    
-    $uuid = unique();
-    $now = time();
-    
-    $ownKey = $key . ':own';
-    $counter = $key . ':counter';
-    
-    $redis->multi();
-    
-    $redis->zremRangeByScore($key, '-inf', $now - $timeout);
-    $redis->zinterstore($ownKey, [$ownKey, $key]);
-    
-    $redis->incr($counter);
-    $identify = $redis->exec()[2];
-    
-    $redis->zadd($key, $uuid, $now):
-    $redis->zadd($ownKey, $uuid, $identify);
-    
-    $redis->zrank($ownKey, $uuid);
-    $order = $redis->exec()[1];
-    if($order <= $limit)
-        return $uuid;
-    
-    $redis->zrem($key, $uuid);
-    $redis->zrem($ownKey, $uuid);
-    $redis->exec();
+    if ($lock) {
+        $timestampKey = 'lock:timestamp:' . $key;
+        $countKey = 'lock:count:' . $key;
+
+        $now = time();
+        $uuid = uniqid();
+
+        $redis = Singer::getInstance();
+
+        // 信号量计数器
+        $count = $redis->incr('count');
+
+        $redis->multi();
+        // 移除过期的信号量
+        $redis->zRemRangeByScore($timestampKey, '-inf', time() - $expire);
+
+        // 使用交集合并俩个集合
+        $redis->zInter($countKey, [$timestampKey, $countKey], [0, 1]);
+
+        // 添加时间戳、添加信号量的计数器
+        $redis->zAdd($timestampKey, $now, $uuid);
+        $redis->zAdd($countKey, $count, $uuid);
+        $redis->zRank($countKey, $uuid);
+        $result = $redis->exec();
+
+        echo $result[4], "\n";
+
+        // 判断信号量的排名是否超过限制
+        if ($result[4] < $limit) {
+            echo "lock success\n";
+            releaseLock('counter', $lock);
+            return $uuid;
+        } else {
+            releaseLock('counter', $lock);
+            // 移除获取失败的信号量
+            $redis->zRem($timestampKey, $uuid);
+            $redis->zRem($countKey, $uuid);
+        }
+    }
+
     return false;
 }
 
+```
 
-function release_lock($key, $uuid)
-{
-    $redis = getRedis();
-    $ownKey = $key . ':own';
-    $redis->zrem($ownKey, $uuid);
-    $redis->zrem($key, $uuid);
-    return true;
+说明：由于获取信号量的计数器会发生竞争，因为进行加锁来操作信号量，消除竞争条件。redis加锁与解锁速度是非常快的，因此能够在同一时间获取多个信号量。
+
+
+
+> 释放信号量
+
+```php
+function release($key, $uuid) {
+    $timestampKey = 'lock:timestamp:' . $key;
+    $countKey = 'lock:count:' . $key;
+    $redis = Singer::getInstance();
+    return $redis->multi()->zRem($timestampKey, $uuid)->zRem($countKey, $uuid)->exec();
 }
 ```
 
 
 
-刷新信号量
+> 刷新信号量
 
 刷新信号量即增加信号量的存活时间，因为公平信号量区分开超时有序集合和信号量拥有者有序集合，所以只需要对超时有序集合进行更新，就可以立即刷新信号量的超时时间了。
-
-
-
-公平信号量的竞争
-
-这是因为redis的事务只是保存了多个操作的原子性。
-
-多个事务仍然是可以并发执行的。
-
-
-
-
-
-公平信号量的应用场景
-
