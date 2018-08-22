@@ -1,0 +1,92 @@
+秒杀功能设计
+
+redis
+	排行榜设计
+	文章的投票设计
+	session应用
+	过期机制
+
+- 如何进行系统压力的测试
+
+先完成上述的任务，再完成下面的任务。
+
+
+- c语言学习
+- c网络编程
+- linux服务器编程
+- swoole学习：认知、聊天系统
+
+
+
+
+
+
+
+
+
+
+
+锁相关的连接
+	https://zhuanlan.zhihu.com/p/34510121?utm_medium=social&utm_source=wechat_session
+
+连接查询的总结
+
+- HTTP缓存
+- Request Payload与Form Data的区别
+	php://input
+	Content-type: application/json
+	Content-type的不同类型
+
+关于推送与拉取
+	https://mp.weixin.qq.com/s/54yEWWet9mFztv1fO_GTqQ
+
+MySQL大表优化方案
+    https://mp.weixin.qq.com/s/QobKe-o9CPEIJa7vfTaSMw
+
+微信高并发资金交易系统设计方案
+    https://mp.weixin.qq.com/s/suBAJrP6uN2kFgHtGz16mw
+
+
+负载均衡中使用 Redis 实现共享 Session
+https://mp.weixin.qq.com/s/gWOT60TrgYeNIrTgo-rb2Q
+
+红黑树
+https://mp.weixin.qq.com/s/pvfA9ozQD_N09EZd2Vbs8w
+
+shell 在手分析服务器日志不愁
+https://mp.weixin.qq.com/s/fi28V4u1Zf_F9H2xRQyEIg
+
+PHP 进阶之路 - 揭开 PHP 线程安全的神秘面纱
+https://mp.weixin.qq.com/s/siNZNplMRMe6jrfJhLjQwg
+
+RESTFUL API最佳实践
+https://mp.weixin.qq.com/s/IrlX9grJWi_MjF4xU4U5XA
+
+PHP的引用，你知道多少？
+https://segmentfault.com/a/1190000012437512
+
+从放弃迅雷和 IDM 到自己开发下载工具
+https://mp.weixin.qq.com/s/YJd9Ts6-BUJna0-Ru--voA
+
+
+个人网站即时到账收款解决方案
+https://mp.weixin.qq.com/s/ujq4q9rRO0fT3XeBwjAzWg
+https://mp.weixin.qq.com/s/VfQUV-rhjssUo2Vc6LwB3w
+
+
+
+
+
+
+
+
+
+
+
+
+
+面试题
+https://github.com/hookover/php-engineer-interview-questions
+
+学习资料
+https://github.com/hookover/PHP-Interview
