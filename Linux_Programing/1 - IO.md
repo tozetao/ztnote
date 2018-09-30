@@ -7,7 +7,18 @@ I/O表示输入与输出，一个通用I/O模型的系统调用包括：
 - 读取文件
 - 写入文件
 
+```c
+int open(const char *pathname, int flags, [mode_t mode]);
+```
 
+打开一个文件描述符，flags参数是位掩码，指定文件的访问模式，具体模式有：
+
+- O_CREAT：若文件不存在则创建。
+- O_EXCL：结合O_CREAT参数使用，如果文件已存在函数将调用失败。
+
+- O_APPEND：向文件尾部追加数据。
+
+mode参数在创建文件时时候，表示该文件的状态。
 
 ### 文件描述符
 
@@ -102,7 +113,85 @@ int main(void)
 
 
 
+### 原子操作
 
+- 原子操作
+
+  原子操作指的是系统调用所要完成的一系列动作将作为不可中断的操作，一次性加以执行。
+
+- 竞争状态
+
+  操作共享的进程或线程，其结果取决于一个无法预期的顺序，即这些进程获得CPU使用权的先后顺序。原子操作可以规避竞争状态。
+
+一般在多线程（多进程）的程序中会出现竞争状态，例如多个进程向同个文件的尾部写入数据或者多个进程判断文件是否创建。
+
+```c
+if (lseek(fd, 0, SEEK_END) == -1) 
+    exit(1);
+if (write(fd, buffer, len) != len)
+    exit(1);
+```
+
+在这段代码中，如果第一个进程执行到lseek()与write()之间，被执行相同代码的第二个进程打断，俩个进程会在写入数据之前将偏移量指向相同的位置，这时候就会出现竞争状态；
+
+解决这一问题可以将文件偏移量的移动与写入操作纳入原子操作，在打开文件时加入O_APPEND可以保证这一点。
+
+
+
+
+
+
+
+### fcntl
+
+```c
+#include <fcntl.h>
+
+int fcntl(int fd, int cmd, ...);
+```
+
+fcntl()系统调用可以对一个打开的文件描述符执行一系列控制操作，成功时返回的参数依赖cmd参数，失败时返回-1。
+
+cmd参数表示操作，第三个参数以省略号表示，该参数可以设置为不同的类型。
+
+
+
+
+
+
+
+
+
+example：向一个文件写入数据
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+
+int main(int argc, char const *argv[])
+{
+    int fd;
+    int BUF_SIZE = 1024;
+    char buffer[BUF_SIZE];
+
+    fd = open(argv[1], O_WRONLY | O_CREAT | O_APPEND);
+
+    if(fd == -1){
+        perror("open error: ");
+        return 1;
+    }
+
+    lseek(fd, 0, SEEK_END);
+    write(fd, argv[2], strlen(argv[2]));
+    close(fd);
+
+    return 0;
+}
+```
 
 
 
