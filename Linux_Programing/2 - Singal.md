@@ -338,15 +338,15 @@ int main(int argc, char const *argv[])
 
 
 
-### signaction()
+### sigaction()
 
 ```c
 #include <signal.h>
 
-int signaction(int sig, const struct signaction *act, struct signaction *oldact);
+int sigaction(int sig, const struct sigaction *act, struct sigaction *oldact);
 ```
 
-signaction()用于设置信号处理，它允许在获取信号处置的同时无需将其改变，还可设置各种属性对调用信号处理器的行为施以更加精准的控制。
+sigaction()用于设置信号处理，它允许在获取信号处置的同时无需将其改变，还可设置各种属性对调用信号处理器的行为施以更加精准的控制。
 
 sig参数表示要获取或改变的信号，该参数可以是SIGKILL和SIGSTOP之外的任何信号。
 
@@ -354,10 +354,10 @@ act参数是结构指针，指向描述信号新处置的数据结构，oldact�
 
 
 
-signaction结构预览：
+sigaction结构预览：
 
 ```c
-struct signaction {
+struct sigaction {
     void (*sa_handler)(int);
     sigset_t sa_mask;
     
