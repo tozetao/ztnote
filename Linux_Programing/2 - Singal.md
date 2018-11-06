@@ -211,6 +211,34 @@ raise()出错将返回负数，可能发生错误EINVAL，即信号无效。
 
 
 
+### 信号集
+
+```c
+sigfillset(sigset_t *set);
+```
+
+设置所有信号在set集合中。
+
+```c
+sigemptyset(sigset_t *set);
+```
+
+从set集合中清空所有信号。
+
+```c
+sigaddset(sigset_t *set, int sig);
+```
+
+在set信号集中加入sig信号。
+
+```c
+sigdelset(sigset_t *set, int sig);
+```
+
+在set信号集中删除sig信号。
+
+
+
 ### 信号掩码
 
 信号掩码用于阻塞信号传递：内核会为每个进程维护一个信号掩码，即一组信号，并将阻塞这组信号传递给该进程。
@@ -346,15 +374,19 @@ int main(int argc, char const *argv[])
 int sigaction(int sig, const struct sigaction *act, struct sigaction *oldact);
 ```
 
-sigaction()用于设置信号处理，它允许在获取信号处置的同时无需将其改变，还可设置各种属性对调用信号处理器的行为施以更加精准的控制。
+sigaction()用于设置信号处理，它允许在获取信号处置的同时无需将其改变，还可设置各种属性对调用信号处理器的行为，以此得到更加精准的控制。
 
-sig参数表示要获取或改变的信号，该参数可以是SIGKILL和SIGSTOP之外的任何信号。
+- sig
 
-act参数是结构指针，指向描述信号新处置的数据结构，oldact参数也是指向同一类型结构的指针，用来返回之前信号处理的相关信息。
+  sig参数表示要获取或改变的信号，该参数可以是SIGKILL和SIGSTOP之外的任何信号。
+
+- sigaction *act
+
+  act参数是结构指针，指向描述信号新处置的数据结构，oldact参数也是指向同一类型结构的指针，用来返回之前信号处理的相关信息。
 
 
 
-sigaction结构预览：
+sigaction结构
 
 ```c
 struct sigaction {
@@ -363,46 +395,39 @@ struct sigaction {
     
     int sa_flags;
     void (*sa_restorer)(void);
-    
     // 其他略...
 }
 ```
 
-sa_handler成员与signal()的handler参数相同，是信号处理器程序，sa_handler成员是函数指针才会对sa_mask、sa_flags成员进行处理。
+- sa_handler
 
-sa_mask成员指定了一组要阻塞的信号。在调用处理器程序时，会在调用之前将这组信号中未处于信号掩码中的任何信号添加到进程掩码中，这些信号会停留在进程掩码中，直到信号处理器程序返回才会自动删除这些信号。
+  sa_handler成员与signal()的handler参数相同，是信号处理器程序，sa_handler成员是函数指针才会对sa_mask、sa_flags成员进行处理。
 
-利用sa_mask可以指定一组信号，不允许这组信号中断此处理器程序的执行。
+- sa_mask
 
-同时对处理器程序调用的信号会自动添加到进行掩码中，这意味着当处理器程序在执行时，如果同一个信号抵达多次，信号处理器程序是不会递归中断自己的。在处理器程序执行这段时间重复产生的信号，对信号的传递是一次性的。(在之前的代码已经测试过了，一个信号阻塞时，产生的多次信号只会传递一个。)
+  sa_mask成员指定了一组要阻塞的信号。在调用处理器程序时，会在调用之前将这组信号中未处于信号掩码中的任何信号添加到进程掩码中，这些信号会停留在进程掩码中，直到信号处理器程序返回才会自动删除这些信号。
 
-sa_flags是一个位掩码，用于控制信号处理过程的各种选项，包含的位有：
+  利用sa_mask可以指定一组信号，不允许这组信号中断此处理器程序的执行。同时对处理器程序调用的信号会自动添加到进行掩码中。
 
-- SA_NOCLDSTOP
+  这意味着当处理器程序在执行时，如果同一个信号抵达多次，信号处理器程序是不会递归中断自己的。在处理器程序执行这段时间重复产生的信号，对信号的传递是一次性的。(在之前的代码已经测试过了，一个信号阻塞时，产生的多次信号只会传递一个。)
 
-  若sig为SIGCHLD信号时，当接收一信号而停止或恢复某一子进程时，将不会产生此信号。
+- sa_flags
 
-- SA_NOCLDWAIT
+  是一个位掩码，用于控制信号处理过程的各种选项，包含的位有：
 
-  若sig为SIGCHLD，当子进程终止时不会将其转化为僵尸。
+  SA_NOCLDSTOP：若sig为SIGCHLD信号时，当接收一信号而停止或恢复某一子进程时，将不会产生此信号。
 
-- SA_NODEFER
+  SA_NOCLDWAIT：若sig为SIGCHLD，当子进程终止时不会将其转化为僵尸。
 
-  捕获信号时，不会在执行处理器程序时将信号自动添加到进程掩码中。
+  SA_NODEFER：捕获信号时，不会在执行处理器程序时将信号自动添加到进程掩码中。
 
-- SA_ONSTACK
+  SA_ONSTACK：针对此信号调用处理器函数时，使用了有signaltstack()安装的备用栈。
 
-  针对此信号调用处理器函数时，使用了有signaltstack()安装的备用栈。
+  SA_RESETHAND：当捕获该信号时，会在调用处理器函数之前将信号重置为默认值（SIG_DEL）
 
-- SA_RESETHAND
+  SA_SIGINFO：调用信号处理器程序时携带了额外参数，包含了信号的深入信息。
 
-  当捕获该信号时，会在调用处理器函数之前将信号重置为默认值（SIG_DEL）
-
-- SA_RESTART
-
-- SA_SIGINFO
-
-  调用信号处理器程序时携带了额外参数，包含了信号的深入信息。
+  SA_RESTART：???
 
 
 
@@ -417,3 +442,28 @@ int pause(void);
 调用pause()将暂停进程的执行，直到信号处理器函数中断该调用为止，或者直到一个未处理信号终止进程为止。
 
 处理信号时，paue()会遭到中断，并总是返回-1，并将errno置为EINTR。
+
+example：
+
+```c
+void siginfoHandler(int sig, siginfo_t *si)
+{
+    printf("%d\n", sig);
+}
+
+int main(int argc, char const *argv[])
+{
+    struct sigaction sa;
+    sigset_t mask;
+    sa.sa_sigaction = siginfoHandler;
+    sa.sa_flags = SA_SIGINFO;
+    sigfillset(&mask);
+
+    sigaction(SIGINT, &sa, NULL);
+
+    pause();
+    printf("%d\n", errno);
+    return 0;
+}
+```
+
