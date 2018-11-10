@@ -1,29 +1,60 @@
-### I/O
-
-I/O表示输入与输出，一个通用I/O模型的系统调用包括：
-
-- 打开文件
-- 关闭文件
-- 读取文件
-- 写入文件
-
-```c
-int open(const char *pathname, int flags, [mode_t mode]);
-```
-
-打开一个文件描述符，flags参数是位掩码，指定文件的访问模式，具体模式有：
-
-- O_CREAT：若文件不存在则创建。
-- O_EXCL：结合O_CREAT参数使用，如果文件已存在函数将调用失败。
-
-- O_APPEND：向文件尾部追加数据。
-
-mode参数在创建文件时时候，表示该文件的状态。
-
 ### 文件描述符
 
 所有I/O操作的系统调用都是以文件描述符来表示，它是一个非负小整数。
 文件描述符可以表示所有类型的已打开文件，包括普通文件、socket、管道（pipe）、FIFO、终端和设备等。
+
+
+
+在系统中已经预定义了标准文件描述符，分别是：
+
+- 标准输入
+
+  文件描述符是0，stdio流为stdin，POSIX名称是STDIO_FILENO
+
+- 标准输出
+
+  文件描述符是1，stdio流为stdout，POSIX名称是STDOUT_FILENO
+
+- 标准错误
+
+  文件描述符是2，stdio流为stderr，POSIX名称是STDERR_FILENO
+
+标准文件描述符的POSIX名称定义在<unistd.h>文件中。
+
+
+
+### I/O系统函数
+
+```c
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int open(const char *pathname, int flags, [mode_t mode]);
+```
+
+打开一个文件描述符，如果调用失败会返回-1，并将errno设为对应的错误。
+
+flags参数是位掩码，指定文件的访问模式，具体常量有：
+
+- O_CREAT
+
+  若文件不存在则创建。
+
+- O_EXCL
+
+  结合O_CREAT参数使用，如果文件已存在函数将调用失败。
+
+- O_APPEND
+
+  向文件尾部追加数据。
+
+这些常量均可位或运算来指定问价你的访问模式，
+
+mode参数也是位掩码，它指定的文件的访问权限。
+
+
+
+open()返回值是其进程未用文件描述符中的最小数值。
 
 
 
