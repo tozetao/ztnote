@@ -5,7 +5,7 @@
 
 
 
-在系统中已经预定义了标准文件描述符，分别是：
+在系统中已经预定义了标准文件描述符，标准文件描述符的POSIX名称定义在<unistd.h>文件中，分别是：
 
 - 标准输入
 
@@ -19,11 +19,9 @@
 
   文件描述符是2，stdio流为stderr，POSIX名称是STDERR_FILENO
 
-标准文件描述符的POSIX名称定义在<unistd.h>文件中。
 
 
-
-### I/O系统函数
+### I/O Functions
 
 ```c
 #include <sys/stat.h>
@@ -32,9 +30,41 @@
 int open(const char *pathname, int flags, [mode_t mode]);
 ```
 
-打开一个文件描述符，如果调用失败会返回-1，并将errno设为对应的错误。
+打开一个文件描述符，如果调用失败会返回-1，并将errno设为对应的错误，具体的错误信息可以看手册说明，open()调用成功返回值是其进程未用文件描述符中的最小数值。
 
-flags参数是位掩码，指定文件的访问模式，具体常量有：
+flags参数是位掩码，指定文件的访问模式、文件创建标志和文件状态标志，访问模式的常量有：
+
+- O_RDWR
+
+  以读写方式打开
+
+- O_WRONLY
+
+  以只写方式打开
+
+- O_RDONLY
+
+  以只读方式打开
+
+文件状态标志是指已经打开文件的状态，可以通过fcntl()的F_GETFL和F_SETFL操作分别检索和修改这些标志，这些标志有：
+
+- O_SYNC
+
+  已同步方式写入文件
+
+- O_NONBLOCK
+
+  以非阻塞方式打开
+
+- O_ASYNC
+
+  当I/O操作可行时，产生信号signal通知进程。
+
+- O_DSYNC
+
+  提供同步的I/O数据完整性。
+
+文件创建标志无法查询和修改，在创建文件之处就设定好的，例如：
 
 - O_CREAT
 
@@ -48,17 +78,104 @@ flags参数是位掩码，指定文件的访问模式，具体常量有：
 
   向文件尾部追加数据。
 
-这些常量均可位或运算来指定问价你的访问模式，
-
-mode参数也是位掩码，它指定的文件的访问权限。
+这些常量均可位或运算来进行组合，设置文件访问模式和状态标志。mode参数也是位掩码，它指定的文件的访问权限。
 
 
 
-open()返回值是其进程未用文件描述符中的最小数值。
+```c
+#include <fcntl.h>
+
+int creat(const char *pathname, mode_t mode);
+```
+
+create()系统调根据pathname参数内容创建并打开一个文件，若文件将会打开文件，清空文件内容并将长度置为0，成功调用会返回文件描述符。
 
 
 
-example：读写一个文件
+```c
+#include <unistd.h>
+
+ssize_t read(int fd, void *buffer, size_t count);
+```
+
+从文件描述符fd指向的文件引用读取数据，count参数指定最多读取的字节数，buffer参数是用来存储读取数据的缓冲地址，缓冲区至少应该有count个字节。
+
+调用成功返回实际读取到的字节数，碰到文件结尾返回0（EOF），出现错误返回-1。
+
+
+
+read()能够从文件读取任何数据，因为读取的数据没有边界之分，如果需要在输入缓冲区结尾限制追加终止的空字符。
+
+example：
+
+```c
+char buffer[1024];
+ssize_t numRead;
+
+numRead = read(STDIN_FILENO, buffer, 1024);
+buffer[numRed] = '\0';
+printf("%s", buffer);
+```
+
+
+
+
+
+```c
+#include <unistd.h>
+
+ssize_t write(int fd, void *buffer, size_t count);
+```
+
+将数据写入一个打开的文件中。buffer参数是写入数据的缓冲地址，count是将写入的字节数。
+
+如果调用成功会返回实际写入的字节数，该返回值可能会小于count参数值。这种情况一般是磁盘满了或者进程资源对文件大小的小指。
+
+注：对磁盘文件进行I/O操作时，write()调用成功并不能保证数据已经写入磁盘，因为为了减少磁盘活动量和加快wirte()调用，内核会缓存磁盘的I/O操作，参见13章。
+
+
+
+```c
+#include <unistd.h>
+
+int close(int fd);
+```
+
+关闭一个打开的文件描述符，并将其释放供进程使用。
+
+
+
+```c
+#include <unistd.h>
+
+off_t lseek(int fd, off_t offset, int where);
+```
+
+每一个打开的文件，内核都会记录其文件偏移量，也叫做指针。文件偏移量是指write()或read()操作文件的位置，是以相对于文件起始点来表示，文件第一个字节的偏移量是0.
+
+每次read()或write()都会调整文件偏移量，lseek()可以设置文件偏移量，offset参数设置文件偏移量，whence参数则表明应该以什么模式来解释offset参数：
+
+- SEEK_SET
+
+  将文件偏移量设置为从文件头部起始点开始的offset个字节
+
+- SEEK_CUR
+
+  相对于当前文件偏移量，将文件偏移量调整offset个字节
+
+- SEEK_END
+
+  将文件偏移量设置为起始于文件尾部的offset个字节，offset参数应该是从文件结尾的最后一个字符的下一个字符算起。
+
+成功将返回文件偏移量，失败返回-1.
+
+
+
+
+
+### Example
+
+读写一个文件
 
 ```c
 #include <stdio.h>
