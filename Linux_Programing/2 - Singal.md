@@ -20,13 +20,13 @@
 
 ### 触发过程
 
-产生信号 => 处于等待/阻塞状态 => 送达信号 => 处理信号
+信号的整个处理流程可以分为是：产生信号 => 处于等待（pending）状态 => 送达信号 => 处理信号。
 
 
 
 pending：在信号产生和到达进程期间，信号会处于pending状态，只有但内核调度进程执行时，或者正在运行的进程信号才会立即到达。
 
-阻塞：将信号添加到进程的掩码中，该信号触发时，内核会阻塞它，不让它送达到进程。
+如果将信号添加到进程的掩码中，该信号触发时，内核会阻塞它，不让它送达到进程。阻塞状态下的信号也认为是处于pending状态。
 
 
 
@@ -63,6 +63,7 @@ void sigHandler(int sig)
     printf("Ouch\n");
 }
 
+// 分别在主程序和信号处理程序睡眠期间触发信号，查看运行效果。
 int main(int argc, char const *argv[])
 {
     if (signal(SIGINT, sigHandler) == SIG_ERR) {
@@ -79,11 +80,155 @@ int main(int argc, char const *argv[])
 }
 ```
 
-分别在主程序和信号处理程序睡眠期间触发信号，查看运行效果。
+
+
+### 信号集
+
+一组不同信号的集合称为信号集，sigset_t系统数据类型可以用于表示信号集，它是一个位掩码。
+
+系统提供了以下函数来操作信号集：
+
+```c
+sigemptyset(sigset_t *set);
+```
+
+将一个信号集置空。
+
+```c
+sigfillset(sigset_t *set);
+```
+
+初始化一个信号集，使其包含所有信号，包括实时信号。
+
+信号集必须通过以上函数来进行初始化，因为C语言并不会对自动变量进行初始化。
 
 
 
+```c
+sigaddset(sigset_t *set, int sig);
+```
 
+在信号集中添加一个信号。
+
+```c
+sigdelset(sigset_t *set, int sig);
+```
+
+在信号集中删除一个信号。
+
+
+
+```c
+sigismember(const sigset_t *set, int sig);
+```
+
+如果sig是set信号集的成员，函数将返回1，否则返回0
+
+
+
+- NSIG常量
+
+  该常量定义于signal.h文件中，其值等于信号最大编号加1，为了使其可见需要使用特定实现的编译器选项，例如在linux中必须定义以下功能测试宏之一：BSD\_SOURCE、\_GUN_SOURCE、_SVID\_SOURCE.
+
+```c
+#define _GUN_SOURCE
+#include <string.h>
+#include <signal.h>
+
+//打印信号集中添加的信号
+void printSigset(sigset_t *sigset)
+{
+    int i;
+    for(i = 1; i < NSIG; i++){
+        if(sigismember(sigset, i)){
+            printf("signal %d in sigset\n", i);
+        }
+    }
+}
+```
+
+
+
+### 信号掩码
+
+内核为每个进程维护了一个信号掩码，即一组信号，处于进程信号掩码中的信号会被阻塞，无法传递给该进程。
+
+如果将遭阻塞的信号发送给某进程，那么对该信号的传递将延后，直到从进程信号掩码中移除该信号，从而解除阻塞为止。
+
+
+
+```c
+#include <signal.h>
+int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
+//returns 0 on success, or -1 on error.
+```
+
+sigprocmask()可以修改进程的信号掩码，也可获取现有掩码，调用成功返回0，失败返回-1。
+
+how参数对进程信号掩码的操作类型：
+
+- SIG_BLOCK
+
+  将set信号集的信号添加到信号掩码中，等于将当前进程的信号掩码值与set信号集进行并集运算。
+
+- SIG_UNBLOCK
+
+  将set信号集中的信号从进程的信号掩码中移除，即使该信号不存在也不会返回错误。
+
+- SIG_SETMASK
+
+  将set信号集赋给进程的信号掩码。
+
+oldset参数如果不为空，则其指向一个sigset_t结构缓冲区，用于存储进程之前的信号掩码。
+
+在SUSv3规定中，如果有任何等待信号因sigprocmask()的调用而解除了阻塞，那么在该调用返回之前至少会传递一个信号，可以认为如果解除了某个信号的阻塞，那么会立刻将该信号传递给进程。
+
+注：SIGKILL和SIGSTOP信号是无法进行阻塞的。
+
+
+
+### pending
+
+所谓pending指信号已经发出，但是接受信号的进程还未来得及处理。比如进程目前在内核态运行且还没有返回到用户态，或者进程将该信号设置为阻塞状态。
+
+
+
+### 等待信号集
+
+```c
+#include <signal.h>
+
+int sigpending(sigset_t *set);
+//returns 0 on success, or -1 on error.
+```
+
+sigpending()能够获取当前进程正在等待的信号集。
+
+
+
+进程拥有自身的等待信号集，如果它接受到一个正处于阻塞的信号，会将其添加到等待信号集中。当解除对该信号的阻塞时，才会将信号传递给该进程进行处理。
+
+等待信号集只是一个掩码，对于标准信号来说，仅表明该标准信号是否发生，而未表明该信号发生的次数。
+
+如果同一个信号在阻塞状态触发多次，那么会将该信号记录在等待信号集中，并且在解除阻塞后仅传递一次。即使是在未阻塞状态下，接收方收到的信号也会比发送方发的少的多，这是因为发送进程会在每次获得调度运行时发送多个信号给接受者，然而接受进程运行时传递过来的信号只有一个，因为只会将这些信号中的一个标记为等待状态。
+
+example: 测试信号阻塞情况下，多次触发该信号后的接收情况
+
+```c
+
+```
+
+example: 测试信号非阻塞情况下，多次发送该信号后的接收情况
+
+```c
+
+```
+
+
+
+如果修改了处于等待状态信号的处置（处理方式），那么在解除对该信号的阻塞后，会根据新的信号处置来处理该信号。例如对处于等待状态信号设置为SIG_IGN或者SIG_DEL，忽略该信号，从而阻止传递处于等待状态的信号。
+
+注：等待信号集与信号掩码是不同的，信号掩码存储要阻塞的信号，而等待信号集是存储pending状态的信号，即进程阻塞的信号哪些是被触发的。
 
 
 
@@ -217,165 +362,6 @@ int raise(int sig);
 raise()系统调用相当于kill(getpid(), sig)，支持线程的系统会将raise(sig)实现为pthred_kill(pthred_self(), sig)，表示将信号传递给调用raise(sig)的线程，而kill(getpid(), sig)会将信号发送给进程内的所有线程。
 
 raise()出错将返回负数，可能发生错误EINVAL，即信号无效。
-
-
-
-### 信号集
-
-一组不同信号的集合称为信号集，sigset_t系统数据类型可以用于表示信号集，它是一个位掩码。
-
-以下这些函数是
-
-```c
-sigfillset(sigset_t *set);
-```
-
-设置所有信号在set集合中。
-
-```c
-sigemptyset(sigset_t *set);
-```
-
-从set集合中清空所有信号。
-
-```c
-sigaddset(sigset_t *set, int sig);
-```
-
-在set信号集中加入sig信号。
-
-```c
-sigdelset(sigset_t *set, int sig);
-```
-
-在set信号集中删除sig信号。
-
-
-
-### 信号掩码
-
-信号掩码用于阻塞信号传递：内核会为每个进程维护一个信号掩码，即一组信号，并将阻塞这组信号传递给该进程。
-
-如果将遭阻塞的信号发送给某进程，那么对该信号的传递将延后，直到从进程信号掩码中移除该信号，从而解除阻塞为止。
-
-
-
-向信号掩码添加一个信号的方式有：
-
-- 使用signaction()函数建立信号处理器程序时，可以指定一组额外信号，当调用该处理器程序时会将其阻塞。
-- 在调用信号处理器程序时，可将信号添加到信号掩码中，这是signaction()函数的标志的功能。
-- 使用sigprocmask()系统调用，显示的添加或移除信号掩码中的信号。
-
-
-
-```c
-#include <signal.h>
-
-int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
-```
-
-sigprocmask()可以修改进程的信号掩码，也可获取现有掩码。调用成功返回0，失败返回-1
-
-how参数的类型有：
-
-- SIG_BLOCK
-
-  将set信号集的信号添加到信号掩码中，等价于将信号掩码设置为当前值与set的并集。
-
-- SIG_UNBLOCK
-
-  将set指向信号集中的信号从信号掩码中移除。即使要解除的阻塞的信号当前不处于阻塞状态，也不会返回错误。
-
-- SIG_SETMASK
-
-  将set指向的信号集赋给信号掩码。
-
-oldset参数会存储返回之前设置的信号掩码。如果想要获取信号掩码而又不对其改动，那么可将set参数指定为空，这时会忽略how参数。
-
-
-
-### 等待状态的信号
-
-```c
-#include <signal.h>
-int sigpending(sigset_t *set);
-```
-
-如果某进程接收到一个该进程正处于阻塞的信号，那么会将该信号添加到等待信号集中，在解除了对该信号的锁定时，会将该信号传递给该进程。
-
-sigpending()能够获取当前进程正在等待的信号集。
-
-等待信号集与信号掩码是不同的，信号掩码保存着要阻塞的信号，而等待信号集存储处于pengding状态的信号（即该信号在阻塞状态下触发是便处于pengding状态）。
-
-example：
-
-```c
-#define _GUN_SOURCE
-#include <stdio.h>
-#include <signal.h>
-
-void sighandle(int sig)
-{
-    printf("signal: %d\n", sig);
-    if (signal(SIGINT, SIG_DFL) == SIG_ERR) {
-        printf("sig_del error\n");
-    }
-}
-
-int main(int argc, char const *argv[])
-{
-    /* code */
-    int i;
-    sigset_t blockSet, prevSet, pendSet;
-
-    // 注册sigint信号的处理程序
-    if (signal(SIGINT, &sighandle) == SIG_ERR) {
-        printf("registe sigint error.\n");
-        return -1;
-    }
-
-    sigemptyset(&blockSet);
-    sigaddset(&blockSet, SIGINT);
-
-    // 阻塞SIGINT信号
-    if (sigprocmask(SIG_BLOCK, &blockSet, &prevSet) == -1) {
-        printf("block set error\n");
-        return -1;
-    }
-
-    // 睡眠5秒，在睡眠期间触发SIGINT信号，看看该信号的处理程序是否会调用
-    for(i=0; i<5; i++) {
-        sleep(1);
-        printf("sleep %d\n", i);
-    }
-
-    // 获取阻塞的信号
-    if (sigpending(&pendSet) == -1) {
-        printf("sigpending error\n");
-        return -1;
-    }
-
-    // 判断SIGINT信号是否在信号掩码中
-    if (sigismember(&pendSet, SIGINT)) {
-        printf("SIGINT is in set\n");
-    }
-
-    // 将信号掩码重置为原先的状态以解除对信号的阻塞
-    printf("end pending...\n");
-    if (sigprocmask(SIG_SETMASK, &prevSet, NULL) == -1) {
-        printf("setmask error\n");
-        return -1;
-    }
-
-    return 0;
-}
-```
-
-等待信号集只是一个掩码，仅表明一个信号是否发生而未表明该信号发生的次数，如果一个信号在阻塞状态下产生多次，那么会将该信号记录在等待信号集中，并在稍后仅传递一次。
-
-如果进程没有设置阻塞信号，其收到的信号也可能会比发送给它的要少的多，这是因为发送程序会在每次获得调度运行时发送多个信号给接受者，然而接受程序运行时传递过来的信号只有一个，因为只会将这些信号中的一个标记为等待状态。
-
-这段描述具体看仓库编写的代码。。。
 
 
 
