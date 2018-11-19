@@ -27,8 +27,8 @@
 
 ÎÄ¼þÃèÊö·ûÓëÎÄ¼þ²¢²»ÊÇ¶ÔÓ¦µÄ¹ØÏµ£¬ÏµÍ³ÄÚºËÊÇÍ¨¹ý3¸öÊý¾Ý½á¹¹Î¬»¤×ÅÎÄ¼þÃèÊö·ûµÄ£º
 
-- ÏµÍ³¼¶µÄÎÄ¼þÃèÊö·û±í
 - ½ø³Ì¼¶µÄÎÄ¼þÃèÊö·û±í
+- ÏµÍ³¼¶µÄ´ò¿ªÎÄ¼þ±í
 - ÎÄ¼þÏµÍ³µÄi-node±í
 
 
@@ -40,40 +40,31 @@
 
 
 
-Õë¶ÔËùÓÐ´ò¿ªµÄÎÄ¼þ£¬ÄÚºË»áÎ¬»¤Ò»¸öÏµÍ³¼¶µÄÃèÊö±í¸ñ£¬³ÆÎª´ò¿ªÎÄ¼þ±í£¨open file table£©£¬±íÖÐÃ¿¸öÌõÄ¿³ÆÎª´ò¿ªÎÄ¼þ¾ä±ú£¨open file handle£©£¬¸ÃÎÄ¼þ¾ä±ú´æ´¢ÁË´ò¿ªÎÄ¼þµÄËùÓÐÐÅÏ¢£¬°üÀ¨ÓÐ£º
+Õë¶ÔËùÓÐ´ò¿ªµÄÎÄ¼þ£¬ÄÚºË»áÎ¬»¤Ò»¸öÏµÍ³¼¶´ò¿ªÎÄ¼þ±í£¨open file table£©£¬±íÖÐÃ¿¸öÌõÄ¿ÊÇ´ò¿ªÎÄ¼þ¾ä±ú£¨open file handle£©£¬¸ÃÎÄ¼þ¾ä±ú´æ´¢ÁË´ò¿ªÎÄ¼þµÄËùÓÐÐÅÏ¢£¬°üÀ¨ÓÐ£º
 
-- µ±Ç°ÎÄ¼þÆ«ÒÆÁ¿
+- ÎÄ¼þµÄ·ÃÎÊÄ£Ê½£¨¼´¶ÁÐ´Ä£Ê½£©
 - ´ò¿ªÎÄ¼þÊ±ËùÊ¹ÓÃµÄ×´Ì¬±êÖ¾£¬¼´openµÄflags²ÎÊý
-- ÎÄ¼þ·ÃÎÊÄ£Ê½
+- µ±Ç°ÎÄ¼þÆ«ÒÆÁ¿
 - ÓëÐÅºÅÇý¶¯I/OÏà¹ØµÄÉèÖÃ
 - ¶Ô¸ÃÎÄ¼þi-node¶ÔÏóµÄÒýÓÃ
 
 
 
-¶øÃ¿¸öÎÄ¼þÏµÍ³»á¶ÔËùÓÐÎÄ¼þ½¨Á¢Ò»¸öi-node±í£¬ËüµÄÐÅÏ¢ÓÐ£º
+¶øÃ¿¸öÎÄ¼þÏµÍ³»á¶ÔËùÓÐÎÄ¼þ½¨Á¢Ò»¸öi-node±í£¬±íÖÐµÄÃ¿Ò»Ïî¾ßÌåÐÅÏ¢°üÀ¨£º
 
-- ÎÄ¼þÀàÐÍ£¨ÀýÈç³£¹æÎÄ¼þ»òÌ×½Ó×ÖµÈ£©ºÍ·ÃÎÊÈ¨ÏÞ
+- ÎÄ¼þÀàÐÍºÍ·ÃÎÊÈ¨ÏÞ£¬ÀýÈç³£¹æÎÄ¼þ»òÌ×½Ó×ÖÀàÐÍ
 - Ò»¸öÖ¸ÏòËù³ÖÓÐËøµÄÁÐ±íµÄÖ¸Õë
 - ÎÄ¼þµÄ¸÷ÖÖÊôÐÔ£¬°üÀ¨ÎÄ¼þ´óÐ¡ÒÔ¼°²»Í¬ÀàÐÍ²Ù×÷Ïà¹ØµÄÊ±¼ä´Á
 
 
 
-ÎÄ¼þÃèÊö·û±í¡¢´ò¿ªÎÄ¼þ±íºÍi-nodeÈýÕßµÄ¹ØÏµ¿ÉÄÜÓÐ£º
+¶à¸öÎÄ¼þÃèÊö·û¿ÉÒÔÖ¸ÏòÍ¬Ò»¸öÎÄ¼þ¾ä±ú£¨ÎÄ¼þÖ¸Õë£©£¬¶ø¶à¸öÎÄ¼þ¾ä±ú¿ÉÒÔÖ¸ÏòÍ¬Ò»¸öi-nodeÏî¡£
 
-- Í¬¸ö½ø³ÌÄÚ²»Í¬ÎÄ¼þÃèÊö·ûÖ¸ÏòÍ¬Ò»¸ö´ò¿ªµÄÎÄ¼þ¾ä±ú£¬ÕâÖÖÇé¿ö¿ÉÄÜÊÇÍ¨¹ýdmp()¡¢dmp2()»òfcntl()ÐÎ³ÉµÄ¡£
-- ²»Í¬½ø³ÌÄÚµÄÎÄ¼þÃèÊö·ûÖ¸ÏòÍ¬Ò»¸ö´ò¿ªµÄÎÄ¼þ¾ä±ú£¬ÕâÖÖÇé¿ö¿ÉÄÜÔÚµ÷ÓÃfork()ºó³öÏÖ£¬½ø³ÌÖ®¼äÊÇ¸¸×Ó¹ØÏµ
-- ²»Í¬½ø³ÌÄÚµÄÎÄ¼þÃèÊö·ûÖ¸Ïò²»Í¬µÄ´ò¿ªµÄÎÄ¼þ¾ä±ú£¬µ«ÊÇÕâÐ©ÎÄ¼þ¾ä±ú¶¼Ö¸ÏòÍ¬Ò»¸öi-nodeÌõÄ¿£¬ÕâÖÖÇé¿öÊÇ´ò¿ªÁËÍ¬Ò»¸öÎÄ¼þ¡£
+ÀýÈçÊ¹ÓÃdup()¸´ÖÆÎÄ¼þ¾ä±ú£¬»òÍ¨¹ýfork()×Ó½ø³Ì¿ÉÒÔÊ¹²»Í¬ÎÄ¼þÃèÊö·ûÖ¸ÏòÍ¬Ò»¸öÎÄ¼þ¾ä±ú£¬ËüÃÇ»á¹²Ïí¸ÃÎÄ¼þ¾ä±úµÄÆ«ÒÆÁ¿¡¢·ÃÎÊÄ£Ê½ºÍ×´Ì¬±êÖ¾¡£
 
+Í¨¹ý¶à´Îµ÷ÓÃopen()²Ù×÷Í¬Ò»¸öÎÄ¼þÔò»á·¢ÉúÊ²Ã´Ó°Ïì£¿ÕâÊ±ÊÇ²»Í¬µÄÎÄ¼þ¾ä±úÖ¸ÏòÍ¬Ò»¸öi-nodeÏî£¬»á·¢Éú¾ºÕùÇé¿ö£¬ÎÞ·¨±£Ö¤Êý¾ÝµÄÕýÈ·ÐÔ£¬Òò´ËÒª×¢ÒâÕâÖÖÇé¿öµÄ´¦Àí¡£
 
-
-×Ü½á£º
-
-1. Á©¸ö²»Í¬µÄÎÄ¼þÃèÊö·û£¬ÈôÖ¸ÏòÍ¬Ò»¸ö´ò¿ªµÄÎÄ¼þ¾ä±ú£¬½«¹²ÏíÍ¬Ò»¸öÎÄ¼þÆ«ÒÆÁ¿£¬Òò´Ë¶ÓÆäÖÐÒ»¸öÎÄ¼þÃèÊö·ûÐÞ¸ÄÁËÆ«ÒÆÁ¿£¬ÁíÍâÒ»¸öÎÄ¼þÃèÊö·ûÒ²»á·¢¾õÕâµã£¬ÎÞÂÛÁ©¸öÎÄ¼þÃèÊö·ûÊÇ·ñÊôÓÚÍ¬Ò»¸ö½ø³Ì¡£
-2. ÎÄ¼þÃèÊö·û±êÖ¾£¨¼´close-on-exec±êÖ¾£©Îª½ø³ÌºÍÎÄ¼þÃèÊö·ûË½ÓÐ£¬¶ÔÕâÒ»±êÖ¾µÄÐÞ¸Ä²»»áÓ°Ïìµ½Í¬Ò»½ø³Ì»ò²»Í¬½ø³ÌÖÐµÄÎÄ¼þÃèÊö·û¡£
-
-
-
-
+×¢£ºÎÄ¼þÃèÊö·û±êÖ¾£¬¼´close-on-exec±êÖ¾Îª½ø³ÌºÍÎÄ¼þÃèÊö·ûË½ÓÐ£¬¶Ô¸Ã±êÖ¾µÄÐÞ¸ÄÊÇ²»»áÓ°Ïìµ½ÆäËûÎÄ¼þÃèÊö·ûµÄ¡£
 
 
 
@@ -250,7 +241,7 @@ off_t lseek(int fd, off_t offset, int where);
 
 
 
-### fcntl
+### fcntl()
 
 ```c
 #include <fcntl.h>
@@ -287,73 +278,9 @@ fcntlÊ¹ÓÃ³¡¾°£º
 
 
 
+### dup()
 
-
-
-
-
-
-
-
-### ÎÄ¼þ¿Õ¶´
-
-Ò»¸öÎÄ¼þµÄÆ«ÒÆÁ¿¿çÓòÁËÎÄ¼þ½áÎ²£¬ËüÈÔÈ»ÊÇ¿ÉÒÔ½øÐÐI/O²Ù×÷µÄ£¬read()²Ù×÷»á·µ»Ø0£¬±íÊ¾ÎÄ¼þ½áÎ²£»write()²Ù×÷¿ÉÒÔÔÚÎÄ¼þ½áÎ²´¦ÈÎÒâÎ»ÖÃÐ´ÈëÊý¾Ý¡£
-
-´ÓÎÄ¼þ½áÎ²´¦µ½ÐÂÐ´ÈëµÄÊý¾ÝÖ®¼äµÄÕâ¶Î¿Õ¶Î±»³ÆÎªÎÄ¼þ¿Õ¶´£¬¶ÔÓÚÖ§³ÖÎÄ¼þ¿Õ¶´µÄÏµÍ³£¬ÎÄ¼þ¿Õ¶´ÊÇ²»Õ¼¾Ý´ÅÅÌ¿Õ¼äµÄ£¬¶ø¶ÔÓÚ²»Ö§³ÖÎÄ¼þ¿Õ¶´µÄÏµÍ³»áÒÔ¿Õ×Ö½ÚÐ´ÈëÎÄ¼þ¡£
-
-```c
-#include<stdio.h>
-#include<unistd.h>
-#include<fcntl.h>
-#include<unistd.h>
-
-int main(void)
-{
-    int fd, BUF_SIZE = 1024;
-    char buffer[BUF_SIZE];
-
-    fd = open("test.log", O_RDWR);
-    if (fd == -1) {
-        perror("open error.");
-    }
-
-    // lseek(fd, -1, SEEK_END);
-    // read(fd, buffer, BUF_SIZE);
-    int r = lseek(fd, 10, SEEK_END);
-    printf("%d\n", r);
-    // write(fd, "hello", 5);
-
-    // lseek(fd, 0, SEEK_SET);
-    // read(fd, buffer, BUF_SIZE);
-    // printf("%s\n", buffer);
-
-    close(fd);
-
-    return 0;
-}
-```
-
-ÓÅµã£º
-
-- ¿ÉÒÔÈÃÎÄ¼þ¾¡¿ÉÄÜµÄÕ¼ÓÃÁ¬ÐøµÄ´ÅÅÌÉÈÇø£¬¼õÉÙºóÐøÐ´ÈëºÍ¶ÁÈ¡ÎÄ¼þÊ±µÄ´ÅÅÌÑ°µÀ¿ªÏú£»
-- Ñ¸ËÙÕ¼ÓÃ´ÅÅÌ¿Õ¼ä£¬·ÀÖ¹Ê¹ÓÃ¹ý³ÌÖÐËùÐè¿Õ¼ä²»×ã¡£
-- ºóÃæÔÙ×·¼ÓÊý¾ÝµÄ»°£¬²»»áÐèÒª¸Ä±äÎÄ¼þ´óÐ¡£¬ËùÒÔºóÃæ½«²»Éæ¼°metadataµÄÐÞ¸Ä¡£
-
-
-
-
-
-
-
-
-
-- 
-
-
-
-
-
-### ¸´ÖÆÎÄ¼þÃèÊö·û
+ÎÄ¼þÃèÊö·ûÊÇ¿ÉÒÔ½øÐÐ¸´ÖÆµÄ£¬ÏµÍ³Ìá¹©ÁËÒ»Ð©µ÷ÓÃ¡£
 
 ```c
 #include <unistd.h>
@@ -371,34 +298,33 @@ dupµ÷ÓÃ»á¸´ÖÆÒ»¸öÎÄ¼þÃèÊö·û²¢·µ»ØÒ»¸ö±àºÅÖµ×îµÍµÄÎ´ÓÃÎÄ¼þÃèÊö·û£¬Á©¸öÎÄ¼þÃèÊö·û¶
 int dup2(int oldfd, int newfd);
 ```
 
-dup2µ÷ÓÃ»á¸´ÖÆoldfdÎÄ¼þÃèÊö·û£¬¸Ã¸±±¾ÎÄ¼þÃèÊö·ûµÄ±àºÅÓÉnewfd²ÎÊýÖ¸¶¨¡£
+dup2µ÷ÓÃ»á¸´ÖÆoldfdÎÄ¼þÃèÊö·û£¬¸Ã¸±±¾ÎÄ¼þÃèÊö·ûµÄ±àºÅÓÉnewfd²ÎÊýÖ¸¶¨¡£dup2µ÷ÓÃ³É¹¦Ê±·µ»ØÖ¸¶¨±àºÅµÄÎÄ¼þÃèÊö·û£¬Ê§°ÜÊ±·µ»Ø-1¡£
 
 Èç¹ûnewfd²ÎÊýÖ¸¶¨±àºÅµÄÎÄ¼þÃèÊö·ûÒÑ´æÔÚ£¬dup2º¯Êý»á¹Ø±Õ¸ÃÎÄ¼þÃèÊö·û£¬Ö´ÐÐ¹ý³ÌÖÐ»áºöÂÔ¹Ø±ÕµÄ´íÎó£¬Òò´Ë¸ü°²È«µÄ±àÂëÊÇÈç¹ûnewfd²ÎÊýÖ¸¶¨±àºÅµÄÎÄ¼þÃèÊö·û´æÔÚ£¬ÒªÏÔÊ¾µÄ¹Ø±ÕËü¡£
 
-dup2µ÷ÓÃ³É¹¦Ê±·µ»ØÖ¸¶¨±àºÅµÄÎÄ¼þÃèÊö·û£¬Ê§°ÜÊ±·µ»Ø-1¡£
 
-
-
-fcntl()µÄF_DUPFDÊÇ¸´ÖÆÎÄ¼þÃèÊö·ûµÄÁíÒ»½Ó¿Ú£¬Ëü»á·µ»ØoldfdµÄÒ»¸ö¸±±¾£¬ÇÒ»áÊ¹ÓÃ´óÓÚµÈÓÚstartfdµÄ×îÐ¡Î´ÓÃÖµ×÷ÎªÃèÊö·û±àºÅ£¬¸Ãµ÷ÓÃÄÜ±£Ö¤ÐÂµÄÃèÊö·û±àºÅÂäÔÚÌØ¶¨µÄ·ÖÎªÄÚ¡£
 
 ```c
 newfd = fcntl(oldfd, F_DUPFD, startfd);
 ```
 
+fcntl()µ÷ÓÃµÄF_DUPFDÃüÁîÒ²¿ÉÒÔÓÃÓÚ¸³ÖµÎÄ¼þÃèÊö·û£¬Ëü»á·µ»ØoldfdµÄÒ»¸ö¸±±¾£¬ÇÒ»áÊ¹ÓÃ´óÓÚµÈÓÚstartfdµÄÎ´ÓÃµÄ×îÐ¡ÎÄ¼þÃèÊö·û¡£
 
 
 
 
-### preadÓëpwrite
 
-preadÓëpwrite»áÔÚÖ¸¶¨µÄÎ»ÖÃ½øÐÐÎÄ¼þI/O²Ù×÷£¬¶ø·ÇÊ¼ÓÚÎÄ¼þµÄµ±Ç°Æ«ÒÆÁ¿£¬ÇÒ¸ÃÏµÍ³µ÷ÓÃ²»»á¸Ä±äÎÄ¼þµÄÆ«ÒÆÁ¿¡£
+
+
+### pread/pwrite
+
+pread()Óëpwrite()»áÔÚÖ¸¶¨Æ«ÒÆÁ¿´¦½øÐÐÎÄ¼þI/O²Ù×÷£¬¶ø·ÇÎÄ¼þµÄµ±Ç°Æ«ÒÆÁ¿£¬ÇÒ¸ÃÏµÍ³µ÷ÓÃ²»»á¸Ä±äÎÄ¼þµÄÆ«ÒÆÁ¿¡£
 
 ```c
 #include <unistd.h>
 
 ssize_t pread(int fd, void *buffer, size_t count, off_t offset);
-
-ssize_t pwrite
+ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset);
 ```
 
 
@@ -406,54 +332,54 @@ ssize_t pwrite
 pread()µ÷ÓÃÏàµ±ÓÚ½«ÈçÏÂ²Ù×÷ÄÉÈëÔ­×Ó²Ù×÷£º
 
 ```c
-// ¼ÇÂ¼µ±Ç°ÎÄ¼þµÄÆðÊ¼Æ«ÒÆÁ¿
 off_t orig;
 
-orig = lseek(fd, 0, SEEK_CUR);
-lseek(fd, offset, SEEK_SET);
-s = read(fd, buffer, len);
-lseek(fd, orig, SEEK_SET);
+orig = lseek(fd, 0, SEEK_CUR);	//´æ´¢µ±Ç°ÎÄ¼þµÄÆ«ÒÆÁ¿
+lseek(fd, offset, SEEK_SET);	//Ö¸¶¨Òª²Ù×÷µÄÆ«ÒÆÁ¿
+s = read(fd, buffer, len);		//¶ÁÈ¡Êý¾Ý
+lseek(fd, orig, SEEK_SET);		//½«Æ«ÒÆÁ¿ÖÁÎª²Ù×÷Ö®Ç°µÄ×´Ì¬
 ```
 
+pread()ºÍpwrite()¿ÉÒÔÓÃÓÚ¶àÏß³ÌÓ¦ÓÃÖÐ£¬ÔÚ¶ÔÍ¬Ò»¸öÎÄ¼þÃèÊö·ûÖ´ÐÐI/O²Ù×÷Ê±£¬²»»áÒòÎªÆäËûÏß³ÌÐÞ¸ÄÎÄ¼þÆ«ÒÆÁ¿¶øÊÜµ½Ó°Ïì£¬Èç¹ûÊ¹ÓÃwrite()ºÍread()À´Ìæ´ú£¬½«»áÒý·¢¾ºÕù×´Ì¬¡£
 
 
-### ·ÖÉ¢ÊäÈëÓë¼¯ÖÐÊä³ö
 
-readv()ºÍwritev()·Ö±ðÊµÏÖÁË·ÖÉ¢ÊäÈëÓë¼¯ÖÐÊä³öµÄ¹¦ÄÜ£¬ÕâÐ©ÏµÍ³µ÷ÓÃ¿É¶Ô¶à¸ö»º³åÇøµÄÊý¾Ý½øÐÐI/O²Ù×÷¡£
+### readv()
+
+readv()ÊµÏÖÁË·ÖÉ¢ÊäÈë£¬writev()ÊµÏÖÁË¼¯ÖÐÊä³ö¡£ÕâÐ©ÏµÍ³µ÷ÓÃ¿É¶Ô¶à¸ö»º³åÇøµÄÊý¾Ý½øÐÐI/O²Ù×÷¡£
 
 ```c
 #include <sys/uio.h>
 
 ssize_t readv(int fd, const struct iovec *iov, int iovcnt);
-ssize_t writev(int fd, const struct iovec *iov, int iovcnt);
 ```
 
-- iov
+readv()ÊµÏÖÁË·ÖÉ¢ÊäÈëµÄ¹¦ÄÜ£¬µ÷ÓÃ³É¹¦½«·µ»Ø¶ÁÈ¡µÄ×Ö½ÚÊý£¬Åöµ½ÎÄ¼þ½áÎ²·µ»Ø0£¬Ê§°Ü·µ»Ø-1¡£iov²ÎÊýÊÇÒ»¸öiovec½á¹¹ÀàÐÍµÄÊý×é£¬¶¨ÒåÁËÒ»×éÓÃÀ´´«ÊäÊý¾ÝµÄ»º³åÇø£¬iovec½á¹¹ÌåÈçÏÂ£º
 
-  ¸Ã²ÎÊýÊÇÒ»¸öiovec½á¹¹ÀàÐÍµÄÊý×é£¬¶¨ÒåÁËÒ»×éÓÃÀ´´«ÊäÊý¾ÝµÄ»º³åÇø£¬iovec½á¹¹ÈçÏÂ£º
+```c
+struct iovec {
+    void *iov_base;
+    size_t iov_len;
+}
+```
 
-  ```c
-  struct iovec {
-      void *iov_base;
-      size_t iov_len;
-  }
-  ```
+ÆäÖÐiov_baseÊÇ»º³åÇøµÄÆðÊ¼µØÖ·£¬iov_len²ÎÊýÖ¸´Ó»º³åÇø¶ÁÈ¡µÄ×Ö½ÚÊý´óÐ¡»òÐ´Èë»º³åÇøµÄ×Ö½ÚÊý´óÐ¡¡£
 
-  iov_baseÊÇ»º³åÇøµÄÆðÊ¼µØÖ·£¬iov_len²ÎÊýÖ¸´Ó»º³åÇø¶ÁÈ¡µÄ×Ö½ÚÊý´óÐ¡»òÐ´Èë»º³åÇøµÄ×Ö½ÚÊý´óÐ¡¡£
-
-- iovcnt
-
-  ¸Ã²ÎÊýÖ¸¶¨iovÊý×éµÄ³ÉÔ±¸öÊý
+iovcnt²ÎÊýÖ¸¶¨iovÊý×éµÄ³ÉÔ±¸öÊý¡£
 
 
 
-·ÖÉ¢ÊäÈë
+- Ê²Ã´ÊÇ·ÖÉ¢ÊäÈë?
 
-·ÖÉ¢ÊäÈëÖ¸µÄÊÇ´ÓÎÄ¼þÃèÊö·ûfdËùÖ¸ÏòµÄÎÄ¼þ¶ÁÈ¡Ò»Æ¬Á¬ÐøµÄ×Ö½Ú£¬È»ºó½«Æä·ÖÉ¢·ÅÖÃÓÚiovÖ¸¶¨µÄ»º³åÇøÖÐ£¬ÊäÈëµÄ¹ý³Ì»á´ÓµÚÒ»¸öÔªËØµÄ»º³åÇø¿ªÊ¼£¬ÒÀ´ÎÌîÂúÃ¿¸ö»º³åÇø¡£
+  Ö¸´ÓÎÄ¼þÃèÊö·ûfdËùÖ¸ÏòµÄÎÄ¼þ¶ÁÈ¡Ò»Æ¬Á¬ÐøµÄ×Ö½Ú£¬È»ºó½«Æä·ÖÉ¢·ÅÖÃÔÚiovÖ¸¶¨µÄ»º³åÇøÖÐ£¬ÊäÈëµÄ¹ý³Ì»á´ÓµÚÒ»¸öÔªËØµÄ»º³åÇø¿ªÊ¼£¬ÒÀ´ÎÌîÂúÃ¿¸ö»º³åÇø¡£
 
-readv()ÊÇÔ­×ÓÐÔµÄ£¬´Óµ÷ÓÃ½ø³ÌµÄ½Ç¶ÈÀ´¿´£¬µ±µ÷ÓÃreadv()Ê±£¬ÄÚºËÔÚfdËùÖ¸ÏòµÄÎÄ¼þÓëÓÃ»§ÄÚ´æÖ®¼äÒ»´ÎÐÔµÄÍê³ÉÁËÊý¾Ý×ªÒÆ£¬ÕâÒâÎ¶×Å¼´Ê¹ÆäËû½ø³Ì£¨Ïß³Ì£©ÓëÆä¹²ÏíÍ¬Ò»ÎÄ¼þÆ«ÒÆÁ¿£¬ÇÒÔÚµ÷ÓÃreadv()µÄÍ¬Ê±ÆóÍ¼ÐÞ¸ÄÎÄ¼þÆ«ÒÆÁ¿£¬readv()Ëù¶ÁÈ¡µÄÊý¾ÝÈÔÈ»ÊÇÁ¬ÐøÐÔµÄ¡£
+- readv()µÄÔ­×ÓÐÔËµÃ÷
 
-readv()µ÷ÓÃ³É¹¦½«·µ»Ø¶ÁÈ¡µÄ×Ö½ÚÊý£¬ÈôÎÄ¼þ½áÊøÊ±½«·µ»Ø0¡£
+  readv()ÊÇÔ­×ÓÐÔµÄ£¬´Óµ÷ÓÃ½ø³ÌµÄ½Ç¶ÈÀ´¿´£¬µ±µ÷ÓÃreadv()Ê±£¬ÄÚºËÔÚfdËùÖ¸ÏòµÄÎÄ¼þÓëÓÃ»§ÄÚ´æÖ®¼äÒ»´ÎÐÔµÄÍê³ÉÁËÊý¾Ý×ªÒÆ£¬ÕâÒâÎ¶×Å¼´Ê¹ÆäËû½ø³Ì£¨Ïß³Ì£©ÓëÆä¹²ÏíÍ¬Ò»ÎÄ¼þÆ«ÒÆÁ¿£¬ÇÒÔÚµ÷ÓÃreadv()µÄÍ¬Ê±ÆóÍ¼ÐÞ¸ÄÎÄ¼þÆ«ÒÆÁ¿£¬readv()Ëù¶ÁÈ¡µÄÊý¾ÝÈÔÈ»ÊÇÁ¬ÐøÐÔµÄ¡£
+
+
+
+example:
 
 ```c
 struct iovec iovecs[2];
@@ -472,25 +398,23 @@ readv(fd, iovecs, 2);
 
 
 
-¼¯ÖÐÊä³ö
+### writev()
 
-¼¯ÖÐÊä³öÖ¸µÄÊÇ½«¶à¸ö»º³åÇøµÄÊý¾ÝÆ´½ÓÆðÀ´£¬È»ºóÒÔÁ¬ÐøµÄ×Ö½ÚÐòÁÐÐ´Èëµ½Ö¸¶¨µÄÎÄ¼þÖÐ¡£writev()ÊµÏÖÁË¼¯ÖÐÊä³ö¡£
+```c
+#include <sys/uio.h>
 
+ssize_t writev(int fd, const struct iovec *iov, int iovcnt);
+```
 
+writev()²ÎÊýÓëreadv()ÏàÍ¬£¬ËüÊµÏÖÁË¼¯ÖÐÊä³öµÄ¹¦ÄÜ¡£
 
-writev()µ÷ÓÃÊÇÔ­×Ó²Ù×÷£¬¼´ËùÓÐÊý¾ÝÊÇÒ»´ÎÐÔµØ´ÓÓÃ»§ÄÚ´æ´«Êäµ½fdÖ¸ÏòµÄÎÄ¼þÖÐ£¬Òò´ËÔÚÐ´ÈëÎÄ¼þÊ±£¬writev()»á°ÑËùÓÐÇëÇóÊý¾ÝÁ¬ÐøÐ´Èëµ½ÎÄ¼þÖÐ£¬¶ø²»»áÔÙÆäËû½ø³Ì£¨Ïß³Ì£©µÄÓ°ÏìÏÂ·ÖÉ¢µØÐ´ÈëÎÄ¼þ¡£
+- Ê²Ã´ÊÇ¼¯ÖÐÊä³ö
 
+  ¼¯ÖÐÊä³öÖ¸µÄÊÇ½«¶à¸ö»º³åÇøµÄÊý¾ÝÆ´½ÓÆðÀ´£¬È»ºóÒÔÁ¬ÐøµÄ×Ö½ÚÐòÁÐÐ´Èëµ½Ö¸¶¨µÄÎÄ¼þÖÐ¡£
 
+- Ô­×ÓÐÔ²Ù×÷
 
-readv()Óëwritev()µÄµ÷ÓÃÔÚÓÚ±ß½ç£¬Ëü¿ÉÒÔÓÃÁ©ÖÖ·½°¸Ìæ´ú£º
-
-- ±àÂëÊ±¿ª±ÙÒ»¿é´óµÄ»º³åÇø£¬È»ºóÔÚ½ø³ÌµØÖ·¿Õ¼äµÄÆäËûÎ»ÖÃ½«Êý¾Ý¸´ÖÆ¹ýÀ´£¬×îºóµ÷ÓÃwirte»òread²Ù×÷ËùÓÐÊý¾Ý¡£
-
-  È±µãÊÇÔÚÓÃ»§ÄÚ´æ¿Õ¼ä·ÖÅä»º³åÇø½øÐÐÊý¾Ý¸´ÖÆ£¬Ð§ÂÊµÍ
-
-- Í¨¹ý¶à´Îµ÷ÓÃread()»òwrite()£¬¸Ã·½°¸ÎÞ·¨±£Ö¤²Ù×÷µÄÔ­×ÓÐÔ¡£
-
-
+  writev()µ÷ÓÃÊÇÔ­×Ó²Ù×÷£¬¼´ËùÓÐÊý¾ÝÊÇÒ»´ÎÐÔµØ´ÓÓÃ»§ÄÚ´æ´«Êäµ½fdÖ¸ÏòµÄÎÄ¼þÖÐ£¬Òò´ËÔÚÐ´ÈëÎÄ¼þÊ±£¬writev()»á°ÑËùÓÐÇëÇóÊý¾ÝÁ¬ÐøÐ´Èëµ½ÎÄ¼þÖÐ£¬¶ø²»»áÔÙÆäËû½ø³Ì£¨Ïß³Ì£©µÄÓ°ÏìÏÂ·ÖÉ¢µØÐ´ÈëÎÄ¼þ¡£
 
 
 
@@ -512,106 +436,3 @@ truncate()ºÍftruncate()ÏµÍ³µ÷ÓÃ½«ÎÄ¼þ´óÐ¡ÉèÖÃÎªlength²ÎÊýÖ¸¶¨µÄÖµ¡£
 Á©¸öÏµÍ³µ÷ÓÃµÄ²î±ðÔÚÓÚÈçºÎÖ¸¶¨²Ù×÷ÎÄ¼þ£¬truncate()ÒÔÂ·¾¶Ãû×Ö×Ö·û´®À´Ö¸¶¨ÎÄ¼þ£¬²¢ÒªÇó¿É·ÃÎÊ¸ÃÎÄ¼þ£¬ÇÒ¶ÔÎÄ¼þÓµÓÐÐ´È¨ÏÞ¡£ÈôÎÄ¼þÃûÎª·ûºÅÁ´½Ó£¬ÄÇÃ´µ÷ÓÃ½«¶ÔÆä½âÒýÓÃ¡£
 
 ftruncate()µ÷ÓÃ²Ù×÷µÄÊÇÒÔÐ´·½Ê½´ò¿ªµÄÎÄ¼þÃèÊö·û£¬¸ÃÏµÍ³µ÷ÓÃ²»»áÐÞ¸ÄÎÄ¼þÆ«ÒÆÁ¿¡£
-
-
-
-### ·Ç×èÈûI/O
-
-ÔÚ´ò¿ªÎÄ¼þÊ±Ö¸¶¨O_NONBLOCK±êÖ¾£¬Ä¿µÄÓÐ¶þ£º
-
-- Èôopen()µ÷ÓÃÎ´ÄÜÁ¢¼´´ò¿ªÎÄ¼þÔò·µ»Ø´íÎó£¬¶ø·ÇÏÝÈë×èÈû¡£ÓÐÒ»ÖÖÊôÓÚÁíÍâ£¬µ÷ÓÃopen()²Ù×÷FIFO¿ÉÄÜ»áÏÝÈë×èÈû¡£
-- µ÷ÓÃopen()³É¹¦ºó£¬ºóÐøµÄI/OÒ²ÊÇ·Ç×èÈûµÄ¡£ÈôI/OÏµÍ³µ÷ÓÃÎ´ÄÜÁ¢¼´Íê³É£¬Ôò¿ÉÄÜ»áÖ»´«Êä²¿·ÖÊý¾Ý£¬»òÕßÏµÍ³µ÷ÓÃÊ§°Ü£¬²¢·µ»ØEAGAIN»òEWOULDBLOCK´íÎó¡£¾ßÌå·µ»ØºÎÖÖ´íÎó½«ÒÀÀµÓÚÏµÍ³µ÷ÓÃ¡£
-
-socket¡¢¹ÜµÀ¡¢FIFO¡¢Éè±¸¶¼Ö§³Ö·Ç×èÈûÄ£Ê½£¬Ö»²»¹ý²»ÄÜÍ¨¹ýopen()µ÷ÓÃÀ´»ñÈ¡¹ÜµÀºÍÌ×½Ó×ÖµÄÎÄ¼þÃèÊö·û£¬ËùÒÔÒªÆôÓÃ·Ç×èÈû±êÖ¾£¬ÐèÒªÊ¹ÓÃfcntl()µÄF_SETFL¡£
-
-¸ü¶àÄÚÈÝ²Î¼û44.9½ÚºÍ63ÕÂ
-
-
-
-
-
-
-
-### example
-
-read¶ÁÈ¡µÄÊý¾ÝÒªÓÐ½ØÖ¹×Ö·û
-
-```c
-char buffer[1024];
-ssize_t numRead;
-
-numRead = read(STDIN_FILENO, buffer, 1024);
-buffer[numRed] = '\0';
-printf("%s", buffer);
-```
-
-
-
-example£ºÏòÒ»¸öÎÄ¼þÐ´ÈëÊý¾Ý
-
-```c
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-
-int main(int argc, char const *argv[])
-{
-    int fd;
-    int BUF_SIZE = 1024;
-    char buffer[BUF_SIZE];
-
-    fd = open(argv[1], O_WRONLY | O_CREAT | O_APPEND);
-
-    if(fd == -1){
-        perror("open error: ");
-        return 1;
-    }
-
-    lseek(fd, 0, SEEK_END);
-    write(fd, argv[2], strlen(argv[2]));
-    close(fd);
-
-    return 0;
-}
-```
-
-
-
-example£º¶ÁÐ´Ò»¸öÎÄ¼þ
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-#define BUF_SIZE 1024
-
-int main(int argc, char const *argv[])
-{
-    int fd, openFlags, filePerms;
-    char buffer[BUF_SIZE];
-
-    openFlags = O_CREAT | O_RDWR | O_TRUNC;
-    filePerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
-
-    fd = open("test.log", openFlags, filePerms);
-
-    if (fd == -1) {
-        perror("open error.");
-    }
-
-    write(fd, "qwerqwer", 8);
-    lseek(fd, SEEK_SET, 0);
-
-    while (read(fd, buffer, BUF_SIZE) > 0) {
-        printf("%s\n", buffer);
-    }
-
-    close(fd);
-    return 0;
-}
-```
