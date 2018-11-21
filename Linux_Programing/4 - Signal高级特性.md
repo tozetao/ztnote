@@ -101,15 +101,7 @@ int limit = sysconf(_SC_SIGQUEUE_MAX);
 
 
 
-### 使用实时信号
-
-为了能让一对进程收发实时信号，SUSv3要求：
-
-- 收发进程使用sigqueue()系统调用来发送信号及携带数据
-
-  因为使用kill()、raise()调用发送的实时信号，收发信号的排队处理时依赖于系统实现的，有些unix系统并未实现信号的排队处理。
-
-- 要为该信号建立一个处理器函数，接收进程应以SA_SIGINFO标志发起对sigaction()的调用，这样调用处理器函数就会附带额外参数，其中就包括实时信号携带的数据。
+### sigqueue()
 
 ```c
 #define _POSIX_C_SOURCE 199309
@@ -124,17 +116,49 @@ union sigval {
 }
 ```
 
-使用sigqueue()发送信号的权限与kill()的要求相同，也可以发送空信号（即信号0），但是不能讲pid指定为负值向整个进程组发送信号。
+sigqueue()函数用于发送实时信号和信号的携带数据，它能够保证信号是以排队的方式来发送的。kill()、raise()系统调用虽然也能够发送实时信号，但是发送信号的排队处理是依赖于系统实现的。
 
 参数value是sigval联合体，指定携带的数据，sival_ptr属性比较少使用，因为指针的作用范围是在进程内部，对另一进程是没有意义的。
+
+使用sigqueue()发送信号的权限与kill()的要求相同，也可以发送空信号（即信号0），但是不能讲pid指定为负值向整个进程组发送信号。
 
 如果超出排队信号的数量限制，sigqueue()调用会失败，并将errno置为EAGAIN。
 
 
 
-
-
 ### 处理实时信号
+
+要为一个实时信号注册处理器函数，接收进程应以SA_SIGINFO标志发起对sigaction()的调用，这样调用处理器函数就会附带额外参数，其中就包括实时信号携带的数据。
+
+```c
+void handler(int sig, siginfo_t *siginfo);
+```
+
+使用SA_SIGINFO标志注册的处理函数，第二个参数将会是一个siginfo_t结构体，包含实时信号的附加信息。
+
+对于一个实时信号，会在siginfo_t结构中设置以下字段：
+
+- si_signo
+
+  实时信号的值
+
+- si_code
+
+  表示信号来源，对于通过sigqueue()发送的实时信号，值总是为SI_QUEUE。
+
+- si_value
+
+  发送方进程发送信号携带的数据，即sigval union联合体。
+
+- si_pid
+
+  发送方进程的ID
+
+- si_uid
+
+  发送方的实际用户ID
+
+example：设置SA_SIGINFO常量
 
 ```c
 struct sigaction act;
@@ -143,13 +167,3 @@ sigemptyset(&act.sa_mask);
 act.sa_sigaction = handler;
 act.sa_flags = SA_RESTART | SA_SIGINFO;
 ```
-
-在使用SA_SIGINFO标志后，传递给处理器函数的第二个参数将会是一个siginfo_t结构体，包含实时信号的附加信息。
-
-对于一个实时信号，会在siginfo_t结构中设置以下字段：
-
-- si_signo字段，实时信号的值
-- si_code，表示信号来源，对于通过sigqueue()发送的实时信号，值总是为SI_QUEUE。
-- si_value，发送方进程发送信号携带的数据，即sigval union联合体。
-- si_pid和si_uid分别表示发送方的进程id和实际用户id
-
