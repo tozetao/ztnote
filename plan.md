@@ -1,16 +1,15 @@
 ### TO DO LIST
 
-- unix/linux服务器编程
+- http服务器
+
+- 如何进行系统压力的测试，分析性能瓶颈
 
 - 秒杀功能设计
-- 如何进行系统压力的测试，分析性能瓶颈
-- 刷locecode
-
+- 微信红包设计
 - 排行榜设计
 - 文章的投票设计
-
-- redis session应用
-- redis的过期机制
+- Redis课程：掘金
+- MySQL课程
 
 
 
@@ -21,7 +20,7 @@
 - TCP/IP高效编程（Effective TCP/IP Programing）
 - 图解TCP/IP详解
 - unix网络编程
-- 现代化PHP
+- 现代化PHP（Model PHP）
 - 高性能MySQL
 
 
@@ -64,3 +63,34 @@ http://open.163.com/special/sp/singlevariablecalculus.html
 https://www.coursera.org/specializations/algorithms
 
 https://www.coursera.org/
+
+
+
+
+
+
+
+### 11月
+
+学习linux/unix系统编程。
+
+- 进程的学习
+- 线程的学习
+- socket的学习
+- 进程通信
+
+
+
+### 12月
+
+- 书籍：高性能服务器编程
+
+- 完成一个简单的web服务器的开发
+- MySQL课程
+- 秒杀功能的设计
+- 微信红包的设计
+
+
+
+- 用C语言刷算法
+- 刷各种PHP面试题
