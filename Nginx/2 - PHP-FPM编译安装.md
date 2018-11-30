@@ -108,12 +108,3 @@ phpize用于安装php扩展，例如当前php需要安装sockets扩展：
   ./configure --with-php-config=/usr/local/php7/bin/php-config
 
 最后在php.ini启用该扩展即可。
-
-
-
-
-
-
-
-
-
