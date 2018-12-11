@@ -1,0 +1,23 @@
+https://blog.csdn.net/dc_726/article/details/12340349
+https://blog.csdn.net/dc_726/article/details/9336193
+
+connect() to unix:/dev/shm/php-fcgi.sock failed (11: Resource temporarily unavailable) while connecting to upstream
+连接到上游资源时暂时不可用
+
+解决方法
+cat /proc/sys/net/core/somaxconn，如果是128的话，那么每次请求积累到100-200的时候就会报错。
+
+echo 4096 > /proc/sys/net/core/somaxconn
+ or
+sysctl -w net.core.somaxconn=4096
+
+同时nginx的listen 80后面加 backlog=4092，php-fpm的listen.backlog=4096
+
+
+
+
+第二个，nginx和php-fpm的错误日志配置是很重要的。
+对于nginx来说，server需要配置自己的错误日志，否则默认不显示；有空再整理下这俩个模块的日志要处理做。
+
+
+linux内核参数优化也是提高并发的关键。
