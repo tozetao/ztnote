@@ -99,7 +99,7 @@ function lock($key, $timeout = 50000)
             $redis->expire($key, $timeout);
             return $uuid;
         }
-        else if($redis->ttl($key) === -2)
+        else if($redis->ttl($key) === -1)
             $redis->expire($key, $timeout);
         
         sleep(0.2);
