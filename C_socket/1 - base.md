@@ -11,9 +11,7 @@
 
 
 
-协议：
-
-为了完成数据交换而约定的规则，即通信规则。
+协议：为了完成数据交换而约定的规则，即通信规则。
 
 ```c
 int socket(int domain, int type, int protocol);
