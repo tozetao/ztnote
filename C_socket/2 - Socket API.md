@@ -1,10 +1,135 @@
-### Functions
+### Socket
 
 在linux中，一切都是文件，硬件、socket都可以认为是文件。所有在Linux系统中创建的文件都有一个int型的编号，称为文件描述符，使用文件时只需要知道编号即可。
 
 socket也是一种文件，所以在网络数据传输时可以使用与文件I/O相关的函数，可以认为俩台计算机之间的通信，实际上是俩个socket文件的相互读写。
 
 
+
+
+
+### 套接字地址结构
+
+每个协议组都各自定义了自己的套接字地址结构
+
+```c
+#include <netinet/in.h>
+
+struct sockaddr_in {
+    uint8_t sin_len;		//结构长度
+    
+    sa_family_t sin_family;	//地址族，也就是地址类型
+    in_port_t sin_port;		//16位的端口
+    struct in_addr;			//32位IP地址
+    
+    char sin_zero[8];		//未使用
+}
+```
+
+sockaddr_in结构体长度为16个字节，sockaddr_in的各个参数意义如下：
+
+- sin_family
+
+  地址族，与socket()函数的参数一致，占用俩个字节。
+
+- sin_port
+
+  端口号，in_port_t一般是uint16_t类型，无符号的16位整数，端口号总是以网络字节序存储。
+
+- in_addr
+
+  32位的IPv4地址，一般是一个32位的无符号整数。
+
+- sin_zero
+
+  一般填充为0，没什么用。
+
+```c
+#include <netinet/in.h>
+
+struct in_addr {
+    in_addr_t s_addr;	// 32位的IPv4地址
+}
+```
+
+in_addr表示IPv4地址，它是只包含一个成员的结构体。
+
+in_addr等价于unsigned long，长度为4个字节，也是以网络字节序存储的。
+
+
+
+```c
+struct sockaddr_in6 { 
+    uint8_t sin6_len;			//该结构体的长度，IPv6结构体的长度时28个字节
+    sa_family_t sin6_family;   //地址类型，取值为AF_INET6
+    in_port_t sin6_port;  	   //16位端口号
+    
+    struct in6_addr sin6_addr; //具体的IPv6地址
+    
+    uint32_t sin6_scope_id;    //接口范围ID
+    uint32_t sin6_flowinfo;    //IPv6流信息，未定义
+};
+
+struct in6_addr {
+    unit8-t s6_addr[16];		//128位的IPv6地址，占用16个字节，以网络字节序存储
+}
+```
+
+sockaddr_in6是一个28个字节长度的结构体。
+
+
+
+### 通用套接字地址结构
+
+```c
+#include <sys/socket.h>
+
+struct sockaddr {
+    uint8_t sa_len;
+    sa_family_t sa_family;
+    char sa_data[14];	//协议具体地址
+}
+```
+
+套接字地址结构是以指针来传递的，但是套接字函数都需要处理任意协议族的套接字地址结构，因此定义了一个通用的套接字地址结构，以该通用套接字地址结构的指针类型作为参数传递。
+
+因此在使用套接字函数时，需要将特定协议的套接字地址接结构转换成通过的套接字地址结构，例如：
+
+```c
+bind(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+```
+
+
+
+### 字节排序
+
+数据存储在内存中是二进制字节的，从右往左数是从低序走向高序的一个过程。而内存地址也是从小往大一个递增的过程。
+
+- 小端序：低序字节存储在起始地址是小端序
+
+- 大端序：高序字节存储在起始地址是大端序
+
+网络协议的数据传输必须是大端序（网络字节序），数据存储时是按照主机字节序存储的，等传输数据时会自动转换成网络字节序，然后由于历史原因，套接字地址接口中的某些字段必须是以网络字节序进行存储。
+
+```c
+
+```
+
+
+
+
+
+字节序的验证过程：
+
+```c
+short s = 0x0102;	//02是低序字节，01是高序字节
+```
+
+
+
+
+
+### Functions
 
 ```c
 #include <sys/socket.h>
@@ -38,59 +163,6 @@ bind(int sock, struct sockaddr *addr, socklen_t addrlen);
 sockt()用于确定套接字的属性，bind()函数用于将套接字与特定的IP地址和端口绑定起来。只有这样，流经过该IP地址和端口的数据才能交给套接字处理，而客户端需要使用connect()函数建立连接。
 
 sock参数是socket文件描述符，addr参数是一个sockaddr的结构体，指定绑定的IP与端口等信息，addrlen参数是该结构体的大小。
-
-```c
-struct sockaddr {
-    sa_family_t sin_family;	//地址族
-    char sa_data[14];		//IP地址和端口号
-}
-
-struct sockaddr_in {
-    sa_family_t sin_family;	//地址族，也就是地址类型
-    uint16_t sin_port;		//16位的端口号
-    struct in_addr;			//32位IP地址
-    char sin_zero[8];		
-}
-```
-
-sockaddr和sockaddr_in结构体的长度一致，都是16个字节，sockaddr是使用sa_data成员将IP地址和端口合并到一起，它的赋值比较麻烦，所以一般会使用sockaddr_in结构来代替sockadd结构。
-
-sockaddr_in的各个参数意义如下：
-
-- sin_family
-
-  地址族，与socket()函数的参数一致，占用俩个字节。
-
-- sin_port
-
-  端口号，uint16_t长度为俩个字节，端口号需要使用htons()转换。
-
-- in_addr
-
-  in_addr是一个只包含一个成员的结构体。
-
-  ```c
-  #include <netinet/in.h>
-  in_addr_t s_addr;
-  ```
-
-  in_addr等价于unsigned long，长度为4个字节。s_addr是一个整数，所以需要使用inet_addr()函数转换。
-
-- sin_zero
-
-  一般填充为0，没什么用。
-
-sockaddr_in结构用于表示IPv4的地址，如果要表示IPv6的地址，可以使用sockaddr_in6结构。
-
-```c
-struct sockaddr_in6 { 
-    sa_family_t sin6_family;   //地址类型，取值为AF_INET6
-    in_port_t sin6_port;  	   //16位端口号
-    uint32_t sin6_flowinfo;    //IPv6流信息
-    struct in6_addr sin6_addr; //具体的IPv6地址
-    uint32_t sin6_scope_id;    //接口范围ID
-};
-```
 
 
 
