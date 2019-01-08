@@ -20,7 +20,7 @@ struct sockaddr_in {
     
     sa_family_t sin_family;	//地址族，也就是地址类型
     in_port_t sin_port;		//16位的端口
-    struct in_addr;			//32位IP地址
+    struct in_addr sin_addr;			//32位IP地址
     
     char sin_zero[8];		//未使用
 }
@@ -112,17 +112,36 @@ bind(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 网络协议的数据传输必须是大端序（网络字节序），数据存储时是按照主机字节序存储的，等传输数据时会自动转换成网络字节序，然后由于历史原因，套接字地址接口中的某些字段必须是以网络字节序进行存储。
 
 ```c
+#include <netinet/in.h>
 
+uint16_t htons(uint16_t host_16bit_value);
+uint16_t htonl(uint32_t host_32bit_value);
+//主机字节序转网络字节序
+
+
+uint16_t ntohs(uint16_t net_16bit_value);
+uint32_t ntohl(uint32_t net_32bit_value);
+//网络字节序转主机字节序
+
+#include <arpa/inet.h>
+
+int inet_pton(int family, const char *strptr, void *addrptr);
+//将IP地址转为网络字节序，成功返回1，失败返回-1，如果不是有效的表达式则返回0.
+
+const char *inet_ntop(int family, const void *strptr, char *strptr, size_t len);
+//将网络字节序转换成IP地址
 ```
 
-
-
-
-
-字节序的验证过程：
+example:
 
 ```c
-short s = 0x0102;	//02是低序字节，01是高序字节
+//将IP地址转换为网络字节序
+char ip[] = "192.12.34.90";
+struct sockaddr_in serv_addr;
+memset(&serv_addr, '0', sizeof(serv_addr));
+
+inet_pton(AF_INET, ip, &serv_addr.sin_addr);
+printf("%d\n", (int)serv_addr.sin_addr.s_addr);
 ```
 
 
@@ -170,7 +189,7 @@ sock参数是socket文件描述符，addr参数是一个sockaddr的结构体，�
 int connect(int sock, struct sockaddr *serv_addr, socklen_t addrlen); 
 ```
 
-用于连接连接，它的参数与bind()基本相同。
+客户端使用connect来与TCP服务器建立连接，它的参数与bind()基本相同。
 
 
 
