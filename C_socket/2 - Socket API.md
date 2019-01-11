@@ -219,7 +219,7 @@ accpet(int sock, struct sockaddr *addr, socklen_t *addrlen);
 
 当套接字处于被动监听状态时，可以通过accept()来接收客户端请求。
 
-accept()函数会 从请求队列中去除当前要处理的请求，它会返回一个新的socket来和客户端通信，addr参数保存了客户端的IP地址和端口号，在后面的通信中会使用这个新生成的套接字，而不是原来服务器端的套接字。
+accept()函数会 从请求队列中返回当前要处理的请求，它会返回一个新的socket来和客户端通信，addr参数保存了客户端的IP地址和端口号，在后面的通信中会使用这个新生成的套接字，而不是原来服务器端的套接字。
 
 值得注意的是，listen()只是让套接字进入监听状态，并没有真正接受客户端请求，listen()后面的代码会继续执行，直到遇到accept()。
 
@@ -228,6 +228,16 @@ accept()会阻塞程序执行，直到有新的请求进来。
 
 
 
+
+```c
+#include <unistd.h>
+
+int close(sockfd);
+```
+
+close将一个TCP套接字标记为已关闭，然后立即返回调用进程。文件描述符被标记关闭后就不能在调用进程中使用了。
+
+注：close()函数并不会引发socket关闭的4次握手过程，只有当socket的文件描述符引用计数为0时，内核才会真正的去关闭该socket对应的资源。
 
 
 
@@ -301,3 +311,68 @@ TCP套接字默认情况下是阻塞模式。在这种模式下，调用write()�
 
 
 从socket缓冲区的输入和输出过程就可以知道，数据的接受也发送是无关的。read()函数不管数据发送了多少次，都会尽可能的接收数据。也就是说read()和write()的执行次数可能不同。
+
+
+
+
+
+
+
+并发服务器
+
+```c
+int pid;
+
+while(1) {
+    clnt_sock = accept(serve_sock, (struct sockaddr*)&clnt_addr, &sizeof(clnt_addr));
+    
+    if ((pid = fork()) == 0) {
+        //child closes listenling socket
+        close(serve_sock);
+        
+        //do something，这里是子进程的执行逻辑
+        
+        //done with this client
+        close(clnt_sock);
+        
+        //关闭进程
+        exit(0);
+    }
+    
+    close(clnt_sock);
+}
+```
+
+accept()从请求队列中获得要处理的客户端连接，这时候fock()子进程，由子进程来处理客户端连接。
+
+可以看到，close()不会将一个TCP连接关闭，即不会发生连接断开的四次握手过程。只有当父子进程都关闭掉客户端套接字的描述符，内核才会对该清理该客户端套接字的资源。
+
+
+
+exec函数
+
+将当前进程映像替换为新的程序文件，而且该程序通常从main()函数开始执行，执行exec()函数的进程被称为调用进程（calling process）。
+
+注：进程在调用exec函数之前打开的描述符通常跨exec继续保持打开，该行为可以通过fcntl()设置FD_CLOEXEC标志禁止掉。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

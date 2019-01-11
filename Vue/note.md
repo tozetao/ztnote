@@ -189,7 +189,6 @@ bus无学习成本，同时也可以扩展bus对象的属性，方法等等。
   </script>
   ```
 
-  
 
 
 
@@ -513,8 +512,6 @@ Vue对象的生命周期
 
 - created
 
-  
-
 - mounted
 
   vue对象被挂载到dom节点上触发
@@ -532,3 +529,31 @@ Vue对象的生命周期
 如果没有开启缓存，函数触发顺序为：created => mounted => destoryed;
 
 在开启缓存时，组件会被缓存在内存中，第一次访问组件时函数触发顺序为：created => mounted => activated，之后再次访问组件时将会一直触发activated函数，直到该组件被销毁。
+
+
+
+
+
+
+
+es6 export
+
+npm install --save-dev：安装在开发依赖，--save是安装在依赖里面。
+
+
+
+
+
+extract-text-webpack-plugin：该插件可以将css集中输出到一个文件
+
+html-webpack-plugin：根据模板生成index.html文件
+
+webpack-merge: 合并多个webpack配置对象。
+
+
+
+
+
+vue router
+
+--history-api-fallback：配置vue router指向index.html页面
