@@ -14,12 +14,11 @@
 
 - Unix网络编程卷1  => linux高性能服务器编程 => C Primer Plus => C语言接口与实现
 - 整理PHP面试题（刷题）
-- 秒杀功能的实现 (laravel => MySQL优化 => IOC/程序设计范式/PSR标准)
-- MySQL实战45讲 => Linux性能优化实战 => 玩转git三剑客 => Redis（掘金）
-- 凯威的讲堂 => 有明（Laravel）
+- 有明（Laravel）=> 秒杀功能的实现 (IOC/PSR标准/Restful) 
+- 凯威的讲堂 => 有明（Laravel）=> MySQL实战45讲 => Linux性能优化实战 => 玩转git三剑客 => Redis（掘金）
 - 趣谈网络协议 => 程序员的数学基础课 => 数据结构与算法之美
 
-
+将网络编程学习完后，整理面试题，然后一边做面试题一边学习下面课程。
 
 
 
