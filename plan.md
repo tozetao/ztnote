@@ -1,15 +1,27 @@
 ### TO DO LIST
 
-- http服务器
-
 - 如何进行系统压力的测试，分析性能瓶颈
 
-- 秒杀功能设计
 - 微信红包设计
 - 排行榜设计
 - 文章的投票设计
-- Redis课程：掘金
-- MySQL课程
+
+
+
+
+
+### 学习清单
+
+- Unix网络编程卷1  => linux高性能服务器编程 => C Primer Plus => C语言接口与实现
+- 整理PHP面试题（刷题）
+- 秒杀功能的实现 (laravel => MySQL优化 => IOC/程序设计范式/PSR标准)
+- MySQL实战45讲 => Linux性能优化实战 => 玩转git三剑客 => Redis（掘金）
+- 凯威的讲堂 => 有明（Laravel）
+- 趣谈网络协议 => 程序员的数学基础课 => 数据结构与算法之美
+
+
+
+
 
 
 
@@ -22,6 +34,8 @@
 - unix网络编程
 - 现代化PHP（Model PHP）
 - 高性能MySQL
+
+
 
 
 
@@ -64,15 +78,3 @@ https://www.coursera.org/specializations/algorithms
 
 https://www.coursera.org/
 
-
-
-
-
-
-
-2019-1
-
-1. unix网络编程
-2. linux高性能服务器编程
-3. 面试题
-4. 秒杀功能的实现
