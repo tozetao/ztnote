@@ -9,7 +9,7 @@
 技能描述
 ----------------------------------
     精通C/PHP，熟悉Lua/Java语言
-    熟悉linux服务器应用开发（Linux+Apache+Nginx+MySQL+Redis+PHP）
+    熟悉linux服务器应用开发（Linux+Swoole+Nginx+MySQL+Redis+PHP）
     熟悉Linux环境下C程序的设计与开发，精通多线程，网络编程
     熟练使用MySQL，了解基本的性能优化
     掌握HTML5/CSS3/JavaScript前端技术
