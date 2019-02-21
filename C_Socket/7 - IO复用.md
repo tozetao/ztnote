@@ -133,7 +133,14 @@ int poll(struct pollfd *fdarray, unsigned long nfds, int timeout);
 
 poll与select类似，也是允许进程指定内核要监视的描述符，并在IO事件就绪的情况下通知进程。
 
-fdarray，该参数是一个指向pollfd结构数组的第一个元素的指针。该数组每个元素都是一个pollfd结构，用于指定监视某个给定描述符fd的条件。
+- fdarray
+
+  该参数是一个指向pollfd结构数组的第一个元素的指针。该数组每个元素都是一个pollfd结构，用于指定监视某个给定描述符fd的条件。
+
+- nfds
+
+- timeout
+
 
 ```c
 struct pollfd {
@@ -143,7 +150,7 @@ struct pollfd {
 };
 ```
 
-要监视的事件由events成员指定，revents成员会返回描述符已触发的事件，一个为调用值，另一个为返回结果。每个成员都是指定某个特定事件的一位或多位组成。
+pollfd结构体有3个成员，要监视的事件由events成员指定，revents成员会返回描述符已触发的事件，一个为调用值，另一个为返回结果。每个成员都是指定某个特定事件的一位或多位组成。
 
 
 
