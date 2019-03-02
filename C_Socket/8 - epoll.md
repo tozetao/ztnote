@@ -6,9 +6,9 @@ int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
 
 在一段超时时间内等待一组文件描述符上的事件，成功时返回就绪的文件描述符个数，失败返回-1并设置errno。
 
-epoll_wait函数如果监测到事件，就将所有就绪的事件从内核事件表（由epfd参数指定）中复制到它的第二个参数events指向的数组中。
+如果监测某个事件发生，就将所有就绪的事件从内核事件表（由epfd参数指定）中复制到它的第二个参数events指向的数组中。
 
-events数组只用于epoll_wait检测到的就绪事件，而不像select和poll的数组参数，既用于传入用户注册的事件，又用于输出内核检测到的就绪事件。这极大的提供了索引就绪文件描述符的效率。
+events数组只存储epoll_wait检测到的就绪事件，而不像select和poll的数组参数，既用于传入用户注册的事件，又用于输出内核检测到的就绪事件。这极大的提供了索引就绪文件描述符的效率。
 
 
 
