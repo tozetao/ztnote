@@ -1,95 +1,109 @@
-## CSS3 selector
-CSS3是对CSS2的一个扩展，这里主要讲CSS3的选择器
+### 类选择器
 
-### 1. 通配符选择器
-使用*字符来代替所有html元素
+将不同样式定义成一组样式并命名，方便重复使用。
 
-### 2. 类选择器，Class of selectors
-将不同样式定义成一组样式并命名，方便重复使用，CSS3支持多个类选择器应用同一个元素，也支持类选择器在特定标签生效。
+- css3支持多个类选择器应用同一个元素，以组合的方式复用样式。比如：
 
-example：
 ```html
 <style type="text/css">
-	/*定义h2.title标签的样式， 其他标签使用.title选择器是无效的*/
+    .background{
+        background: #cdccec;
+    }
+
+    .font {
+        font-size: 30px;
+        color: red;
+    }
+</style>
+
+<div class="background font">
+    <p>this is content</p>
+</div>
+```
+
+
+
+- 也支持类选择器在特定标签生效。语法是先写标签，再写类选择器，注意中间是没有空格的。
+
+```html
+<style type="text/css">
 	h2.title{
 		font-size:25px;
 		color:red;
 	}
 </style>
 
-<body class="body">
-	<div class="title">
-		title
-	</div>
-	<h2 class="title">
-		title
-	</h2>
-</body>
-```
-
-example2：
-```html
-<style type="text/css">
-	.title{
-		color: lightgreen;
-	}
-	.brand{
-		font-size: 30px;
-	}
-	
-	/* 组合样式来定义div的样式，注意.title.brand中间是没有空格的 */
-	.title.brand div{
-		background: #cdc;
-		color: yellow;
-	}
-</style>
-<!-- 应用多个选择器 -->
-<div class="title brand">
-	<p>this is content</p>
-
-	<div class="content">
-		content...
-	</div>
+<div class="title">
+    title
 </div>
+<h2 class="title">
+    title
+</h2>
 ```
 
-### 3. 属性选择器，Attribute selectors
-属性选择器可以通过标签的属性值来匹配HTML文档中的标签，这是CSS3的新特性。
 
-- [attribute]：选择拥有该属性的元素
-- [attribute1][attribute2]：选择同时拥有多个属性
-- [attribute = 'value']：选择某个属性拥有特定值的标签
-- [attribute |= 'value']：匹配属性等于value值的标签，或者属性的值以value-开头的标签
-- [attribute ~= 'value']：选择属性拥有多个值的标签，以空格分开。某些标签属性拥有多个值
-- [attribute ^= 'value']：匹配属性值以value开头的标签
-- [attribute $= 'value']：匹配属性值以value结尾的标签
-- [attribute *= 'value']：匹配属性包含value值的标签
+
+### 属性选择器
+
+css3的新特性，可以通过标签的属性值来匹配HTML文档中的标签。
+
+- [attribute]
+
+  选择拥有该属性的元素
+
+- \[attribute_1\]\[attribute_2\]
+
+  选择同时拥有多个属性
+
+- [attribute = 'value']
+
+  选择某个属性拥有特定值的标签
+
+- [attribute |= 'value']
+
+  匹配属性等于value值的标签，或者属性的值以value-开头的标签
+
+- [attribute ~= 'value']
+
+  选择属性拥有多个值的标签，以空格分开。某些标签属性拥有多个值
+
+- [attribute ^= 'value']
+
+  匹配属性值以value开头的标签
+
+- [attribute $= 'value']
+
+  匹配属性值以value结尾的标签
+
+- [attribute *= 'value']
+
+  匹配属性包含value值的标签
 
 example：
 ```html
 <style type="text/css">
+    /* 匹配拥有data-album属性的标签 */
 	[data-album]{
 		display: inline-block;
 		text-align: center;
 		color: black;
 		padding-right: 20px;
 	}
-	/* 匹配拥有data-album属性的标签 */
 
+    /* 匹配拥有多个属性的标签 */
 	div[data-name][data-age]{
 		width: 50px;
 		height: 50px;
 		background: #d3d;
 	}
-	/* 匹配拥有多个属性的标签 */
 
+    /* 匹配属性值等于a或等于a-开头值的标签 */
 	div[data-name|="a"]{
 		width: 150px;
 		height: 150px;
 		background: #cdc;
 		margin-top: 10px;
 	}
-	/* 匹配属性值等于a或等于a-开头值的标签 */
 </style>
 
 <ul>
@@ -102,38 +116,64 @@ example：
 <div data-name="a-123"></div>
 ```
 
-### 4. 后裔选择器
-后裔选择器允许通过标签与标签的关系来定位标签元素。
 
-- element1 element2：匹配element1内部所有element2的元素，只要是后代就会被匹配，例如：子孙和子子孙等后代的标签
-- element1 > element2：匹配element1中所有element2子节点，不包括子孙等关系的节点。
-- element1 * element2：不匹配element1中的element2子节点，只会选择element2子节点中的其他后裔节点。
-- element1 + element2：选择临近element1的下一个兄弟元素，如果有其他元素阻隔则无法选择。
-- element1 ~ element2：选择临近element1后的所有兄弟元素，无视其他元素阻隔。
 
-说明：element可以是标签名也可以是选择器名。
+### 后代选择器
 
-example1：
-```html
-<style type="text/css">
-	div p{
-		font-size: 30px;
-		color: #cdc;
-	}
-</style>
+指允许通过标签、类选择之间的关系来应用样式。
 
-<div>
-	<p>title</p>
-	<ul>
-		<li>
-			<p>content.</p>
-		</li>
-	</ul>
-</div>
-<!-- div下所有p元素都被匹配到 -->
+```css
+element1 element2
 ```
 
-example2：> 子后裔选择器
+匹配元素1内部所有元素2，只要是元素1的后代就会被匹配。比如子孙、子子孙等后台元素。
+
+注：element可以是标签名也可以是选择器名。
+
+example:
+
+```html
+<style type="text/css">
+    .foo .article {
+        background: #cdccec;
+    }
+    
+    .foo .article .child {
+        font-size: 20px;
+        height: 30px;
+        line-height: 30px;
+    }
+</style>
+
+<div class="foo">
+    <div class="article">
+        <p class="child">
+            hello world!...
+        </p>
+        <div>
+            <p class="child">
+                hello world!...
+            </p>
+        </div>
+    </div>
+
+    <!-- 不符合指定规则则不匹配 -->
+    <div class="child">
+        foo2123123
+    </div>
+</div>
+```
+
+
+
+```css
+element1 > element2
+```
+
+只匹配元素1中所有直系的元素2，不包括子孙等关系的元素。
+
+example:
+
 ```html
 <style type="text/css">
 	.container > div{
@@ -156,7 +196,34 @@ example2：> 子后裔选择器
 <!-- 匹配container div下所有子div元素 -->
 ```
 
-example3：~ 后裔选择器
+
+
+
+
+```css
+element1 * element2
+```
+
+不匹配元素1中的直系后台元素2，只会匹配元素2中的其他后代元素。
+
+
+
+```css
+element1 + element2
+```
+
+选择临近元素1的下一个兄弟元素，如果有其他元素阻隔则无法选择。
+
+
+
+```css
+element1 ~ element2
+```
+
+选择临近元素1的所有兄弟元素，无视其他元素阻隔。
+
+example:
+
 ```html
 <style type="text/css">
 	div ~ p{
@@ -174,7 +241,7 @@ example3：~ 后裔选择器
 
 
 
-### before/after伪类
+### 伪类
 before和after是附着在元素前后的伪元素，伪元素是不在dom中生成的，而是浏览器渲染css时画上去的，所以在浏览器上查看元素是看不到伪类的HTML结果的。
 
 在伪元素的样式上可以通过content属性设置伪元素的内容，默认伪元素是行内显示的，也可以将其设置为块元素显示。
@@ -207,6 +274,8 @@ example1:
 
 <i class="demo">cotent</i>
 ```
+
+
 
 ### 选择器伪类
 
