@@ -141,14 +141,27 @@ requireJS中定义的模块不仅可以返回一个对象作为结果，也可�
   ```
 
 
-shim属性
 
-该属性用于定义不符合AMD规范的非标准模块。
+### 属性
+
+map
+​	在加载其他模块之前，都必须先加载map中的模块。
+
+shim
+​	通过require的define()方法定义的模块就是标准的，只有不准备的情况下才会使用shim定义的参数。
 
 
 
-Config属性
 
 
 
-压缩
+
+
+
+参考链接：
+
+http://www.requirejs.cn/
+
+https://www.cnblogs.com/HCJJ/p/6611669.html
+
+https://blog.csdn.net/wrp920227/article/details/78055970
