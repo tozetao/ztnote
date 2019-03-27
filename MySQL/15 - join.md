@@ -38,9 +38,11 @@ insert into t1 (select * from t2 where id<=100)
 
 
 
-### Index Nested-Loop Join
+### NLJ
 
-直译索引嵌套循环连接，在一个连接查询中，主表被称为驱动表，从表被称为被驱动表，如果连接条件有使用到索引，这种连接查询就被称为Index Nested-Loop Join。比如：
+Index Nested-Loop Join，直译索引嵌套循环连接。
+
+在一个连接查询中，主表被称为驱动表，从表被称为被驱动表，如果连接条件有使用到索引，这种连接查询就被称为Index Nested-Loop Join。比如：
 
 ```sql
 select * from t1 straight_join t2 on (t1.a = t2.a);
@@ -61,9 +63,11 @@ select * from t1 straight_join t2 on (t1.a = t2.a);
 
 
 
-### Block Nested-Loop Join
+### BNL
 
-如果被驱动表没有使用到索引，就会使用该算法。比如：
+Block Nested-Loop Join，块嵌套循环连接。
+
+如果连接查询中，被驱动表没有使用到索引，就会使用该算法。比如：
 
 ```sql
 select * from t1 straight_join t2 on t1.a = t2.a;
@@ -98,8 +102,6 @@ join查询缓存的大小，默认是256kb。
 
 
 
-
-
 总结：
 
 - 如果可以使用Index Nested-Loop Join算法，使用join查询是没问题的。如果SQL语句使用的是Block Nested-Loop Join算法，建议进行优化.
@@ -110,9 +112,37 @@ join查询缓存的大小，默认是256kb。
 
 
 
+### MRR
+
+在普通索引中，查询是顺序扫描索引树的，回表查询时主键id会变成随机的，这时一行一行的去访问主键索引会出现随机访问。
+
+大多数的数据都是按照主键递增顺序插入得到的，所以如果按照主键的递增顺序查询的话，对磁盘的读会比较接近顺序读，能够提升性能。
+
+这就是MRR的设计思路。比如：
+
+```sql
+select * from t1 where a >= 1 and a <= 100;
+```
+
+- 在MRR算法下，会根据索引a查询满足条件的记录，将id值放入read_md_buffer中。
+- 将read_md_buffer中的id进行递增排序
+- 排序后的id数组，依次到主键id索引中查询记录，并作为结果返回。
+
+这里read_md_buffer的大小是read_md_buffer_size参数控制的，如果read_md_buffer满了，就会执行步骤2、3，然后清空read_md_buffer，继续循环执行。
+
+MRR算法是否使用是由optimizer_switch参数的mrr_cost_based选项决定的，优化器倾向于不使用MRR算法，所以将mrr_cost_base=off设置为off就表示使用MRR算法了。
 
 
-优化
 
-Index Nested-Loop Join简称INL，Block Nested-Loop Join简称BNL。
+### BKA
+
+Batched Key Access算法，由MySQL5.6版本后引入，该算法是对NLJ算法的优化。
+
+BAK算法会把驱动表需要字段的数据查询出来，放入到join_buffer中， 然后从join_buffer中批量的取索引字段的值去跟被驱动表做join查询。如果join_buffer一次性无法放入驱动表的数据，那么会分多次来执行。
+
+
+
+> set optimizer_switch='mrr=on,mrr_cost_based=off,batched_key_access=on';
+
+BAK算法依赖于MRR算法，因此需要设置前俩个参数，启用MRR算法。
 
