@@ -1,91 +1,72 @@
-在C中，字符串是多个字符和一个位全为0的NUL字节组成的字符数组。NUL字节是字符串的终止符，它本身不属于字符串的一部分，所以字符串的长度不包括NUL字节。
+## 字符串字面量
+
+string literal，字符串字面量是一种用双引号括起来的字符序列。
+
+C语言在解析一个长度为n的字符串字面量时，会分配一个长度为n+1的内存空间，用于存储字符串字面量的字符和一个用来标记字符串结尾的空字符。
+
+- 空字符
+
+  空字符是一个所有位都为0的字节，用转义序列\0来表示。空字符与零字符是不同的，空字符的码值为0，而零字符串在ASCII码中是48。
 
 
 
-### 字符串常量
+字符串字面量的操作
 
-当一个字符串常量出现在表达式中，它的值就是一个指针常量。编译器会将这些字符存储在内存中的某个位置，并存储一个指向第一个字符的指针。
+- 字符串字面量赋值时，是把第一个字符的地址作为值进行赋值。
+
+  ```c
+  char *pa = "hello world";
+  ```
+
+- 下标引用，C语言允许对指针取下标，因此可以对字符串字面量取下标。
+
+  ```c
+  function digit_to_hex_char(int digit) {
+      return "0123456789abcdef"[digit];
+  }
+  ```
+
+
+
+## 字符串变量
+
+### 声明
+
+C语言默认字符串是以空字符\0结尾的，任何一维字符数组都可以用于存储字符串。
+
+在声明一个存放字符串的字符数组时，要保证数组长度比字符串长度多一个字符，这是因为C语言规定每个字符串都是以空字符结尾。如何没有空字符串，程序运行时会出现难以预料的结果。
+
+- 字符串的长度
+
+  字符串是以空字符结尾的，所以字符串的长度取决于空字符的位置。
+
+
+
+### 初始化
+
+声明时初始化
 
 ```c
-"xzy" + 1;
-// 字符串常量是一个指针，它表示在该指针上加1，因此指向第二个字符。
-
-*"xzy";
-// 对一个指针执行间接访问操作，结果是该指针所指向的内存，该表达式的结果是字符x。
-
-"xzy"[1];
-*("xzy" + 1);
-// 上面俩个表达式是等价的。
+char date1[] = "June";
+char date2[] = {'J', 'u', 'n', 'e', '\0'};	//数组初始化式
 ```
 
+编译器会把字符串"June"中的字符一个个复制到数组中，然后追加一个空字符。"June"在这里不是字符串字面量，而是被编译器看成是数组初始化式的缩写形式。
 
-
-
-
-### string.h
+如果不指明字符数组的长度，编译器会自动计算长度。
 
 ```c
-#include <stddef.h>
+char conte[10] = "abc";
+```
+
+对于不满足字符数组长度的字符串，编译器会默认将剩下的数组元素初始化为空字符\0。
+
+
+
+
+
+```c
 #include <string.h>
-
-size_t strlen(char const *str);
-//计算字符串的长度
-
-char *strcpy(char const *dist, char const *source);
-//拷贝一个字符串
-
-int strcmp(char const *s1, char const *s2);
-//如果s1大于s2，返回大于0的值，如果s1小于s2，返回小于0的值，如果s1等于s2则返回0
-
-
-char *strncpy(char const *dist, char const *source, size_t len);
-char *strcat(char *dist, char const *src, size_t len);
-char *strncmp(char const *s1, char const *s2, size_t len);
-```
-
-
-
-find
-
-```c
-char *strchr(char const *str, int ch);
-char *strrchr(char const *str, int ch);
-//查找一个字符
-
-char *strpbrk(char const *str, char const *group);
-//返回str字符串中第一个匹配group中任意一个字符的位置
-
-char *strstr(char const *s1, char const *s2);
-//查找一个子字符串
-```
-
-
-
-### 内存处理
-
-在内存中，包含0值的数据并不少见，因此需要利用mem系列函数来处理数据。
-
-```c
-void *memcpy(void *dst, void const *src, size_t length);
-//从src的起始位置复制length个字节到dist的内存起始位置，如果src与dst出现重叠，它的结果是未定义的。
-
-
-memcpy(saved_answers, answers, count * sizeof(answers[0]));
-//如果要复制的数据大于一个字节，要确保数量与数据类型的长度相乘，保证复制正确的数据
-
-
-void *memmove(void *dst, void const *src, size_t length);
-
-
-void *memcmp(void const *a, void const *b, size_t length);
-//对俩段内容进行比较，共比较length个字节。这些值会按照无符号字符逐个字节进行比较，如果用于整型或浮点型比较将会出现不可预料的结果。
-
-
-void *memchr(void const *a, int ch, size_t length);
-//用于查找某个字符，查找length个字节
-
-
-void *memset(void *a, int ch, size_t length);
-//把a起始的length个字节设置为ch的值，例如：memset(buffer, 0, SIZE);
+char *strcpy(char *dest, const char *src);
 ```
 
