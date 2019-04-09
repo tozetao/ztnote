@@ -53,10 +53,10 @@ char date2[] = {'J', 'u', 'n', 'e', '\0'};	//数组初始化式
 
 编译器会把字符串"June"中的字符一个个复制到数组中，然后追加一个空字符。"June"在这里不是字符串字面量，而是被编译器看成是数组初始化式的缩写形式。
 
-如果不指明字符数组的长度，编译器会自动计算长度。
+注：如果不指明字符数组的长度，编译器会自动计算长度。
 
 ```c
-char conte[10] = "abc";
+char str[10] = "abc";	//从下标3开始的元素的值都是空字符串
 ```
 
 对于不满足字符数组长度的字符串，编译器会默认将剩下的数组元素初始化为空字符\0。
@@ -65,8 +65,54 @@ char conte[10] = "abc";
 
 
 
+### 函数库
+
 ```c
 #include <string.h>
 char *strcpy(char *dest, const char *src);
 ```
+
+把src字符串拷贝到dest字符数组中。
+
+strcpy不会检查src指向的字符串长度是否适合dest字符数组，如果dest字符数组的长度是n，src字符串长度大于n，那么函数在复制src字符串时，它会越过dest的数组边界继续复制。
+
+
+
+```c
+char *strncpy(char *dest, const char *src, size_t n);
+```
+
+从src字符串中复制最多n个字符。
+
+如果src的前n个字符没有以空字符结尾，则dest中的字符串将不会以空字符结尾；如果src的长度小于n，则strncpy()将额外的空字节写入dest以确保写入n个字节。
+
+
+
+
+
+```c
+size_t strlen(const char *s);
+```
+
+返回字符串的个数，不包括空字符。
+
+
+
+```c
+char *strcat(char *dest, const char *src);
+```
+
+把字符串src的内容追加到字符串dest的末尾，并返回字符串dest的指针。
+
+如果dest没有足够大的空间容纳src指向的字符串内容，那么追加的字符将会溢出dest的内容区域。
+
+
+
+```c
+int strcmp(const char *s1, const char *s2);
+```
+
+strcmp()函数比较字符串s1和字符串s2，然后根据s1是小于、等于或大于s2，函数返回一个小于、等于或大于0的值。
+
+
 
