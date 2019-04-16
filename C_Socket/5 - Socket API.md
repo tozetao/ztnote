@@ -30,7 +30,7 @@ sockaddr_in结构体长度为16个字节，sockaddr_in的各个参数意义如�
 
 - sin_family
 
-  地址族，与socket()函数的参数一致，占用俩个字节。
+  地址族，与socket()函数的参数一致，占用2个字节。
 
 - sin_port
 
@@ -179,7 +179,7 @@ int socket(int af, int type, int protocal)
 bind(int sock, struct sockaddr *addr, socklen_t addrlen);
 ```
 
-sockt()用于确定套接字的属性，bind()函数用于将套接字与特定的IP地址和端口绑定起来。只有这样，流经过该IP地址和端口的数据才能交给套接字处理，而客户端需要使用connect()函数建立连接。
+将套接字与特定的IP地址和端口绑定起来。只有这样，流经过该IP地址和端口的数据才能交给套接字处理，而客户端需要使用connect()函数建立连接。
 
 sock参数是socket文件描述符，addr参数是一个sockaddr的结构体，指定绑定的IP与端口等信息，addrlen参数是该结构体的大小。
 
@@ -194,22 +194,27 @@ int connect(int sock, struct sockaddr *serv_addr, socklen_t addrlen);
 
 
 ```c
-listen(int sock, int backlog);
+int listen(int sock, int backlog);
 ```
 
-在绑定IP地址与端口后，就需要让套接字进入被动监听状态。sock是需要进入监听状态的套接字，backlog为请求队列的最大长度。
+使套接字进入被动监听状态。sock是需要进入监听状态的套接字，backlog为请求队列的最大长度。
 
-- 所谓被动监听
+内核会为给定的监听套接字维护俩个队列：
 
-  指当没有客户端请求时，套接字处于"睡眠"状态，只有当收到客户端请求时，套接字才会被"唤醒"来响应请求。
+- 一种是未完成连接队列，该队列中每一项都对应客户SYN分节，即已由客户发出并到达服务器，而服务器在等待完成TCP三次握手过程，这些套接字处于SYN_RECV状态。
+- 一种时已完成连接队列，每个完成TCP三次握手的客户对应其中一项，这些套接字处于ESTABLISTED状态。
 
-- 请求队列
+因为套接字从SYN_RECV状态变为ESTABLISTED状态需要一个RTT时间，所以把准备就绪的套接字从未完成队列移到已完成队列需要一个RTT时间。
 
-  当套接字正在处理客户端请求时，如果有新的请求进来，套接字是无法处理的，只能把它放到缓冲区，待当前请求处理完毕后，再从缓冲区中读取出来处理。
+关于backlog满的情况：
 
-  如果不断有新的请求进来，它们会按照先后顺序放到缓冲区中，直到缓冲区满，该缓冲区就被成为请求队列。
+当一个客户SYN到达时，如果队列是满的，TCP将忽略该分节，也就是不发送RST，这是因为TCP有超时重传的实现，客户端在等不到服务端的SYN响应时，会重新发起SYN。
 
-  如果缓冲区满了，对于Linux，客户端会收到ECONNREFUSED 错误。
+如果服务端返回RST分节，客户的connect调用会立即返回一个错误，强制让进程处理该错误，而不是由TCP的正常重传机制来处理。
+
+
+
+
 
 
 
