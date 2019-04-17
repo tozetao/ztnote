@@ -179,9 +179,21 @@ int socket(int af, int type, int protocal)
 bind(int sock, struct sockaddr *addr, socklen_t addrlen);
 ```
 
-将套接字与特定的IP地址和端口绑定起来。只有这样，流经过该IP地址和端口的数据才能交给套接字处理，而客户端需要使用connect()函数建立连接。
+将套接字与特定的IP地址和端口绑定起来。
 
 sock参数是socket文件描述符，addr参数是一个sockaddr的结构体，指定绑定的IP与端口等信息，addrlen参数是该结构体的大小。
+
+- 源IP地址：即IP数据报的来源IP地址。
+
+- 目标IP地址：即IP数据报要发完的IP地址。
+
+- INADDR_ANY：通配地址，即0.0.0.0的地址，表示监听所有网卡IP地址，
+
+客户端与服务端绑定IP地址的区别：
+
+​	为客户端套接字绑定IP地址，表示为该套接字上发送的IP数据报指定了源IP地址。TCP客户一般不把IP地址捆绑在套接字上，当连接套接字时，内核将根据网卡接口来选择源IP地址。也就是说connect中的套接字结构地址是指定IP数据报的目标IP地址，而不是为套接字绑定该套接字结构。
+
+​	为服务端套接字绑定指定IP地址，表示监听目的地为这个IP地址的客户连接。如果TCP服务器没有把IP地址捆绑在它的套接字上，内核就会把客户发送的SYN的目标IP地址作为服务器的源IP地址。
 
 
 
@@ -190,6 +202,8 @@ int connect(int sock, struct sockaddr *serv_addr, socklen_t addrlen);
 ```
 
 客户端使用connect来与TCP服务器建立连接，它的参数与bind()基本相同。
+
+connect在建立连接时，是在接收到TCP第二个分节时才会返回。接着客户端会发送一个ACK分节给服务端，服务器的accept在接收到该分节时才会正在建立连接。
 
 
 
