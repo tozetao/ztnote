@@ -118,7 +118,7 @@ TCP建立一个连接需要3个分节，通常关闭一个连接需要4个分节
 
 
 
-TCP状态
+### TCP状态
 
 - SYN_SENT
 
@@ -136,15 +136,19 @@ TCP状态
 
 - FIN_WAIT_2
 
+- TAIME_WAIT
+
+  主动关闭的一端在接收到FIN分节后，会处于TIME_WAIT状态。该状态下会给对端发送最后一个ack确认号。
+
 - CLOSE_WAIT
+
+  被动关闭的一端在接收到FIN分节后将由ESTABLISHED状态变为CLOSE_WAIT状态。
 
 - LAST_ACK
 
   被动关闭的一端在发送FIN分节后会处于该状态。
 
-- TAIME_WAIT
 
-  主动关闭的一端在接收到FIN分节后，会处于TIME_WAIT状态。该状态下会给对端发送最后一个ack确认号。
 
 
 ### TIME_WAIT
