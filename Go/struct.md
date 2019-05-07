@@ -1,5 +1,3 @@
-
-
 ### Go方法
 
 Go方法是作用于接收者（receiver）上的一个函数。
@@ -41,51 +39,32 @@ func (recv User) changeAge2() {
 
 - 重载
 
-  内嵌时，字段与方法可以被覆盖。在结构体内部中，外层名字会覆盖内层名字，这里的内层指的是混入的类型，外外层指的是当前结构体本身。
+  内嵌时，字段与方法可以被覆盖。在结构体内部中，外层名字会覆盖内层名字，这里的内层指的是混入的类型，外层指的是当前结构体本身。
 
 
 
-
-
-
-
-### Interface
-
-接口可以定义一组抽象（不具体实现）方法来说明对象的行为，所以接口是一种抽象类型。
-
-
-
-接口按照如下格式进行定义：
+通过内嵌类型可以以组合的方式来编写代码，在下面代码中，Task结构就可以调用 Log结构所实现的方法。
 
 ```go
-type Namer interface {
-    methods(param_list) return_type
+type Loger interface {
+	logging()
+}
+
+type Log struct {
+	time int
+}
+
+func (this *Log) logging() {
+	fmt.Println("this is logging func")
+}
+
+type Task struct {
+	Log
+}
+
+func main() {
+	task := Task{}
+	task.logging()
 }
 ```
-
-
-
-Go的多态：
-
-接口的方法由具体类型来实现，当某个类型的实例实现了接口定义的方法，那么该接口类型的变量可以指向这个实例的引用，并且该变量可以调用实例实现了接口定义的方法。
-
-这便是多态，是同一种类型在不同实例上表现出不同的行为。
-
-
-
-类型断言
-
-类型断言指在运行期间，判断接口类型的变量是哪种具体类型。
-
-```go
-v, err := interfaceVar.(T)
-```
-
-interfaceVar是某种接口类型的变量，T是要转换的类型。如果转换合法，v是interfaceVar转换到类型T的值，err会是true；否则v是类型T的零值，ok是false，也不会发生运行时错误。
-
-注：在做类型断言处理时，总是要处理错误。
-
-
-
-
 
