@@ -181,88 +181,45 @@ coro：保存协程的中断点。
 
 ### goroutine
 
-go协程是独立的处理单元，无法确定协程是什么时候开始执行的，因此代码逻辑必须独立与协程的调用顺序。
+在Go中，应用程序并发处理的部分是由协程来实现的。Go协程是独立的处理单元，多个Go协程可以并发的执行。
 
-go协程提供了一种简单的方法来编写并发程序，它与协程的有所区别：
+它与协程的有所区别：
 
+- Go协程通过通道来通信；协程通过让出和恢复来进行通信。
+- Go协程是并行的，协程一般来说不是并行的。
 
-
-
-
-### channel
-
-通道是一种用于发送类型化数据的管道，负责协程之间的通信。
-
-数据在通道进行传递时，在任何给定时间，一个数据被设计为只有一个协程可以对其访问，所以不会发生数据争抢，通过这种设计避免了共享内存导致的竞争问题。
+注：无法确定协程是什么时候开始执行的，因此代码逻辑必须独立与协程的调用顺序。
 
 
 
-
-
-
-
-通道阻塞
-
-通信是同步且无缓冲的。
-
-一个没有缓冲的通道在没有空间保存数据时，发送者使用通道发送数据时，接收者必须准备好接收数据，否则将会阻塞。所以通道的发送和接收操作在对方准备好之前是阻塞的。
-
-example：发送者阻塞
+example：并发演示
 
 ```go
-func sendData(ch chan int) {
-    fmt.Println("send 1")
-    ch <- 1
-    
-    //发生阻塞
-    fmt.Println("send 2")
-    ch <- 2
-    
-    fmt.Println("send 3")
-    ch <- 3
-}
-
-func getData(ch chan int) {
-    fmt.Println(<- ch)
-}
-
 func main() {
-    ch := make(chan int)
-    go sendData(ch)
-    go getData(ch)
+    go spinner(100 * time.Millisecond)
+    const n = 45
+    fibN := fib(n) // slow
+    fmt.Printf("\rFibonacci(%d) = %d\n", n, fibN)
+}
+
+func spinner(delay time.Duration) {
+    for {
+        for _, r := range `-\|/` {
+            fmt.Printf("\r%c", r)
+            time.Sleep(delay)
+        }
+    }
+}
+
+func fib(x int) int {
+    if x < 2 {
+        return x
+    }
+    return fib(x-1) + fib(x-2)
 }
 ```
 
-example：接收者阻塞
-
-```go
-func sendData(ch chan int) {
-    ch <- 1
-}
-
-func getData(ch chan int) {
-    fmt.Println("receive 1")
-    fmt.Println(<- ch)
-    
-    //发生阻塞
-    fmt.Println("receive other")
-    fmt.Println(<- ch)
-}
-
-func main() {
-    ch := make(chan int)
-    go sendData(ch)
-    go getData(ch)
-}
-```
-
-
-
-默认通道的容量是0，即未使用缓冲区的通道，通信只有在双方都准备好的情况下才成功。如果通道带缓冲区，它将是异步的，在缓冲区变满（发送）或变空（接收）之前通信是不会阻塞的。
-
-
-
-信号量模式：在协程中，通过通道发送信号，告诉main协程处理已经完成。
+spinner函数用于显示等待动画，我们通过go关键字开启一个协程负责运行该函数，然后程序会继续执行，计算斐波那契数列，直至计算完成，程序运行结束后，所有开启的协程也被关闭。
 
 
 
