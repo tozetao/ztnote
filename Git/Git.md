@@ -1,7 +1,26 @@
+- 缓存区
+
+  工作区有一个.git隐藏目录，这个目录是版本库。
+
+  版本库存储了很多东西，最重要的就是stage(缓存区)，还有Git为我们创建个一个master分支以及指向master分支的一个HEAD指针。
+
+- 工作区
+
+  working tree，工程目录就是工作区。比如将demo目录下的所有文件加入git版本库管理，那么demo目录就是工作区。
+
+  git add命令实际上是将文件存储到缓存区，然后通过git commit命令将缓存区中的修改提交到当前分支上。
+
+
+
+
+
 ## Git简介
+
 Git是一个版本控制管理工具，用于备份文件、记录历史、回溯过去、多段共享。与SVN不同的是Git是一个分布式版本控制系统。
 
 在Git中有仓库的概念，英文名是reporitory，所谓的仓库可以看作是一个目录，Git通过管理这个目录下的所有文件和目录，每个文件的修改Git都能进行跟踪，以便任何时候回溯还原。
+
+
 
 ## Github的关联配置
 使用Git我们不需要自己部署版本控制服务器，可以将数据存储在Github上面，Github就是一个版本控制的服务器。
@@ -85,22 +104,14 @@ git checkout -- 123.txt
 
 注意：--参数非常重要，如果没有--，命令就变成创建分支。
 ```
-		
+
 ### 6. 删除文件
 - rm filename
 删除指定的文件
 
-## 缓存区与工作区
-### 1. 缓存区
-工作区有一个.git隐藏目录，这个目录是版本库。
+### 
 
-版本库存储了很多东西，最重要的就是stage(缓存区)，还有Git为我们创建个一个master分支以及指向master分支的一个指针HEAD。
-
-### 2. 工作区
-working tree，就是你在电脑上看到的目录。比如d盘的demo文件是你的版本库，demo下的文件或者以后新建的目录文件都属于工作区的范畴。
-
-git add命令实际上是将文件存储到缓存区，而commit命令会将缓存区中的修改提交到当前的分支上。
-add、commit等命令操作的是.git本地仓库，要与github服务器同步需要pull或fetch、push命令
+- 
 
 ## 远程仓库管理
 前面说过Git是一个分布式的版本控制系统，所以不需要部署版本控制服务器，而是将文件提交到Github上面，Github你可以理解成一个版本控制服务器，通过将文件同步在服务器中，这样便可以在不同客户端上共享和同步数据了。
@@ -290,30 +301,30 @@ git config --global core.safecrlf false
 #提交包含混合换行符的文件时给出警告
 git config --global core.safecrlf warn
 ```
-			
 
-			
-		
+
+​			
+​		
 
 
 4. 多人协调
 	4.1 推送分支
-		master是主分支，因此要时刻与远程同步，一些修复性的bug分支不需要推送到远程区，可以先合并到主分支上，然后再把主分支master推送到远程区。
+	​	master是主分支，因此要时刻与远程同步，一些修复性的bug分支不需要推送到远程区，可以先合并到主分支上，然后再把主分支master推送到远程区。
 
 		命令： git push origin master，origin是远程库名称，master是当地分支。
 
 	4.2 抓取分支
-		git pull：将远程库全部分支抓取下来
-		git branch --set-upstream dev origin/dev
+	​	git pull：将远程库全部分支抓取下来
+	​	git branch --set-upstream dev origin/dev
 	
 	先推送
-		推送失败，因为远程分支比本地分支数据跟新，尝试合并
-			合并失败，解决冲突问题，并在本地提交。
+	​	推送失败，因为远程分支比本地分支数据跟新，尝试合并
+	​		合并失败，解决冲突问题，并在本地提交。
 	没有问题，完成推送
 
 	注意：
-		如果git pull提示“no tracking information”，
-		则说明本地分支和远程分支的链接关系没有创建，用命令git branch --set-upstream branch-name origin/branch-name。
+	​	如果git pull提示“no tracking information”，
+	​	则说明本地分支和远程分支的链接关系没有创建，用命令git branch --set-upstream branch-name origin/branch-name。
 
 5. 创建与合并分支
 	在版本回退里，每次提交，Git都会把它们串成一条时间线，这条时间线就是一个分支。
@@ -321,31 +332,31 @@ git config --global core.safecrlf warn
 	HEAD严格来说不是指向提交，而是指向master，master才是指向提交，所以HEAD指向的是当前分支。
 
 	创建分支
-		git branch branch_name 	#只创建分支
-		git checkout -b name 	#创建分支并切到到新建分支上
-		git checkout -b name，-b参数表示创建并切换到创建分支，相当于如下俩条命令：
+	​	git branch branch_name 	#只创建分支
+	​	git checkout -b name 	#创建分支并切到到新建分支上
+	​	git checkout -b name，-b参数表示创建并切换到创建分支，相当于如下俩条命令：
 	
 	切换分支
-		git checkout branch_name
+	​	git checkout branch_name
 
 	查看分支
-		git branch
+	​	git branch
 
 	合并分支
-		branch1 merge brahch2
+	​	branch1 merge brahch2
 
 	删除分支
-		git branch -d branch_name
+	​	git branch -d branch_name
 	
 	*************
 	在不同分支上修改文件内容，提交后，不同分支显示的内容是不一样的。
 
 	3.1 合并分支
-		合并分支仅限于其中一个分支并未对同一个文件进行操作才能合并，否则会产生合并冲突。
+	​	合并分支仅限于其中一个分支并未对同一个文件进行操作才能合并，否则会产生合并冲突。
 
 	3.1 解决合并冲突
-		创建一个分支：fenzhi1，并切换过来。
-		修改一个文件内容并提交
+	​	创建一个分支：fenzhi1，并切换过来。
+	​	修改一个文件内容并提交
 
 		回到主分支，修改同一个文件内容提交。
 		git merge fenzhi1，会产生冲突，如下所示：
@@ -361,10 +372,10 @@ git config --global core.safecrlf warn
 		this is new branch
 		8888888888888888888
 		>>>>>>> fenzhi1
-
+	
 		Git用<<<<<<<<,============,>>>>>>>>>划分出不同分支内容，其中HEAD就是master分支内容，>>>>>>>fenzhi1就是fenzhi1上修改的内容。
 		对于这种情况，我们可以在master查看内容，并进行修改，最后在提交。
-
+	
 		git log，可以查看分支合并的各种情况。
 
 	4. 分支管理策略
@@ -372,11 +383,11 @@ git config --global core.safecrlf warn
 		我们可以用参数 -no -ff来禁用 fast forward模式。
 
 		合并dev分支，使用命令：
-			git merge –-no-ff -m “注释” dev
+		​	git merge –-no-ff -m “注释” dev
 
 		example：
-			git log --graph --pretty=oneline --abbrev-commit
-			显示合并分支
+		​	git log --graph --pretty=oneline --abbrev-commit
+		​	显示合并分支
 
 		分支策略：首先master主分支应该是非常稳定的，也就是用来发布新版本，一般情况下不允许在上面干活，干活一般情况下都是在新建的dev分支上干活，干完后要发布，或者说dev分支代码稳定后可以合并到主分支master上来。
 
@@ -397,27 +408,27 @@ git config --global core.safecrlf warn
 		Git提供了俩种抓取远程仓库的方式，一种是fetch，一种是pull。
 
 		抓取指定分支，合并指定分支
-			fetch hostname branch_name
-			git merge branch_name
+		​	fetch hostname branch_name
+		​	git merge branch_name
 		
 		抓取所有内容，合并所有内容
-			fetch hostname
-			不知道
+		​	fetch hostname
+		​	不知道
 
 	4. 提交本地数据
 		4.1 提交指定分支
-			git push origin master:master
-				本地分支如果跟远程分支没有关联，语法报错，需要指定推送的分支。
-			
+		​	git push origin master:master
+		​		本地分支如果跟远程分支没有关联，语法报错，需要指定推送的分支。
+		​	
 			推送冲突
 				如果发生推送冲突，需要先讲数据fetch下来，进行合并，再提交再推送。
-
+	
 			解决合并冲突
 				你肯定是add commit，之后推送数据出现错误。
 				这时候先将数据抓取下来，再进行合并，出现冲突。
-
+	
 				查看哪里发生冲突了，修改，再add commit，再推送，成功。
 		4.2 提交全部分支
-			git push -all origin
-				推送本地所有分支
+		​	git push -all origin
+		​		推送本地所有分支
 
