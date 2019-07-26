@@ -1,0 +1,259 @@
+## 商品表的设计分析
+
+### 属性
+
+一个商品是有诸多属性的，按照类型可以分为基本属性、销售属性。销售属性是指由买家购买时来选择的属性，比如服装的尺码、颜色等属性，销售属性也叫做销售规格。
+
+对于一个商品来说，它可以有多个销售规格，而一个销售规格又可以有多个规格值，我们称为规格属性。商品、销售规格和规格属性，从左到右分别是一对多的关系，即一个商品可以有多个规格，一个规格可以有多个规格属性。
+
+比如T恤的产品规格可以有颜色和尺码，一个颜色规格会有白色、红色等等属性。
+
+
+
+### SKU
+
+SKU是Stock Keeping Unit的缩写，是库存量单位的意思。
+
+不同商品规格的不同属性的库存量是不同的，所谓的库存量单位是指一个规格下的某个规格属性与另一个规格的某个规格属性组合而成的一个单位库存量，比如IPhone6的某个sku是：土豪金-64G-电信版，库存量1000。
+
+当然SKU是可以由多个销售规格的属性组合而成的。
+
+
+
+sku表设计：
+
+```sql
+create table skus(
+	sku_id int unsigned,
+    sku_property varchar(100) comment '销售属性的组合',
+    stock int unsigned        comment 'sku库存量',
+    code varchar(100)         comment 'sku条形码'
+);
+```
+
+
+
+
+
+### 销售规格与规格属性
+
+一个类目下的销售规格是固定的，它是由类目决定的，而销售规格的规格属性则复杂的多。
+
+商品是由商家生产的，在同一个销售规格下，规格属性是多样的，对于平台是未知的。因此平台除了给定默认的规格属性，规格属性还需要满足以下几点：
+
+- 一个销售规格允许有多个规格属性
+- 不同的规格属性允许有对应的描述图片
+- 不同的规格属性允许有对应的颜色描述
+- 允许商家修改属性值
+- 允许商家备注不同的规格属性
+- 允许商家自定义规格属性
+
+由于规格属性的复杂性，因此需要一张独立的表来存储商品与规格属性的关系。
+
+
+
+商品规格属性表的设计：
+
+```sql
+create goods_specifications(
+    spec_attr_id int unsigned comment '规格属性id',
+    spec_attr_val varchar(10) comment '规格属性值',
+    goods_id int unsigned comment '商品id',
+    sped_id int unsigned  comment '销售规格id',
+    color varchar(10)     comment '规格属性的颜色',
+    icon varchar(200)     comment '规格属性的图片',
+    remark varchar(10)    comment '规格属性的备注'
+);
+```
+
+
+
+### 属性搜索
+
+在类目搜索中，商品的某些基本属性、销售属性都是要支持搜索的。为了支持搜索需求，在上传商品的时候，会将商品的基本属性值，以及规格属性值打横存储到表中，方便搜索与统计。
+
+针对销售规格属性的搜索，我们只允许平台默认定义的规格属性才支持搜索，也就是说如果商家修改了我们的规格属性，那么该规格属性就不支持搜索。因此一个商品的销售规格属性是官方默认定义的才会加入到这张表中。
+
+商品属性表：
+
+```sql
+create table goods_attrs (
+    id int unsigned comment '自增id',
+    category_id int comment '类目id',
+    goods_id int unsigned comment '商品id',
+    attr_id  int          comment '商品属性id',
+	attr_name varchar(10) comment '商品属性名',
+    attr_value varchar(10)  comment '商品的属性值，可以是基本属性值或规格属性值'
+);
+```
+
+
+
+### CURD分析
+
+- 查询一个商品
+
+  查询商品基本信息、sku信息、商品规格和规格属性信息。
+
+- 查询多个商品
+
+  查询一个基本信息列表
+
+- 新增商品
+
+  新增商品基本信息，新增sku列表，新增商品属性列表，新增属性搜索列表数据。
+
+- 更新商品
+  更新一个商品设计到4张表，goods、skus、specifications和attr_for_searching。先更新商品基本信息，然后分别更新商品sku、商品属性表和规格属性表。
+
+  sku列表的更新：假设A集合是客户端sku列表，B集合是服务端sku列表，那么A与B的交集是要更新的，A与B的差集是要插入的，B与A的差集是要删除的。
+
+  剩下的更新都与sku的逻辑相同。
+
+- 删除商品
+
+  将对应表的数据都清空即可。
+
+
+
+## 类目
+
+类目决定了一个商品所拥有的基本属性、销售规格。
+
+注：销售规格其实是商品的销售属性。
+
+```sql
+create table categories(
+	id int,
+    name varchar(15) comment '类目名',
+    pid int    comment '上级类目id'
+);
+
+-- 基本属性
+create table base_attrs(
+    attr_id int comment '属性id',
+    category_id int     comment '类目id',
+    attr_name varchar(10) comment '属性名',
+    attr_values varchar(200) comment '属性值列表',
+    is_mulit tinyint      comment '是否多选'，
+    is_list tinyint       comment '属性值是否列表'
+);
+
+-- 规格属性
+create table specifiaction_attrs(
+    spec_attr_id int comment '属性id',
+    category_id int  comment '类目id',
+    attr_name varchar(10) comment '属性名',
+    attr_values varchar(200) comment '属性值列表',
+    is_changeable tinyint comment '是可改变的',
+    is_noteable tinyint comment '是可备注的',
+    has_icon tinyint comment '是否可以有图片描述',
+    has_color tinyint comment '是否可以有颜色'，
+    is_allow_new tinyint comment '是否可新增规格属性值的'
+);
+```
+
+
+
+
+
+## 订单
+
+订单需要保留历史信息，因此需要有商品的标题、内容，购买时的sku信息。
+
+一个订单包含多件商品（多个sku）
+
+```sql
+create table orders(
+	order_id int unsigned,
+    order_no varchar(100) comment '订单编号',
+    user_id int unsigned  comment '用户id',
+    created_at int comment '创建时间'
+);
+
+-- 订单sku
+create table order_skus(
+	order_sku_id int unsigned,
+    goods_title varchar(60) comment '商品标题',
+    goods_thumb varchar(100) comment '商品缩略图',
+    goods_content varchar(1000) comment '商品详情页',
+    sku_property  varchar(500)  comment 'sku属性',
+    quantity int unsigned   comment '购买数量',
+    unit_price int unsigned comment '单价，单位分',
+    order_id int unsigned   comment '订单id'
+);
+
+-- 订单地址
+create table order_address(
+    order_addr_id int unsigned comment '订单地址id',
+    address varchar(300) not null comment '详细地址',
+    phone   bigint comment '联系电话',
+    contact char(10) comment '联系人',
+    order_id int unsigned comment '订单id'
+);
+```
+
+
+
+## 用户
+
+用户目前包含基本信息，联系地址。
+
+```sql
+create table users(
+    user_id int unsigned comment '用户id',
+    username varchar(20) comment '用户名',
+    password varchar(100) comment '密码',
+    created_at int comment '创建时间'
+);
+
+-- 用户的联系方式
+create table user_contact(
+    user_contact_id int unsigned comment '联系id',
+    phone bigint comment '联系电话',
+    province varchar(20) '省份',
+    city varchar(20) '市',
+    area varchar(20) '区',
+    address varchar(100) '详细地址',
+    user_id int unsigned '用户id'
+);
+
+-- 系统管理员表
+create table administrators(
+    admin_id int comment comment '管理员id',
+    username varchar(20) comment '管理员名字',
+    password varchar(255) comment '密码',
+    created_at int comment '创建时间'
+);
+```
+
+
+
+前台用户模块接口
+
+登陆
+
+
+
+
+
+
+
+
+
+## 购物车
+
+一个游客或者用户操作购物车的流程大体如下：
+
+> 加入购物车 => 进入购入车页面 => 勾选要购买的商品 => 进入购买流程。
+
+
+
+在用户确认订单并提交订单后，才减少购物车中对应的商品。另外加入购物车的行为是不需要登陆的，只有点击购买确认订单时，才需要用户登陆。
+
+
+
+## 购买流程
+点击购买 => 确认订单 => 提交订单，进入支付页面 => 根据支付结果，响应页面。
+
+注：确认订单是需要登陆的。

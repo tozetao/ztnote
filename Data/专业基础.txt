@@ -93,9 +93,6 @@ Socket 的进程间通信。用 C 语言写一个 1 对 1 的聊天小程序，或是一个简单的 HTTP 服
 - 面试点：QPS优化 => 错误定位  => 日志处理 => 服务器监控
 
 - High School Mathematics
-- The shop platform：implete for Go
-	- jwt
-	- 一个完成的请求流程
-
+- The shop platform
 
 

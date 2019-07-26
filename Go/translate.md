@@ -1,3 +1,5 @@
+## net/http
+
 ### Handler
 
 ```go
@@ -146,4 +148,55 @@ func ListenAndServeTLS(addr string, certFile string, keyFile string, handler Han
 
 - 路由注册流程
 - Server对象处理一个请求的流程
+
+
+
+
+
+## httprouter
+
+httprouter的路由包含俩种类型的参数，命名参数和全匹配参数。
+
+
+
+命名参数是动态路径段，它可以匹配任何东西，直到下一个"/"或路径结束。
+
+```ini
+Path:	/blog/:category/:post
+Requests:
+	/blog/go/request		//匹配，category=go，post=request
+	/blog/go/request/		//不匹配，但是会重定向
+	/blog/go				//不匹配
+	/blog/go/request-routers/comments	//不匹配
+```
+
+同一层级的路由参数是允许同名的，而不同名的路由参数将会发生panic。
+
+```ini
+/user/:post/balance		//right
+/user/:post/account		//right
+/user/:hi/add			//error
+```
+
+
+
+
+
+
+
+
+
+全匹配参数可以匹配任何内容直到路径结束，包括目录索引（指catch-all之前的"/"）。由于全匹配参数是匹配任何内容直到结束，因此该参数必须是最终路径元素。
+
+```ini
+Path: /files/*filepath
+
+Requests:
+ /files/                             match: filepath="/"
+ /files/LICENSE                      match: filepath="/LICENSE"
+ /files/templates/article.html       match: filepath="/templates/article.html"
+ /files                              no match, but the router would redirect
+```
+
+
 
