@@ -1,58 +1,19 @@
-语言选择
+必修
 -------------------------------
-	C Plus
-	C语言程序现代设计
+- 数学
+- 英语
+- 深入计算机系统：CSAPP
+- 数据结构与算法：算法第四版
+- 计算机网络
+- 编译原理
 
 
-
-
-理论学科
+资料
 -------------------------------
-数据结构与算法
-	算法第四版
-	算法导论
-	编程珠玑
-	LeetCode
-
-
-
-
-系统知识
--------------------------------
-CSAPP
-Unix高级环境编程
-gcc调试（https://blog.csdn.net/haoel/article/details/2879）
-makefile编译程序（https://blog.csdn.net/haoel/article/details/2886）
-
-
-
-
-计算机网络
--------------------------------
-Unix网络编程：套接口API
-Unix网络编程：进程间通信
-C10K Problem
-TCP/IP详解(卷1)
-
-
-
-
-编译原理
--------------------------------
-	编译原理（龙书）
-
-
-
-
-练习
--------------------------------
-用这些系统知识操作一下文件系统，实现一个可以拷贝目录树的小程序。
-用 fork / wait / waitpid 写一个多进程的程序，用 pthread 写一个多线程带同步或互斥的程序。比如，多进程购票的程序。
-用 signal / kill / raise / alarm / pause / sigprocmask 实现一个多进程间的信号量通信的程序。
-学会使用 gcc 和 gdb 来编程和调试程序（参看我的《用 gdb 调试程序》一、二、三、四、五、六、七）。
-学会使用 makefile 来编译程序（参看我的《跟我一起写 makefile》一、二、三、四、五、六、七、八、九、十、十一、十二、十三、十四）。
-Socket 的进程间通信。用 C 语言写一个 1 对 1 的聊天小程序，或是一个简单的 HTTP 服务器。
-
+- Unix卷1、卷2
+- C10k Problem
+- gcc调试（https://blog.csdn.net/haoel/article/details/2879）
+- makefile编译程序（https://blog.csdn.net/haoel/article/details/2886）
 
 
 
@@ -80,19 +41,5 @@ Socket 的进程间通信。用 C 语言写一个 1 对 1 的聊天小程序，或是一个简单的 HTTP 服
 	消息队列要做到不丢数据（要把消息持久化下来）。
 	能做到性能很高
 
-
-
-
-暂定学习任务
---------------
-- 数学是一等公民，工程与理论并重。
-
-- 数学
-- 英语
-- 理论学科：CSAPP => 网络编程：卷2 => C10K Problem => 网络是怎样连接的 => TCP/IP卷2
-- 面试点：QPS优化 => 错误定位  => 日志处理 => 服务器监控
-
-- High School Mathematics
-- The shop platform
 
 

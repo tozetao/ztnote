@@ -1,74 +1,40 @@
-基础接口
-
-基础接口定义在框架根目录下。
-
-/peer.go文件定义了通信端的基本接口。
-
-```go
-//GenericPeer定义了基本通用端接口，它由Peer、PeerProperty俩个接口组合而成。
-type GenericPeer interface {}
-
-//定义访问Session的接口
-type SessionAccessor interface {}
-```
-
-
-
-/peer_tcp.go文件定义了TCP通信端的基本接口。
-
-```go
-//tcp接收器的接口
-type TCPAcceptor interface{}
-
-//tcp连接器的接口
-type TCPConnector interface{}
-```
-
-
-
-/processor.go文件定义事件的基本接口。
-
-```go
-type Event interface {
-    Session() Session
-    
-    Message() interface{}
-}
-
-type MessageTransmitter interface {}
-
-type EventHooker interface {}
-```
-
-
-
-/session.go文件定义了Session的操作接口。
-
-```go
-type Session interface {}
-```
-
-
-
-
-
-
-
-
-
-
-
 ### Peer
 
-在cellnet框架中，客户端使用Connector连接服务器，而服务器使用Acceptor接收多个客户端。在连接建立成功后，客户端和服务端都会各自生成一个会话（Session）用于处理数据的收发流程。
+cellnet将端与端之间的通信抽象为通信端（Peer）。
 
-对于Connector和Acceptor，cellnet统称为通信端（Peer）。
-
-
+比如服务器一端可以接受多个连接，因此称为Acceptor，它是一种能够接受连接的端，而连接到服务器的客户端称为Connector，它是能够连接到服务器的端。
 
 
 
-/tcp/acceptor.go文件实现了接收器。
+
+
+源码文件
+
+- peer.go
+
+  定义基本的Peer接口，基本通用接口是GenericPeer接口，由Peer和PeerPropery接口组合而成。
+
+- peer_tcp.go
+
+  定义TCP协议的Peer接口。
+
+- peer_udp.go
+
+- peer_ws.go
+
+- peer_db.go
+
+
+
+
+
+
+
+
+
+tcp.Acceptor端分析
+
+/tcp/acceptr.go文件实现了TCP协议的Acceptor。
 
 ```go
 type tcpAcceptor struct {
@@ -89,20 +55,9 @@ tcp接收器是由多个核心结构体组成的结构体。
 
 
 
-peer.CoreRunningTag，该结构体位于/peer/runningtag.go文件中，定义通信端运行状态的相关信息。
 
-```go
-type CoreRunningTag struct {
-    //运行状态
-    running int64
-    //停止状态
-    stopping int64
-    //
-    stoppingWaiter sync.WaitGroup
-}
-```
 
-peer.CoreProcBundle，该结构体位于/peer/procbundle.go文件中，实现了事件相关的方法。
+
 
 
 
@@ -157,6 +112,44 @@ type SessionAccessor interface {
 	CloseAllSession()
 }
 ```
+
+
+
+### Processor
+
+Processor处理消息的收发过程。
+
+不同的协议要使用不同的Processor，框架内建的Processor类型有：
+
+- tcp.ltv
+
+  处理TCP协议，使用Length-Type-Value封包格式，带RPC，Relay功能
+
+- udp.ltv
+
+  处理UDP协议，使用Length-Type-Value封包格式
+
+- http
+
+  基本的http处理
+
+在使用时将处理特定协议的Processor绑定到Peer上，那么该Peer就能支持该协议的处理。
+
+
+
+系统事件
+
+sysmsg.go文件中定义了常用的系统事件。
+
+
+
+
+
+
+
+### Codec
+
+封包编码
 
 
 
@@ -286,60 +279,17 @@ cellnet在这里将消息类型、消息ID分别与消息元信息建立了关�
 
 
 
-问题：
-
-- Peer的开启与关闭?
-
-  tcpAcceptor
-
-- 如何处理一个新连接?
-
-  每个新的连接都是一个新的Session
-
-- 如何拆包与解包
-
-  MessageTransmittera负责拆包与解包，使用util目录的工具类来处理的。
+Peer、Processor
 
 
 
-- 如何接收数据
+Acceptor如何处理一个新的连接
 
-  Session会开启一个协程，专门接收数据。
+如何收发数据，由哪个对象进行处理？
 
-  将数据拆包成消息后，就是一个接收消息事件，将消息事件交给Processor去处理，Processor则会调用客户端回调函数来处理接收到的消息。
-
-- 如何发送数据
-
-  Session会开启一个协程，循环遍历数据队列，如果有数据时，则发送数据。
+如何封包与拆包？
 
 
-
-- 如何处理一个事件?
-
-  触发一个事件时，会调用ProcEvent()方法来进行处理，其实就是使用EventCallback事件回调方法来处理一个事件的发生。
-
-  EventCallback会调用SessionQueuedCall()方法来处理事件，如果有事件队列则投递给事件队列处理，如果没有则执行执行回调函数。
-
-  
-
-- 如何投递事件?
-
-  
-
-- 处理了哪些socket选项?
-
-- 会话管理的实现?
-
-  由一个SessionID为键，Session对象为值的map对象实现。
-
-  
-
-
-
-
-
-- 事件队列的实现?
-- 发送数据队列的实现?
 
 
 
