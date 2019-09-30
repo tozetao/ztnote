@@ -6,9 +6,7 @@ cellnet将端与端之间的通信抽象为通信端（Peer）。
 
 
 
-
-
-源码文件
+Peer的源码文件
 
 - peer.go
 
@@ -20,15 +18,13 @@ cellnet将端与端之间的通信抽象为通信端（Peer）。
 
 - peer_udp.go
 
+  定义UDP协议的Peer接口
+
 - peer_ws.go
 
+  定义websocket协议的Peer接口
+
 - peer_db.go
-
-
-
-
-
-
 
 
 
@@ -142,6 +138,20 @@ Processor处理消息的收发过程。
 sysmsg.go文件中定义了常用的系统事件。
 
 
+
+Processor
+
+- Processor的注册
+
+  不同的通信端有不同的Processor，而Processor针对不同的通信端依赖的处理模块也不同。
+
+  Processor的注册便是根据通信端来注册Processor的依赖模块：MessageTransmitter、EventHooker和Callback。
+
+- Processor的绑定
+
+  绑定是将通信端（Peer）的Processor（处理器）所依赖的处理模块与客户回调函数一起绑定起来。
+
+  依赖模块就是上面的MessageTransmitter、EventHooker和EventCallback。
 
 
 
@@ -293,21 +303,12 @@ Acceptor如何处理一个新的连接
 
 
 
-Processor
+问题：
 
-- Processor的注册
-
-  不同的通信端有不同的Processor，而Processor针对不同的通信端依赖的处理模块也不同。
-
-  Processor的注册便是根据通信端来注册Processor的依赖模块：MessageTransmitter、EventHooker和Callback。
-
-- Processor的绑定
-
-  绑定是将通信端（Peer）的Processor（处理器）所依赖的处理模块与客户回调函数一起绑定起来。
-
-  依赖模块就是上面的MessageTransmitter、EventHooker和EventCallback。
-
-
+- Peer的实现
+- 收发处理消息
+- 队列
+- 如何封包编码
 
 
 

@@ -81,21 +81,6 @@ https://mengkang.net/1195.html
 
 
 
-GO语言学习资料
-1. https://golang.org/doc/effective_go.html
-
-2. https://github.com/Unknwon/the-way-to-go_ZH_CN
-
-3. https://github.com/qyuhen/book
-
-4. https://github.com/EDDYCJY/blog
-
-5. https://github.com/chai2010/advanced-go-programming-book (入门后再看)
-
-6. https://github.com/gopherchina/conference
-
-
-
 
 
 
