@@ -401,7 +401,9 @@ type Processor interface {
 }
 ```
 
-network/json.go实现了JSON格式消息体的解析、编码以及消息体的路由。
+
+
+以下是network/json.go的分析，它实现了JSON格式消息体的解析、编码以及消息体的路由。每个消息体会路由到对应的Module、处理该消息体的回调函数。我们使用MsgInfo结构体来封装这些信息。
 
 ```go
 type Processor struct {
@@ -419,13 +421,15 @@ type MsgRaw struct {
 	msgID    string
     msgRawData json.RawMessage
 }
+
+type MsgHandler func([]interface{})
 ```
 
 
 
 消息体的注册：
 
-注册消息体就是注册结构体对应的业务函数。Processor会使用一个map，键是结构体的名称，值是一个封装了消息体运行时信息、要路由的模块rpc的对象（MsgInfo结构体）。
+Register实现了消息体的注册，该方法会初始化MsgInfo结构体，然后使用消息体的名字与MsgInfo结构体做一个映射。
 
 ```go
 func (p *Processor) Register(msg interface{}) string {
@@ -433,39 +437,80 @@ func (p *Processor) Register(msg interface{}) string {
 }
 ```
 
-注册过程就是初始化MsgInfo对象，并它结构体与MsgInfo对象做映射关系的过程。
-
 
 
 消息体的路由设置：
 
-json.go文件中定义了Processor结构体，它使用一个map来保存消息体到回调函数之间的映射。key是结构体的名称，值则是匿名函数。
-
-匿名函数是自定义的MsgHandler类型，它是一个接受空接口切片参数的匿名函数类型。
+SetRouter用于设置消息体的chanrpc，之前说过模块之间是通过chanrpc来交互的，设置消息体的chanrpc，就是将该消息体交由给该chanrpc的模块来处理。
 
 ```go
-type MsgHandler func([]interface{})
-
-function (p *Processor) SetRouter(msg interface{}, msgHandler MsgHandler) {
+function (p *Processor) SetRouter(msg interface{}, msgRouter *chanrpc.Server) {
     // 反射，解析msg参数
     msgType := reflect.TypeOf(msg)
     
     // 获取msg的结构体名称
     msgID := msgType.Elem().Name()
     
-    // 设置回调函数
+    // 设置消息体的chanrpc
     i, ok := p.msgInfo[msgID]
-    i.msgHandler = msgHandler
+    i.msgRouter = msgRouter
 }
 ```
 
-总的来说就是以结构体名字为键，设置它的回调函数。上面的源码省略了一系列判断。
 
 
 
 
+消息体是如何路由的?
 
-消息体是如何转发的。
+路由一个消息体便是执行前面所设置的chanrpc和回调函数。
+
+```go
+func (p *Processor) Route(msg interface{}, userData interface{}) {
+    // raw，原生消息的处理。
+    
+    // 反射，解析msg参数
+    msgType := reflect.TypeOf(msg)
+    
+    msgID := msgType.Elem().Name()
+    
+    i, ok := p.msgInfo[msg]
+    // 执行对应的回调函数
+    if i.msgHandler != nil {
+        i.msgHandler([]interface{}{msg, userData})
+    }
+    // 执行对应的chanrpc
+    if i.msgRouter != nil {
+        i.msgRouter.Go(msgType, msg, userData)
+    }
+}
+```
+
+
+
+原材料：
+
+- 面包片
+- 培根
+- 午餐肉
+- 饺子
+- 榨菜
+- 鸡蛋
+
+
+
+饮品：
+
+- 牛奶
+- 麦片
+
+
+
+水果：
+
+- 香蕉
+
+
 
 
 
@@ -499,12 +544,26 @@ type Skeleton struct {
 }
 ```
 
+ChanRPCServer与server字段指向同一个chanrpc.Server对象，同时ChanRPCServer也是暴漏给外部的字段。
+
 
 
 skeleton的运行：
 
-```go
+skeleton会利用多路复用，监听多个channel，执行对应操作。
 
+```go
+func (s *Skeleton) Run(closeSig chan bool) {
+    for {
+        select {
+        // 监听关闭信号   
+        case <-closeSig:
+        // 监听server的ChanCall通道
+        case <-s.server.ChanCall:
+        // 监听其他...
+        }
+    }
+}
 ```
 
 
@@ -531,8 +590,6 @@ skeleton的运行：
 
 
 
-- 
-
 
 
 ### leaf/chanrpc
@@ -545,9 +602,59 @@ skeleton的运行：
 - 异步调用
 - Go调用
 
+```go
+type RetInfo struct {
+    ret  interface{}
+    err  error
+    cb   interface{}
+}
+```
+
+cb字段是回调函数，函数可以是以下类型：
+
+```go
+func (err error)
+func (ret interface{}, err error)
+func (ret []interface{}, err error)
+```
+
+ret字段允许的类型有：nil、
 
 
-消息体是如何路由的？
+
+
+
+```go
+
+
+type CallInfo struct {
+    f     interface{}
+    args  []interface{}
+    
+}
+
+type Server struct {
+    functions map[interface{}]interface{}
+    
+    ChanCall  chan *CallInfo
+}
+```
+
+Server结构体使用map来保存消息体与回调函数之间的映射关系，ChanCall是一个CallInfo类型的通道。
+
+
+
+
+
+
+
+chanrpc是如何交互的？
+
+
+
+
+
+
 
 chanrpc如何使用?
 
