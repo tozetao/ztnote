@@ -107,7 +107,7 @@ Client::open();
 
 ### Laravel的Facade
 
-Laravel中的Facade是一个容器中的对象的静态代理，通过Facade能够以静态的方式来调用存放在容器中对应对象的方法。
+Laravel中的Facade是获取容器中的对象的代理对象，通过Facade能够以静态的方式来调用，去获取存放在容器中对象。
 
 
 

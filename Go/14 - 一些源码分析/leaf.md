@@ -463,7 +463,7 @@ function (p *Processor) SetRouter(msg interface{}, msgRouter *chanrpc.Server) {
 
 消息体是如何路由的?
 
-路由一个消息体便是执行前面所设置的chanrpc和回调函数。
+路由一个消息体便是执行rpc服务和注册的函数。
 
 ```go
 func (p *Processor) Route(msg interface{}, userData interface{}) {
@@ -487,28 +487,6 @@ func (p *Processor) Route(msg interface{}, userData interface{}) {
 ```
 
 
-
-原材料：
-
-- 面包片
-- 培根
-- 午餐肉
-- 饺子
-- 榨菜
-- 鸡蛋
-
-
-
-饮品：
-
-- 牛奶
-- 麦片
-
-
-
-水果：
-
-- 香蕉
 
 
 
@@ -544,13 +522,13 @@ type Skeleton struct {
 }
 ```
 
-ChanRPCServer与server字段指向同一个chanrpc.Server对象，同时ChanRPCServer也是暴漏给外部的字段。
+ChanRPCServer与server字段指向同一个chanrpc.Server对象，同时ChanRPCServer也是暴漏给外部的字段。其他模块可以通过ChanRPCServer来与实现了Skeleton的模块进行通讯。
 
 
 
 skeleton的运行：
 
-skeleton会利用多路复用，监听多个channel，执行对应操作。
+skeleton会利用多路复用，监听多个channel，执行对应操作。Skeleton的Run方法是核心方法，它会监听其他模块对它的调用。
 
 ```go
 func (s *Skeleton) Run(closeSig chan bool) {
@@ -610,7 +588,19 @@ type RetInfo struct {
 }
 ```
 
-cb字段是回调函数，函数可以是以下类型：
+RetInfo是一个封装返回信息的结构体。ret字段是返回结果，cb字段是回调函数。
+
+```go
+type CallInfo struct {
+    f     interface{}
+    args  []interface{}
+    
+    chanRet chan *RetInfo    
+    cb    interface{}
+}
+```
+
+CallInfo是一个封装调用信息的结构体。cb字段是异步模式调用时提供的回调函数，而不是Server注册的函数。cb字段的回调函数只允许是以下类型：
 
 ```go
 func (err error)
@@ -618,29 +608,41 @@ func (ret interface{}, err error)
 func (ret []interface{}, err error)
 ```
 
-ret字段允许的类型有：nil、
-
-
-
 
 
 ```go
-
-
-type CallInfo struct {
-    f     interface{}
-    args  []interface{}
-    
-}
-
 type Server struct {
     functions map[interface{}]interface{}
-    
     ChanCall  chan *CallInfo
 }
 ```
 
-Server结构体使用map来保存消息体与回调函数之间的映射关系，ChanCall是一个CallInfo类型的通道。
+Server对象是chanrpc的服务端，它使用一个map来保存ID与函数的映射关系，而ChanCall是一个CallInfo指针类型的通道，在实例化Server对象时可以指定该通道的缓冲大小。
+
+
+
+```go
+type Client struct {
+    s    *Server
+    chanSyncRet    chan *RetInfo
+    chanAsynRet    chan *RetInfo
+    pendingAsynCall int
+}
+```
+
+RetInfo封装了执行结果信息，chanSyncRet是一个RetInfo类型的通道。当Server执行完毕后会向该chanSyncRet通道中写入RetInfo对象，由客户端处理。
+
+
+
+交互流程的实现：
+
+Client的俩个通道是用于接收Server执行结果，而Server的通道是用于接收Client的调用信息。它们倆者是通过通道来进行交互的。
+
+在同步调用时，Client的chanSyncRet是接收Server端rpc函数的执行结果。在Client进行调用，它会将chanSyncRet封装在CallInfo对象中，然后写入到Server的CallInfo通道中。
+
+接着Client会读取chanSyncRet通道，等待Server端的处理。
+
+Server端在CallInfo通道中读取到调用信息时，会执行rpc函数
 
 
 
@@ -648,7 +650,196 @@ Server结构体使用map来保存消息体与回调函数之间的映射关系�
 
 
 
-chanrpc是如何交互的？
+rpc的注册：
+
+rpc的注册是通过Server对象来进行的，在实现上是通过map来进行注册的，键是id，值是回调函数。
+
+```go
+func (s *Server) Register(id interface{}, f interface{}) {
+    // f的类型检查，代码略
+    switch f.(type) {}
+    
+    if _, ok := s.functins[id]; ok {
+        panic(fmt.Sprintf("function id %v: already registered", id))
+    }
+    
+    s.functions[id] = f
+}
+```
+
+
+
+
+
+rpc的执行：
+
+Server会一直监听Client的调用，当有Client调用Server注册的函数才会执行。                                                                                                                                                                                                                                                                                                                         
+
+```go
+// s是实例化出来的Server对象
+for {
+    s.Exec(<-s.ChanCall)
+}
+```
+
+Server的监听是通过输出CallInfo通道实现的，在通道没有数据时会一直阻塞，而当Client调用时会向Server对象的CallInfo通道输入数据，这时Server收到通道传输过来的CallInfo对象时就会执行。              
+
+执行代码分析：
+
+```go
+func (s *Server) exec(ci *CallInfo) (err error) {
+    // 检测f的类型，转换成对应的类型并执行
+    switch ci.f.(type) {
+        case func([]interface{}):
+            ci.f.(func([]interface{}))(ci.args)
+        	return s.ret(ci, &RetInfo{ret: ret})
+        case func([]interface{}) interface{}:
+            ret := ci.f.(func([]interface{}) interface{})
+            return s.ret(ci, &RetInfo{ret: ret})
+        // 后续代码略...
+    }
+    
+    panic("bug")
+}
+```
+
+首先检测CallInfo对象中f字段的类型是否符合规定的函数类型，接着转换成对应函数类型的函数来执行，最后返回执行结果。
+
+
+
+同步调用分析：
+
+以Call开头的方法都是同步调用，它会在rpc函数执行完毕后返回。每个Call函数对应的不同的函数类型，与注册的类型是对应的。
+
+```go
+func (c *Client) Call0(id interface{}, args ...interface{}) error {
+    // 获取要执行的函数
+    f, err := f(id, 0)
+    
+    // 封装成CallInfo对象，再执行调用
+    err = c.call(&CallInfo{
+        f: f,
+        args: args,
+        chanRet: c.chanSyncRet,
+    })
+    
+    // 读取回调函数执行结果，Server执行完毕后会封装执行结果，写入到chanSyncRet通道中。
+    ri := <-c.chanSyncRet
+    return ri.err
+}
+```
+
+Call0用于调用func([]interface{})类型的函数。
+
+```go
+func (c *Client) f(id interface{}, n int) (f interface{}, err error) {
+    if c.s == nil {
+        err = errors.New("server not attached.")
+        return
+    }
+    
+    // 获取注册的函数
+    f = c.s.functions[id]
+    
+    // 验证函数f的类型
+    switch n {
+    case 0:
+        _, ok := f.(func([]interface{}))
+    // 后续代码略
+    }
+}
+```
+
+f方法会根据id获取注册的回调函数，参数n是回调函数的类型，用于检查注册函数的类型。
+
+```go
+func (c *Client) call(ci *CallInfo, block bool) (err error) {
+    if block {
+        c.s.ChanCall <- ci
+    } else {
+        // 如果c.s.ChanCall是可写入的就执行，否则返回错误。
+        select {
+            case c.s.ChanCall <- ci:
+            default:
+            	err = errors.New("chanrpc channel full")
+        }
+    }
+    return
+}
+```
+
+call方法是真正执行rpc函数的地方，调用rpc函数其实就是将rpc函数、参数等信息封装成CallInfo对象，然后写入到Server对象的CallInfo通道中，由一直监听的Server对象来执行。
+
+Server对象在执行rpc函数过程中，会把执行结果封装成RetInfo对象，写入到CallInfo.chanSyncRet通道中，最终Call方法中读取chanSyncRet通道并返回读取结果。
+
+
+
+注：整个过程中，Server必须将rpc函数执行结果写入到Client的chanSyncRet通道中才会继续向下执行，否则会一直阻塞。
+
+
+
+
+
+异步调用分析：
+
+异步模式指的是调用时返回执行结果，而是由回调函数来处理执行结果。
+
+```go
+func (c *Client) AsynCall(id interface{}, _args ...interface{}) {
+    // 回调函数要调用的参数
+    args := _args[:len(_args) - 1]
+    
+    // 回调函数
+    cb   := _args[len(_args) - 1]
+    
+    // 验证回调函数的类型，代码略...
+    var n
+    switch cb.(type) {}
+    
+    // 传递相关参数，开始调用。
+    c.asyncCall(id, args, cb, n)
+    c.pendingAsynCall++
+}
+```
+
+这部分代码负责分离rpc函数执行时的参数与回调函数，然后传入asyncCall()方法中。
+
+```go
+func (c *Client) asyncCall(id interface{}, args []interface{}, cb interface{}, n int) {
+    // 通过id获取rpc函数
+    f, err := c.f(id, n)
+    
+    // 封装CallInfo对象，写入到CallInfo通道中
+    // chanRet指向了Client的ChanAsynRet通道
+    err = c.call(&CallInfo{
+        f: f,
+        args: args,
+        chanRet: c.ChanAsynRet,
+        cb: cb,
+    })
+    
+    // 异步模式不立即处理执行结果，只有调用报错时会将错误信息写入到ChanAsynRet通道中。
+    if err != nil {
+        c.ChanAsynRet <- &RetInfo{err: err, cb: cb}
+		return
+    }
+}
+```
+
+那么异步模式是如何处理执行结果的呢？
+
+我们需要读取Client的ChanAsynRet通道，然后调用Cb方法来执行。
+
+```go
+// c是Client对象
+c.Cb(<-c.ChanAsynRet)
+```
+
+每调用一次既是处理一次异步调用结果。到这里就明白，所谓的异步模式就是调用时执行rpc函数，直到某个时刻由调用时传入的回调函数来处理rpc执行结果。
+
+
+
+Go模式调用：最简单的一种模式，忽略rpc函数执行结果和错误。
 
 
 
@@ -656,6 +847,58 @@ chanrpc是如何交互的？
 
 
 
-chanrpc如何使用?
+剩余未看的包：
 
-websocket通讯?
+- websocket
+- probuffer
+
+- leaf/go
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+原材料：
+
+- 面包片
+- 培根
+- 午餐肉
+- 饺子
+- 榨菜
+- 鸡蛋
+
+
+
+饮品：
+
+- 牛奶
+- 麦片
+
+
+
+水果：
+
+- 香蕉
+
+
+
+
+
+
+
+
+
+
+

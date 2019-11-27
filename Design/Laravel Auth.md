@@ -1,20 +1,77 @@
-### Auth分析
-
-AuthManager
-
-认证管理类，负责创建Guard和UserProvider对象。
-认证一个用户的过程：
-
-- 通过Auth获取配置的守卫
-- 守卫根据基于的证书验证用户，通过UserProvider提供的服务来检索用户的证书，完成认证的过程。
+laravel用户认证的核心是由Guard（看守器）和Provider（提供器）组成。
 
 
 
-Guard
+看守器决定了如何认证每个请求中的用户，例如SessionGuard会使用Session存储和Cookie来维持状态。
 
-由于登陆的方式是多种多样的，因此抽象认证用户的基础接口，以此实现不同登陆方式的认证。
+提供器定义了如何从存储数据中检索用户。
 
-在Laravel中是通过配置来决定要生成哪种类型的Guard，而用户认证依赖于UserProvider接口定义的实现。
+
+
+SessionGuard如何验证用户？
+
+在创建SessionGuard的时候，会注入UserProvider对象。Guard是使用提供器对象来验证的。
+
+
+
+看看用户提供器是怎么创建的，
+
+
+
+以及如何进行检索和验证用户。
+
+
+
+SessionGuard怎么保持用户状态？
+
+
+
+
+
+如果要自己实现Guard和UserProvider，那么需要通过AuthManager来进行扩展。
+
+
+
+
+
+
+
+
+
+### Auth
+
+在Laravel中，Auth是一个门面对象。它就是一个代理对象，Auth静态方法的调用本质上是获取容器中注册的AuthManager对象来调用的。
+
+
+
+
+
+### AuthManager
+
+认证管理类。提供创建看守器、提供器对象的接口，也提供注册自定义看守器和提供器的接口。
+
+```php
+interface Factory
+{
+    public function guard($name = null);
+    
+    public function shouldUse($name);
+}
+```
+
+AuthManager所实现的接口。
+
+
+
+
+
+
+
+### Guard
+
+Guard是提供用户认证的统一接口。
+
+根据应用的不同，可以有多种不同的Guard实现。Laravel默认提供了基于Session和Token的Guard。
 
 ```php
 // 定义一个守卫的基础接口
@@ -38,6 +95,11 @@ interface Guard
     // Set the current user.
     public function setUser(Authenticatable $user);
 }
+```
+
+SessionGuard
+
+```php
 
 // 定义有状态的守卫的接口
 interface StatefulGuard
