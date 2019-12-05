@@ -1,5 +1,0 @@
-loadrunner
-
-jmeter
-
-grafana
