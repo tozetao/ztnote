@@ -8,7 +8,7 @@ opcache.revalidate_freq=60
 opcache.validate_timestamps=0
 
 # 允许缓存opcode文件的最大数
-opcache.max_accelerated_files
+opcache.max_accelerated_files=3907
 
 # opcache可用的内存大小
 opcache.memory_consumption=512
