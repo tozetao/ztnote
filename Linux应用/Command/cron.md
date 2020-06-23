@@ -3,11 +3,11 @@ cron是系统调度进程，能够在无人干预情况时运行作业。cron进
 
 crontab命令允许用户向cron进程提交、编辑、删除相应的作业，每个用户都可以编辑crontab文件，编写自己的调度信息，例如每分钟执行，每小时执行等。
 
-### 1. cron config
+### cron config
 /etc/cron.allow，/etc/cron.deny，这俩个配置文件管理系统用户执行cron服务的权限。
 allow文件是允许用户使用cron服务，deny是禁止用户使用cron服务，allow的优先级高于deny，如果俩个文件同时存在，allow生效，deny不生效。
 
-### 2. crontab
+### crontab
 crontab格式：分<>小时<>日<>月<>星期<>命令，<>是空格的意思，用于区分。
 - 分：0-59
 - 小时：1-23
@@ -25,7 +25,7 @@ crontab格式：分<>小时<>日<>月<>星期<>命令，<>是空格的意思，�
 
 10 1 * * 6,0 /bin/find -name "core" -exec rm {} \;
 # 每周六日的1:10执行find命令
-``` 
+```
 
 crontab [-u user] -e -l -r
 - -e：编辑crontab定时任务
