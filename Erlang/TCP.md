@@ -67,7 +67,7 @@ binary_to_list()
 
 
 
-数据类型 => 2进制型 => UDP => websocket => ets => erlang数据库
+2进制型 => UDP => websocket => ets => erlang数据库
 
 
 
