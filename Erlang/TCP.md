@@ -53,7 +53,7 @@ erlang的套接字有三种打开模式：主动（active）、被动（passive�
 
 
 
-2进制型：ok => websocket => ets => UDP => erlang数据库
+2进制型：ok => otp => ets  => websocket=> UDP => erlang数据库
 
 练习：解析使用被动模式下套接字的数据
 
