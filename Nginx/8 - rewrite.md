@@ -1,10 +1,9 @@
-### 4. URL重写，隐藏index.php
+rewrite example：
 
 ```
 location / {
      index  index.php index.html index.htm;
-     if (!-e $request_filename)
-     {
+     if (!-e $request_filename) {
         #地址作为将参数rewrite到index.php上。
         rewrite ^/(.*)$ /index.php/$1;
         #若是子目录则使用下面这句，将subdir改成目录名称即可。

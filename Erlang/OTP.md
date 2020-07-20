@@ -8,19 +8,13 @@ OTP
 
 
 
-OTP行为
+### OTP行为
 
 行为封装了常见的行为模式，可以把它看作一个用回调函数作为参数的应用程序框架。
 
+我们从最常见的客户端与服务端实现来分析OTP行为。
 
-
-
-
-
-
-
-
-服务器框架的代码模式是相似的，比如：
+在erlang中服务器框架的代码模式是相似的，比如：
 
 - 启动服务的start()函数
 - 服务器loop()主体函数，它会一直接收消息和处理消息，同时会有一个State参数存储服务器的处理结果。
@@ -106,17 +100,68 @@ handle({find, Name}, Dict) ->
 
 
 
-
+### gen_server
 
 gen_server是不断优化服务器代码形成的成果，它是上述案例的加强版。
 
+
+
+#### 启动gen_server
+
+> gen_server:call()
+
+
+
+#### 同步请求
+
+
+
+#### 异步请求
+
+
+
+
+
+#### 停止gen_server
+
+如果gen_server是监督树的一部分，则不需要停止功能。
+
+
+
+如果是独立的gen_server，则需要停止功能。
+
 ```erlang
+export([stop/0]).
+
+stop() ->
+    gen_server:call(mod, stop).
+
+handle_call(stop, State) ->
+    {stop, normal, stopped, State}.
+
 terminate(_Reason, _State) -> ok
 ```
 
-服务器即将终止时将会调用的接口，它是Moudle:init/1的逆操作，并进行必要的清理。
+处理stop请求的回调函数返回一个元素 {stop, normal, stopped, State}，stopped会返回给stop()接口，normal表示它是一个正常的终止，会作为第一个参数传递给terminate()接口。
 
-无论是服务器崩溃并生成{'Exit', reason}，还是由handle_开头的函数返回一个{stop, Reason, NewState}，都会调用该接口。
+在处理完stop请求后，terminate()接口会被调用。terminate是init的逆操作，在最近进行必要的清理。
+
+注：无论是服务器崩溃并生成{'Exit', reason}消息，还是主要发起stop请求，最后都是调用terminate接口。
+
+
+
+#### 处理自发性消息
+
+自发性消息指的是没有通过call()和cast()来发送请求的消息。
+
+比如gen_server链接到另外一个进程并捕捉到退出信号，这时候就会收到一个错误信息。
+
+```erlang
+handle_info(Info, State) ->
+    {noreply, State}.
+```
+
+handle_info函数用于处理这类消息。
 
 
 
