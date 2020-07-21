@@ -142,7 +142,7 @@ handle_call(stop, State) ->
 terminate(_Reason, _State) -> ok
 ```
 
-处理stop请求的回调函数返回一个元素 {stop, normal, stopped, State}，stopped会返回给stop()接口，normal表示它是一个正常的终止，会作为第一个参数传递给terminate()接口。
+我们向gen_server发出stop请求要求停止服务器，处理stop请求的回调函数返回一个元素 {stop, normal, stopped, State}，stopped会返回给stop()接口，normal表示它是一个正常的终止，会作为第一个参数传递给terminate()接口。
 
 在处理完stop请求后，terminate()接口会被调用。terminate是init的逆操作，在最近进行必要的清理。
 
@@ -165,8 +165,238 @@ handle_info函数用于处理这类消息。
 
 
 
+#### 代码更新
+
 ```erlang
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 ```
 
+
+
+
+
+example：gen_server模板
+
+```erlang
+-module(my_bank).
+
+-behavior(gen_server).
+-export([start/0, stop/0, new_account/1]).
+
+%% gen_server回调函数
+-export([init/1, handle_call/3, handle_cast/2,
+		 handle_info/2, terminate/2, code_change/3]).
+-define(SERVER, bank).
+
+start() ->
+	gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+
+stop() ->
+	gen_server:call(?SERVER, stop).
+
+
+%% 客户端接口
+new_account(Who) ->
+	gen_server:call(?SERVER, {new, Who}).
+
+
+%% 行为接口
+init([]) ->
+	{ok, []}.
+
+handle_call({new, Who}, _From, State) ->
+	State1 = [Who| State],
+	{reply, State1, State1};
+handle_call(stop, _From, State) ->
+	{stop, normal, stopped, State}.
+
+handle_cast(_Msg, State) ->
+	{noreply, State}.
+
+handle_info(_Info, State) -> 
+	{noreply, State}.
+
+terminate(Reason, _State) ->
+	io:format("terminate reason: ~p~n", [Reason]),
+	ok.
+code_change(_OlsVsn, State, _Extra) ->
+	{ok, State}.
+```
+
+
+
+
+
+
+
+
+
+### 事件处理框架
+
+事件是指已经发生的事情。当某个事件发生时，就会发送一个evetn消息给某个注册进程（事件处理器），由它去进行处理。
+
+事件处理框架的通用接口有：
+
+- make(Name)
+
+  创建一个Name的事件处理器
+
+- evetn(Name, X)
+
+  发送消息X到Name的事件处理器
+
+- add_handler(Name, Fun)
+
+  给Name的事件处理器添加一个处理函数Fun。
+
+```erlang
+-module(event_handler).
+-export([make/1, event/2, add_handler/2]).
+
+%% 创建的事件处理器，在执行时如何随时替换掉执行函数。
+
+make(Name) ->
+    register(Name, spawn(fun() -> handle(fun no_op/1) end)).
+
+event(Name, X) ->
+    Name ! {event, X}.
+
+add_handler(Name, Fun) ->
+    Name ! {add, Fun}.
+
+handle(F) ->
+    receive
+        {event, E} ->
+            F(),
+            handle(F);
+        {add, NewFun} ->
+            handle(NewFun)
+	end.
+
+no_op() ->
+    void.
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 错误记录器（error report）
+
+OTP自带一个可定制的错误记录器。简单的理解它就是用于一个记录错误日志，配置如何记录错误日志的东西。
+
+
+
+#### 记录错误
+
+记录日志使用error_logger模块的相关函数。
+
+erlang将错误日志划分为错误、警告和信息。error_logger提供了接口，可以根据错误信息的严重级别来记录错误日志。
+
+
+
+#### 配置错误记录器
+
+我们可以针对输出目标和输出内容进行配置。
+
+日志的输出目标可以是shell或文件，也可以配置要输出哪种类型的日志，比如错误日志、信息日志、进度日志等。
+
+```erlang
+%% 无tty
+[{sasl, [
+	{sasl_error_logger, false},
+	{errlog_type, error},
+	{error_logger_mf_dir, "d:/server"},
+	{error_logger_mf_maxbytes, 10285760},
+	{error_logger_mf_maxfiles, 10}
+]}].
+```
+
+sasl_error_logger应该是进度日志，false表示输出到shell中。
+
+error相关项用于配置错误日志，error_logger_mf_dir配置日志的输出目标，error_logger_mf_maxbytes配置日志的最大存储量，error_logger_mf_maxfiles配置日志文件书。
+
+当错误日志超过只当的大小时，会删除老的日志会新日志腾出空间。
+
+
+
+> erl -boot start_sasl
+
+sasl是启动一个运行生成系统的环境。
+
+
+
+分析日志 
+
+rb模块用于分析日志。 
+
+
+
+
+
+### gen_event
+
+一个事件管理器实现为一个进程，而每个事件处理器则实现为一个模块。
+
+事件管理器本质上是维护一个{Module, State}对的列表，其中每个Module是一个事件处理器，State是时间处理器的内部状态。
+
+
+
+
+
+
+
+alarm_handler：这是什么？
+
+alram_handler应该是gen_event的简化操作API吧。。。后续在查询资料看看
+
+
+
+
+
+监控树 => gen_event => ets
+
+
+
+
+
+
+
+### 监督树
