@@ -63,11 +63,18 @@ sup_flags = #{strategy => strategy(),
 重启策略是由init回调函数返回的督程标志Map中的strategy键指定的。重启策略有以下选项：
 
 - one_for_one
+
+  如果子进程终止，则只有该进程可以重新启动。
+
 - one_for_all
+
+  如果子进程终止，则所有其他子进程都会终止，然后重新启动所有子进程（包括已终止的子进程）。
 
 - rest_for_one
 
   如果一个子进程终止，其余的子进程（指以开始顺序结束的进程之后的子进程）也将终止。然后重新启动终止的子进程和其余的子进程。
+
+
 
 
 
@@ -84,26 +91,6 @@ SupFlags = #{intensity => MaxR, period => MaxT}.
 重启机制的目的在于防止一个进程因为相同的原因反复死亡，但又重新启动的情况。
 
 idtensity和period的默认值分别是1和5，即在过期5秒内重启的次数大于1，
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -175,14 +162,31 @@ start_link(Module, Args) -> startlink_ret();
 start_link(SupName, Module, Args) -> startlink_ret();    
 ```
 
-通过调用Supervisor模块这俩个函数来实现启动督程。supervisor:start_link()是同步的，在子进程没有全部初始化完毕之前是不会返回的。
+通过调用Supervisor模块这俩个函数来实现启动督程。
 
-
+supervisor:start_link()是同步的，在子进程没有全部初始化完毕之前是不会返回的。
 
 调用start_link()时，当前调用进程会与督程链接在一起，如果调用进程终止了，督程也会被终止，这会导致所有子进程也被终止。
 
 
 
+### 添加子进程
+
+除了静态监督树之外，还可以使用以下命令将动态子进程添加到现有监督树中：
+
+```erlang
+supervisor:start_child(Sup, ChildSpec)
+```
+
+Sup是督程的pid或名称，ChildSpec是子进程规范。
+
+使用start_child/2添加的子进程与其他子进程的行为相同，但有一个重要的例外：如果一个督程死亡并重新创建，那么所有动态添加到督程的子进程会消失。
+
+
+
+
+
+### 停止子进程
 
 
 
@@ -190,24 +194,69 @@ start_link(SupName, Module, Args) -> startlink_ret();
 
 
 
+### Simplified one_for_one Supervisor
+
+使用simple_one_for_one的督程是简化版的one_for_one督程，其中所有的子进程都是督程动态添加的实例对象。
+
+下面是一个简单的示例：
+
+```erlang
+-module(simple_sup).
+-behaviour(supervisor).
+
+-export([start_link/0]).
+-export([init/1]).
+
+start_link() ->
+    supervisor:start_link(simple_sup, []).
+
+init(_Args) ->
+    SupFlags = #{strategy => simple_one_for_one,
+                intensity => 0,
+                period => 1},
+    
+    ChildSpecs = [#{id => call,
+                   start => {call, start_link, []},
+                   shutdown => brutal_kill}],
+    
+    {ok, {SupFlags, ChildSpecs}}.
+```
+
+在启动时，督程不会启动任何子进程。相反所有的子进程都是通过调用以下命令动态添加的：
+
+```erlang
+supervisor:start_child(Sup, List)
+```
+
+Sup参数可以是督程的pid或名称，List是一个任意项的列表，它会被添加到子进程规范中指定的参数列表中。如果启动函数参数指定为{M, F, A}，那么会通过调用apply(M, F, A ++ List)来启动。
 
 
 
+例如给上面的simple_sup添加一个子进程：
+
+```erlang
+supervisor:start_child(Pid, [id1])
+```
+
+其实是通过apply(call, start_link, []++[id1])来启动子进程。或者实际上：
+
+```erlang
+call:start_link(id1).
+```
+
+simple_one_for_one督程下的子进程可以通过以下方式来终止：
+
+```erlang
+supervisor:terminate_child(Sup, Pid).
+```
+
+Sup是督程的id或名字，Pid是子进程的pid。
+
+因此一个simple_one_for_one督程可以有很多的子进程，所以它是异步的关闭所有子进程。这意味着这些子进程将并行地进行清理工作，因此没有定义它们终止地顺序。
 
 
-停止Supervisor
 
-
-
-添加子进程
-
-
-
-停止子进程
-
-
-
-
+### 停止Supervisor
 
 
 
@@ -215,7 +264,7 @@ start_link(SupName, Module, Args) -> startlink_ret();
 
 为什么在erlang shell中直接启动督程，明明子进程重启次数没有超过最大重启强度却会无法重启子进程呢?
 
-问题1：最大重启前读是针对单个子进程还是针对所有子进程？
+问题1：最大重启强度是针对单个子进程还是针对所有子进程？
 
 问题3：gen_event的遗留问题，触发一个事件，是所有已经注册的时间处理器一起处理这个事件，还是指定某个事件处理器来进行处理。
 
