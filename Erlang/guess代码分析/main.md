@@ -151,16 +151,34 @@ handle_info(loop, State = {ListenSocket}) ->
 accept(Socket) ->
     receive
         {tcp, Socket, HeaderData} ->
-            %% 以\r\n作为标记，对二进制数据进行分割，将会返回一个分割好的二进制列表
+            %% HTTP协议是以\r\n作为换行的，因此使用\r\n来进行分隔，得到每一行请求头
             HeaderList = binary:split(HeaderData, <<"\r\n">>, [global]),
             
-            %% 解析这个二进制列表
-            %% 以": "作为标记对每个二进制元素进行分隔，将分隔后的列表转换为元组
-            %% 最后返回一个元组列表
+            %% 请求头是以Key: Value的形式组成的，因此对每个请求头以": "进行分隔，再转成元组
+            %% 得到一个元素是元组{Key, Value}形式的列表
             HeaderList1 = [list_to_tuple(binary:split(Header, <<": ">>)) || Header <- HeaderList],
             
+            %% 找到Sec-WebSocket-Key请求头的值
             case lists:keyfind(<<"Sec-WebSocket-Key">>, 1, HeaderList1) of
-                
+                false ->
+                    gen_tcp:close(Socket);
+                {_, SecWebSocketKey} ->
+                    %% 做特定的加密
+                    Sha1 = crypto:hash(sha, [SecWebSocketKey, <<"258EAFA5-E914-47DA-95CA-C5AB0DC85B11">>]),
+                    Base64 = base64:encode(Sha1),
+                    
+                    %% 组成响应头
+                    Handshake = [
+                        <<"HTTP/1.1 101 Switching Protocols\r\n">>,
+                        <<"Upgrade: websocket\r\n">>,
+                        <<"Connection: Upgrade\r\n">>,
+                        <<"Sec-WebSocket-Accept: ">>, Base64, <<"\r\n">>,
+                        <<"\r\n">>
+                    ],
+                    gen_tcp:send(Socket, Handshake),
+                    
+                    %% 完成握手后创建一个新的连接进程来处理该socket
+                    create_conn(Socket)
             end;
         _Else ->
             gen_tcp:close(Socket)
@@ -169,7 +187,7 @@ accept(Socket) ->
 
 accept函数是被作为一个进程启动并执行的，它会监听连接Socket，处理请求发来的数据。
 
-其实只是处理websocket客户端第一次建立连接时的握手协议，如果握手没有问题，那么会调用sys_conn:create/3函数创建一个连接进程，并且把客户端Socket将给该连接进程去处理，同时指定连接进程为该客户端Socket的控制进程。
+accept/1函数会处理WebSocket协议的第一次握手，客户端会发起一次HTTP GET请求，并携带SecWebSocketKey请求头。服务端要做的就是解析出Sec-WebSocket-Key请求头的值，再进行加密返回给客户端，完成握手的验证。
 
 
 
@@ -242,24 +260,12 @@ start_acceptor(N, ListenSocket) ->
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 问题：
 
-- sys_listener模块为什么要将sys_listener设置为系统进程?
+- 分析玩家登陆
+- 分析打动物实现
+- 分析充值实现
 
-- 当建立一个新的连接时，整个应用发生了什么?
-
-- 当一个新的数据包发送到服务端时，怎么解析的?
-
-- 如何写一个简单的接口。
+- profubber的使用
+- 自己实现一个聊天服务器，包含充值功能。
+- sys_listener模块和sys_conn模块为什么是系统进程?
