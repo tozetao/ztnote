@@ -121,7 +121,15 @@ read_next(State) ->
 
 red_next便是读取第一个数据帧。
 
-State参数是conn记录，read_head字段默认是false，表示尚未读取包头，当客户端传递第一个数据帧的时候就会匹配第一个read_next/1函数。接着异步读取2个字节的数据，这2个字节的数据会以一条{inet_async, Socket, Ref, {ok, Data}}格式的消息发给连接进程自己处理。
+State参数是conn记录，read_head字段默认是false，表示尚未读取包头，当客户端传递第一个数据帧的时候就会匹配第一个read_next/1函数。
+
+接着异步读取2个字节的数据，这2个字节的数据会以一条{inet_async, Socket, Ref, {ok, Data}}格式的消息发给连接进程自己处理。
+
+
+
+
+
+### 解析包体长度
 
 ```erlang
 %% 包体长度的检测
@@ -147,10 +155,6 @@ handle_info({inet_async, _Socket, _Ref, {ok, _Bin = <<_Fin:1, _Rsv:3, Opcode:4, 
 ```
 
 这部分代码是对WebSocket数据帧包体长度的解析。
-
-
-
-### 解析包体长度
 
 
 
@@ -295,6 +299,41 @@ handle_info({tcp_send, Bin}, State = #conn{role_id = Account, socket = Socket, s
 
 
 
+### client_check消息
+
+recv_count：当前接收数据包的个数，连接进程每次接收到数据包都会累计加1，可以在read_next函数中看到。
+
+last_recv_count：最后一次接收数据包的个数。
+
+这俩个字段主要用于验证用户的活跃状态，当一个玩家如果在60秒内没有操作就会断开连接。
+
+```erlang
+%% 在初始化连接进程的时候会向自身发送一条消息
+erlang:send_after(300000, self(), client_check).
+
+%% 客户端状态检查，如果客户端一定时间内不发送指令则认定为已断线
+handle_info(client_check, State = #conn{role_id = _Account, recv_count = RecvCount, last_recv_count = LastRecvCount}) ->
+    case RecvCount > LastRecvCount of
+        true ->
+            erlang:send_after(60000, self(), client_check),
+            {noreply, State#conn{last_recv_count = RecvCount}};
+        false ->
+%%            ?ERR("[~w]的客户端长时间未发送指令，可能已经断线", [_Account]),
+            {stop, normal, State}
+    end;
+```
+
+
+
+### account_check消息
+
+```erlang
+%% 300秒后会向自身发送一条
+erlang:send_after(300000, self(), account_check).
+```
+
+
+
 
 
 ### prim_inet.erl
@@ -404,4 +443,6 @@ Options = [system_monitor_option()]
 - busy_port
 
   如果系统中的进程因为发送到繁忙的接口而被挂起，则会向MonitorPid发送消息{monitor, SusPid, busy_port, Port}。SusPid是发送至Port时而被暂时的pid。
+
+
 

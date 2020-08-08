@@ -263,9 +263,8 @@ start_acceptor(N, ListenSocket) ->
 问题：
 
 - 分析玩家登陆
-- 分析打动物实现
 - 分析充值实现
-
+- 分析打动物实现
 - profubber的使用
 - 自己实现一个聊天服务器，包含充值功能。
 - sys_listener模块和sys_conn模块为什么是系统进程?
