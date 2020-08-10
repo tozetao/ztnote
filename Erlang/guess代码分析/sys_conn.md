@@ -299,17 +299,25 @@ handle_info({tcp_send, Bin}, State = #conn{role_id = Account, socket = Socket, s
 
 
 
-### client_check消息
+### 连接进程的活跃状态
 
-recv_count：当前接收数据包的个数，连接进程每次接收到数据包都会累计加1，可以在read_next函数中看到。
+client_check消息用于验证连接的活跃状况，主要是通过在一定时间内检测连接接收的数据包是否有增加来判断用户是否活跃的。
 
-last_recv_count：最后一次接收数据包的个数。
+我们会用俩个字段来实现：
 
-这俩个字段主要用于验证用户的活跃状态，当一个玩家如果在60秒内没有操作就会断开连接。
+- recv_count
+
+  当前接收数据包的个数，连接进程每次接收到数据包都会累计加1，可以在read_next函数中看到。
+
+- last_recv_count
+
+  默认0，当在检测连接活跃状态时，last_recv_count会存储当前连接接收的数据包个数（recv_count）
+
+连接进程每60秒向自身发送一条检测消息，如果发现当前进程接收的数据包个数（recv_count）大于上次检测时接收的数据包个数（last_recv_count)，那么就表示在这段时间内用户一直是停止状态的，这时候就断开连接进程。
 
 ```erlang
 %% 在初始化连接进程的时候会向自身发送一条消息
-erlang:send_after(300000, self(), client_check).
+erlang:send_after(60000, self(), client_check).
 
 %% 客户端状态检查，如果客户端一定时间内不发送指令则认定为已断线
 handle_info(client_check, State = #conn{role_id = _Account, recv_count = RecvCount, last_recv_count = LastRecvCount}) ->
@@ -321,16 +329,82 @@ handle_info(client_check, State = #conn{role_id = _Account, recv_count = RecvCou
 %%            ?ERR("[~w]的客户端长时间未发送指令，可能已经断线", [_Account]),
             {stop, normal, State}
     end;
+
+read_next(State = #conn{socket = Socket, recv_count = RecvCount, read_head = false}) ->
+    prim_inet:async_recv(Socket, 2, 60000),
+    {noreply, State#conn{recv_count = RecvCount + 1, read_head = true}}.
 ```
 
 
 
-### account_check消息
+### 验证身份
 
 ```erlang
-%% 300秒后会向自身发送一条
-erlang:send_after(300000, self(), account_check).
+%% 检查是否已经验证了身份
+handle_info(account_check, State = #conn{role_id = 0, ip = Ip}) ->
+%%    ?ERR("客户端[~w]连接后长时间未登录帐号，强制断开连接", [Ip]),
+    {stop, normal, State};
 ```
+
+每180秒检查一次。
+
+
+
+### 停止连接进程
+
+- WebSocket断开连接，那么会收到下面的消息。
+
+```erlang
+handle_info({inet_async, _Socket, _Ref, {error, closed}}, State = #conn{role_id = Account}) ->
+    {stop, normal, State}.
+```
+
+- 超时
+
+```erlang
+handle_info(timeout, State) ->
+    {stop, normal, State};
+```
+
+- 关联进程（玩家进程）正常退出
+
+```erlang
+handle_info({'EXIT', Pid, normal}, State = #conn{pid_object = Pid, role_id = _Account}) ->
+    {stop, normal, State};
+```
+
+- 关联进程（玩家进程）异常退出
+
+```erlang
+handle_info({'EXIT', Pid, _Why}, State = #conn{role_id = _Account, pid_object = ObjectPid}) when Pid =:= ObjectPid ->
+    {stop, normal, State};
+```
+
+
+
+当向进程发送stop响应时，因为连接进程被设置为系统进程，所以当退出时会执行terminate函数，在这里只是简单的关闭客户端socket。
+
+```erlang
+terminate(_Reason, #conn = {socket = Socket}) ->
+    catch gen_tcp:close(Socket),
+    ok.
+```
+
+
+
+
+
+### gc处理
+
+
+
+
+
+
+
+
+
+
 
 
 
