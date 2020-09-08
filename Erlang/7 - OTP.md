@@ -144,7 +144,7 @@ Options是初始化选项：
 
 - {timeout, Time}
 
-  该选项设置进程初始化的超时时间，如果进程启动花费的时间超过Time毫秒，那么start函数将会返回{error, timeout}。
+  如果存在该选项，则允许gen_server进程花费Time毫秒进行初始化，否则进程将被终止，同时start函数会返回{error, timeout}。
 
 - {hibernate_after, HibernateAfterTimeout}
 
@@ -211,11 +211,23 @@ State参数表示进程的内部状态。
 
 Result参数说明：
 
-- 如果返回{reply, Reply, NewState}，{reply, Reply, NewState, hibernate}，{reply,Reply,NewState,Timeout}，Reply将作为返回值反馈给From，然后进程继续执行可能更新的内部状态NewState.
+- {reply, Reply, NewState}
+
+- {reply, Reply, NewState, hibernate}
+
+- {reply,Reply,NewState,Timeout}
+
+  如果返回上面结果，Reply将作为返回值反馈给From，然后进程继续执行可能更新的内部状态NewState.
 
   For a description of Timeout and hibernate, see **Module:init/1**.
 
-- If {noreply,NewState} is returned, {noreply,NewState,Timeout}, or {noreply,NewState,hibernate}，则进程会继续更新内部状态，任何对From的回复必须使用reply/2（也就是说这种返回值是配合reply/2使用的）。
+- {noreply,NewState}
+
+- {noreply,NewState,Timeout}
+
+- {noreply,NewState,hibernate}
+
+  如果返回上面结果，则进程会继续更新内部状态，任何对From的回复必须使用reply/2（也就是说这种返回值是配合reply/2使用的）。
 
 - 如果返回{stop, Reason, Reply, NewState}，则将Reply反馈给From。
 
