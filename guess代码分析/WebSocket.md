@@ -73,7 +73,7 @@ Sec-WebSocket-Accept: Base64Content
 
 - MaskKey
 
-  1或者4个字节，服务器要用它们来解析数据
+  4个字节，服务器要用它们来解析数据
 
 - PayloadData
 
@@ -86,6 +86,8 @@ Sec-WebSocket-Accept: Base64Content
 PayloadLen是7个bit，也就是说最多能携带128个字节的数据。因此才需要对其扩展。当 = 126时，后面2个字节就表示数据长度，能够最多携带65536个字节数据；当=127时，后面的8个字节表示携带的数据长度，最后能携带$2^{64}$个字节数据。
 
 
+
+### 帧类型
 
 Opcode表示帧类型，具体有：
 

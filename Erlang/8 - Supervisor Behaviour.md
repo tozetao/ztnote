@@ -158,15 +158,45 @@ child_spce() = #{id => child_id(),
 ### 启动Supervisor
 
 ```erlang
-start_link(Module, Args) -> startlink_ret();
-start_link(SupName, Module, Args) -> startlink_ret();    
+start_link() ->
+    supervisor:start_link(ch_sup, []).
 ```
 
-通过调用Supervisor模块这俩个函数来实现启动督程。
+以上是ch_sup.erl文件的代码，在上面的示例中，会通过调用ch_sup:start_link()来启动一个督程。
 
-supervisor:start_link()是同步的，在子进程没有全部初始化完毕之前是不会返回的。
 
-调用start_link()时，当前调用进程会与督程链接在一起，如果调用进程终止了，督程也会被终止，这会导致所有子进程也被终止。
+
+第一个参数ch_sup是回调模块的名称，也是init函数所在的模块。
+
+第二个参数[]，是一个传递给init回调函数的任意数据项。
+
+supervisor:start/2并没有注册督程的名字，如果要对其进程注册需要使用supervisor:start/3函数。
+
+
+
+当supervisor:start_link/2函数执行时，会启动一个督程并执行回调模块的init函数。
+
+调用start_link()的进程会与督程链接在一起，如果调用进程终止了，督程也会被终止，这会导致所有子进程也被终止。
+
+同时督程的启动是同步的，在子进程没有全部初始化完毕之前是不会返回的。
+
+
+
+
+
+函数说明：
+
+```erlang
+
+```
+
+
+
+
+
+
+
+
 
 
 
@@ -196,7 +226,9 @@ Sup是督程的pid或名称，ChildSpec是子进程规范。
 
 ### Simplified one_for_one Supervisor
 
-使用simple_one_for_one的督程是简化版的one_for_one督程，其中所有的子进程都是督程动态添加的实例对象。
+具有simple_one_for_one重启策略的督程是one_for_one督程的简化版，其中所有的子进程都是督程动态添加的实例对象。
+
+
 
 下面是一个简单的示例：
 
@@ -228,11 +260,13 @@ init(_Args) ->
 supervisor:start_child(Sup, List)
 ```
 
-Sup参数可以是督程的pid或名称，List是一个任意项的列表，它会被添加到子进程规范中指定的参数列表中。如果启动函数参数指定为{M, F, A}，那么会通过调用apply(M, F, A ++ List)来启动。
+Sup参数可以是督程的pid或名称，List是一个任意项的列表，它会被添加到子进程规范指定的参数列表中。
+
+如果启动函数参数指定为{M, F, A}，那么会通过调用apply(M, F, A ++ List)来启动，简单的说List参数会被附加到回调模块的参数中，由回调模块处理。
 
 
 
-例如给上面的simple_sup添加一个子进程：
+比如给上面的simple_sup添加一个子进程：
 
 ```erlang
 supervisor:start_child(Pid, [id1])
@@ -244,6 +278,8 @@ supervisor:start_child(Pid, [id1])
 call:start_link(id1).
 ```
 
+
+
 simple_one_for_one督程下的子进程可以通过以下方式来终止：
 
 ```erlang
@@ -252,11 +288,22 @@ supervisor:terminate_child(Sup, Pid).
 
 Sup是督程的id或名字，Pid是子进程的pid。
 
-因此一个simple_one_for_one督程可以有很多的子进程，所以它是异步的关闭所有子进程。这意味着这些子进程将并行地进行清理工作，因此没有定义它们终止地顺序。
+
+因为一个simple_one_for_one督程可以有很多的子进程，所以它是异步的关闭所有子进程。这意味着这些子进程将并行地进行清理工作，因此没有定义它们终止地顺序。
+
+
 
 
 
 ### 停止Supervisor
+
+由于督程是监督树的一部分，所以它会被其上级自动终止。当被要求关闭时，它根据各自的规范，以启动顺序的反向顺序终止所有子进程，然后自己终止。
+
+
+
+
+
+
 
 
 

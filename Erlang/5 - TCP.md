@@ -49,3 +49,115 @@ erlang的套接字有三种打开模式：主动（active）、被动（passive�
 
 
 
+### prim_inet.erl
+
+prim_inet是内部模块，不公开给开发人员使用的。
+
+```erlang
+prim_inet:async_recv(Sock, Length, Timeout)
+```
+
+async_recv/3是异步接收数据，在gen_server里是这样子写的：
+
+```erlang
+handle_info({inet_async, Socket, Ref, {ok, Data}}, State)
+```
+
+这俩个函数要配合使用。
+
+prim_inet:async_recv/3函数接收的数据会以一条{inet_async, Socket, Ref, {ok, Data}, State}消息发送给自身进程，需要handle_info()来进行处理。
+
+example：
+
+```erlang
+loop(Socket) ->
+    prim_inet:async_recv(Socket, 0, 1000),
+    receive
+        {inet_async, _, _, {ok, Msg}} ->
+            io:format("message received ~p~n",[Msg]),
+            loop(Socket);
+        {inet_async, _, _, {error,timeout}} ->
+            io:format("timeout !"),
+            catch gen_tcp:close(Socket);
+        {fake, Msg} ->
+            io:format("Message = ~p~n", [Msg]),
+            loop(Socket)
+    end.
+```
+
+
+
+
+
+```erlang
+port_command(Port, Data, OptionList) -> boolean()
+```
+
+发送数据到一个端口。
+
+如果port command被终止，则返回false，否则返回true。如果端口繁忙，则暂停调用进程，直到端口不再繁忙。
+
+- Port
+
+  port() | atom()，端口
+
+- Data
+
+  iodata，输入/输出数据
+
+- Option
+
+  force | nosuspend
+
+- OptionList
+
+  [Option]，选项列表
+
+Options选项说明：
+
+- force选项
+
+  如果端口繁忙则调用进程不会被挂起，而是强制穿过port command执行。如果端口的驱动程序不支持则调用失败，并出现notsup异常。有关更多信息要参考驱动标志[CDATA[ERL_DRV_FLAG_SOFT_BUSY]]。
+
+- nosuspend
+
+  该选项表示如果端口忙，不允许调用进程不会被挂起，而是终止port command执行并返回false。
+
+这里的port是指什么？什么情况下会繁忙。
+
+
+
+Failures （失败时的错误信息）
+
+- badarg
+
+  如果端口不是一个开放端口的标识符，或者不是一个开发端口的注册名称。如果调用进程先前链接到由端口标识的关闭端口，则保证在发生此badarg异常之前发送该端口的退出信号。
+
+- badarg
+
+  If Data is an invalid I/O list.如果数据是一个无效的I/O列表。
+
+- notsup
+
+  如果是force选项，但是端口驱动不支持强制穿过一个繁忙的端口
+
+
+
+
+
+```erlang
+erlang:system_monitor(MonitorPid, Options) -> MonSettings
+```
+
+Options = [system_monitor_option()]
+
+参数2是监视选项的列表，system_monitor_option()的选项有：
+
+- busy_port
+
+  如果系统中的进程因为发送到繁忙的接口而被挂起，则会向MonitorPid发送消息{monitor, SusPid, busy_port, Port}。SusPid是发送至Port时而被暂时的pid。
+
+
+
+
+
