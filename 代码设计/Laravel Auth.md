@@ -1,36 +1,6 @@
-laravel用户认证的核心是由Guard（看守器）和Provider（提供器）组成。
 
 
-
-看守器决定了如何认证每个请求中的用户，例如SessionGuard会使用Session存储和Cookie来维持状态。
-
-提供器定义了如何从存储数据中检索用户。
-
-
-
-SessionGuard如何验证用户？
-
-在创建SessionGuard的时候，会注入UserProvider对象。Guard是使用提供器对象来验证的。
-
-
-
-看看用户提供器是怎么创建的，
-
-
-
-以及如何进行检索和验证用户。
-
-
-
-SessionGuard怎么保持用户状态？
-
-
-
-
-
-如果要自己实现Guard和UserProvider，那么需要通过AuthManager来进行扩展。
-
-
+自定义Guard、UserProvider。
 
 
 
@@ -150,9 +120,15 @@ interface StatefulGuard
 
 
 
-UserProvider
+### UserProvider
 
-UserProvider实现负责从持久化存储系统中获取Authenticatable 接口的实现。它提供了如何检索用户的一系列接口。
+UserProvider是Illuminate\Contracts\Auth\UserProvider接口。
+
+UserProvider是用户提供者，只负责根据用户凭证从存储系统中检索用户。所检索到的用户实例必须实现了Illuminate\Contracts\Auth\Authenticatable接口。
+
+
+
+注意：这里的Provider不要跟Laravel的服务提供者搞混了，服务提供者只是在系统启动时初始化对应的服务对象而已。这里的UserProvider是一个用户检索对象。
 
 ```php
 interface UserProvider
@@ -202,13 +178,23 @@ interface UserProvider
 }
 ```
 
+retrieveByCredentials方法接收传递给Auth:attempt方法的凭证数组。然后该方法将根据凭证查询存储系统中的用户数据。这个方法需要返回Authenticatable实现的实例，且这个方法不能实现任何密码认证或校验。
+
+
+
+密码认证工作交给validateCredentials()接口。
 
 
 
 
-Authenticatable
 
-意为可认证的，定义了获取一个已认证过的用户数据的一系列接口，一般模型需要实现这个接口。
+### Authenticatable
+
+定义一个已认证过的用户数据的一系列接口，这个接口实现的用户实例是一个已经通过认证后的用户实例。
+
+
+
+简单的说用户通过认证后，从存储系统中取出用户信息，我们需要定义统一的对外提供用户信息的接口。这个接口就是Illuminate\Contracts\Auth\Authenticatable。
 
 ```php
 <?php
@@ -219,6 +205,7 @@ interface Authenticatable
 {
     /**
      * Get the name of the unique identifier for the user.
+     * 返回主键字段的名字。
      *
      * @return string
      */
@@ -226,6 +213,7 @@ interface Authenticatable
 
     /**
      * Get the unique identifier for the user.
+     * 返回用户主键值。
      *
      * @return mixed
      */
@@ -233,6 +221,7 @@ interface Authenticatable
 
     /**
      * Get the password for the user.
+     * 返回用户的散列密码
      *
      * @return string
      */
@@ -273,6 +262,34 @@ Guard::attempt()
 调用UserProvider对比提供的证书与检索出来的用户的证书是否一致。
 
 返回对比结果。
+
+
+
+
+
+
+
+### Dingo
+
+Dingo\Api\Auth\Auth:class    
+	Auth类，对外提供认证接口。
+
+
+
+Provider
+    实现了Dingo\Api\Contract\Auth\Provider接口的类。
+    它只有一个authenticate()接口，用于实现验证请求的逻辑。
+
+
+
+api.auth是Dingo自己实现的中间件，它会使用Dingo\Api\Auth\Auth:class来进行验证。
+
+['middleware' => 'api.auth', 'providers' => ['', '']]
+providers是提供者列表，用于验证请求的。
+
+我们这里不使用Dingo提供的验证方式来实现。
+
+
 
 
 
