@@ -98,6 +98,83 @@ terminate(_Reason, _State) ->
 
 ## 进程方法
 
+### set
+
+```erlang
+set(Type, Value) ->
+    ets:insert(setting, #setting{type = Type, value = Value}).
+```
+
+
+
+### get
+
+```erlang
+get(Type) ->
+    case ets:lookup(setting, Type) of
+        [#setting{value = Value}] -> {ok, Value};
+        _ -> false
+	end.
+```
+
+
+
+### web_get
+
+```erlang
+%% ?setting_acc_sign是28，表示签到状态
+web_get(Type = ?setting_acc_sign) ->
+    case ets:lookup(setting, Type) of
+        [#setting{value = {_, Value}}] -> [{result, Value}];
+        _ -> [{result, 0}]
+    end;
+```
+
+获取签到配置。
+
+```erlang
+%% ?setting_acc_sign_reward是29，表示签到配置列表
+web_get(Type = ?setting_acc_sign_reward) ->
+    case ets:lookup(setting, Type) of
+        [#setting{value = Value}] -> 
+            %% Value是p_sign_reward record的列表，这里做了列表解析，转换成后台需要的数据
+            NewList = [[Day, mail_mgr:to_integer_assets(Type1), Num] || #p_sign_reward{id = Day, list = [#p_assets{type = Type1, num = Num}]} <- Value],
+            [{result, NewList}];
+        _ -> [{result, []}]
+    end;
+```
+
+获取签到配置列表。
+
+
+
+
+
+### web_set
+
+```erlang
+web_set(Type = ?setting_acc_sign, Value) ->
+    ets:insert(setting, #setting{type = Type, value = {date:unixtime(), Value}}),
+    true;
+```
+
+?setting_acc_sign是28，这里是设置签到开启状态。
+
+Value是一个{Time, Status}的元组，Time是设置时间，Status是开启状态。
+
+
+
+```erlang
+web_set(Type = ?setting_acc_sign_reward, Value) ->
+    NewList = [#p_sign_reward{id = Day, list = [#p_assets{type = mail_mgr:to_atom_assets(Type1), num = Num}]} || [Day, Type1, Num] <- Value],
+    ets:insert(setting, #setting{type = Type, value = NewList}),
+    true;
+```
+
+
+
+
+
 
 
 ### add_black_role
@@ -140,3 +217,21 @@ add_black_role(RoleId) ->
 
 
 
+
+
+## record
+
+```erlang
+-record(setting, {
+	type = 0,	%% 类型
+	value
+}).
+```
+
+- type
+
+  配置类型
+
+- value
+
+  配置类型对应的值

@@ -1,51 +1,10 @@
-### send_buff_begin
-
-```erlang
-send_buff_begin() ->
-    case get(send_buff) of
-        undefined ->
-            put(send_buff, []);
-        _ ->
-            ok
-	end.
-```
-
-消息缓冲区。必须在Role进程调用，当调用send_buff_begin()后，必须调用send_buff_flush或send_buff_clean。
+## 协议
 
 
 
-### send_buff_flush
-
-```erlang
-send_buff_flush() ->
-    case get(socket_pid) of
-        Pid when is_pid(Pid) ->
-            case get(send_buff) of
-                List when is_list(List) ->
-                    [Pid ! {tcp_send, Data} || Data <- List],
-                    put(send_buff, undefined);
-                _ ->
-                    ok
-            end;
-        _ ->
-            ?ERR("不在Role进程调用")
-	end.
-```
-
-向客户端推送缓冲区的所有内容，并请空缓冲区。
 
 
-
-### send_buff_clean
-
-```erlang
-send_buff_clean() ->
-    put(send_buff, undefined).
-```
-
-请空消息缓冲区。
-
-
+## 方法
 
 ### 扣除玩家资产
 
@@ -75,9 +34,4 @@ do_cost_lollipop(_, _) ->
 
 
 
-
-
-## problems
-
-1. 扣除玩家资产只是减少了Role进程的数据，数据库数据在什么时候进行更新？
 
