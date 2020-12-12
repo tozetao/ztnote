@@ -224,35 +224,128 @@ ch_app:stop([]).
 
 - test
 
+在开发环境中可能需要其他目录。如果除了erlang以外的其他语言的代码，例如NIF的C代码，这些代码应该放在单独的目录中。
+
+按照惯例，建议在这些目录前加上语言名称，例如c_src代表C，java_src代表Java，go_src代表Go。
+
+后缀为_src的目录表示它是应用程序和编译步骤的一部分。最终构建的artifacts 应该以priv/lib或priv/bin目录为目标。
+
+priv目录存放着应用在运行中需要的资源，可执行文件应该放在priv/bin中，动态链接库应该放在priv/lib中，其他资源文件可以自由的放在priv目录中，但是建议它们以结构化的方式来存放。
+
+来自其他语言的生成Erlang代码的源文件，如ASN.1或Mibs，应该放在顶层目录或src的目录中，名称与源语言相同，例如asn1和mibs。
+
+构建的artifacts应该放在各自的语言目录下比如src代表Erlang代码，java_src代表Java代码。
+
+在开发环境中，用于发布的.app文件可能位于ebin目录中，但我们鼓励将其作为构建步骤的产物。按照惯例，会使用.app.src文件，它位于src目录下。这个文件与.app文件几乎相同，但某些字段可能会在构建步骤中被替换，例如应用程序版本。
+
+目录名不应该用大写。
+
+鼓励省略空目录。
 
 
 
+已发布系统的目录结构：
 
+一个已发布的应用必须遵循一定的结构：
 
-
-
-
-### application controller
-
-应用程序控制器进程，它是作为Kernel应用程序的一部分被启动，注册为application_controller。
-
-对应用程序的所有操作都由应用程序控制器协调，它通过application模块中的函数进行交互。
-
-
-
-load和unload
-
-在应用程序启动前必须加载它，应用程序会从.app文件中读取并存储信息。
-
-```erlang
-application:load(ch_app).
+```
+    ─ ${application}-${version}
+      ├── bin
+      ├── doc
+      │   ├── html
+      │   ├── man[1-9]
+      │   ├── pdf
+      │   ├── internal
+      │   └── examples
+      ├── ebin
+      │   └── ${application}.app
+      ├── include
+      ├── priv
+      │   ├── lib
+      │   └── bin
+      └── src
 ```
 
-也可以卸载停止或从未启动的应用，应用控制器会从内存数据库删除应用的的相关信息。
+- src
 
-```erlang
-application:unload(ch_app).
+  可选的。
+
+  包含erlang源代码和应用自身内部使用的include文件。在已发布的应用程序中不需要该目录。
+
+- ebin
+
+  必须的。包含erlang对象代码，beam文件，.app文件必须放在这里。
+
+- priv
+
+  可选的。应用使用的特定文件。code:priv_dir/1用于访问该目录。
+
+- priv/lib
+
+  推荐的。任何被应用使用的共享对象（shared-object）文件。例如NIFs或linked-in-drivers都应该放在这里。
+
+- priv/bin
+
+  推荐的。任何被应用程序使用的可执行文件，比如port-programs都应该放在这里。
+
+- include
+
+  可选的。公共的include文件，这些文件要能够被其他应用访问。
+
+- bin
+
+  可选的。Any executable that is a product of the application, such as escripts or shell-scripts, should be placed here.
+
+src目录对发布调式有用，但不是必须的。对于include目录来说，只有当应用有公开的include文件时，才应该发布include目录。
+
+以man pages这种方式发布的文档是被推荐的，HTML和PDF通常会以其他方式发布。
+
+最后我们鼓励省略空目录。
+
+
+
+
+
+### 应用控制器
+
+Application Controller。
+
+当一个erlang运行时系统启动时，一些进程会作为Kernel应用的一部分被启动。其中一个进程是应用控制器进程，注册为application_controller。
+
+对应用的所有操作都是由应用控制器协调的，我们是通过application模块的函数与其交互的，具体参见Kernel中的application(3)手册页。
+
+特别是应用可以被加载、卸载，启动和停止。
+
+
+
+
+
+### 加载和卸载应用
+
+在启动应用之前必须加载它。应用控制器从.app文件中读取并存储信息。
+
 ```
+1> application:load(ch_app).
+ok
+2> application:loaded_applications().
+[{kernel,"ERTS  CXC 138 10","2.8.1.3"},
+ {stdlib,"ERTS  CXC 138 10","1.11.4.3"},
+ {ch_app,"Channel allocator","1"}]
+```
+
+可以卸载已停止或从未启动的应用，关于该应用的信息会从应用控制器的内部数据库删除。
+
+```
+3> application:unload(ch_app).
+ok
+4> application:loaded_applications().
+[{kernel,"ERTS  CXC 138 10","2.8.1.3"},
+ {stdlib,"ERTS  CXC 138 10","1.11.4.3"}]
+```
+
+注意：
+
+Loading/unloading一个应用不会去load/unload应用使用的代码。代码的加载是以一般的方式进行的。
 
 
 
@@ -266,9 +359,15 @@ application:unload(ch_app).
 application:start(ch_app).
 ```
 
-如果应用程序未加载，需要调用application:load/1加载应用。它会检查applications键的值，以确保在该应用运行之前所有应用程序已启动。
+如果应用程序未加载，应用控制器会调用application:load/1第一时间加载。它会检查applications键的值，以确保在该应用运行之前所以来的所有应用已启动。
 
-启动时应用控制器会为应用创建一个应用主进程，应用主进程是应用程序中所有进程的组长。应用主进程通过调用应用模块的回调函数start/2，以及由.app文件中的mod键定义的start参数来启动程序。
+在之后应用控制器会为该应用创建一个application master，application master会成为在该应用中所有进程的组长。
+
+I/O转发到上一个组长，不过，这只是一种识别属于应用程序的进程的方式。比如用来从任何进程中找到自己，或者，对等地，当它终止时，将它们全部杀死。
+
+application master会调用应用模块实现的回调函数（start/2）来启动应用，start函数的参数是定义在.app文件中的mod键中。
+
+
 
 通过调用以下命令停止应用，但不卸载：
 
@@ -276,7 +375,9 @@ application:start(ch_app).
 application:stop(ch_app).
 ```
 
-应用主进程通过通知顶级督程来关闭应用，督程会通知所有子进程关闭，整个树以相反的启动顺序终止。然后应用主进程调用mod键定义的应用模块的stop/1回调函数，最终整个应用终止。
+application master会告诉顶级督程去shutdown来关闭应用，接着顶级督程会通知所有子进程去shutdown，以此类推。
+
+整个树以相反的启动顺序终止。然后应用主进程调用mod键定义的应用模块的stop/1回调函数，最终整个应用终止。
 
 
 
@@ -284,42 +385,111 @@ application:stop(ch_app).
 
 ### 配置应用
 
-.app文件中的env键可以配置应用的配置参数，env键的值是一个{Par, Val}的元组列表。
+应用程序可以使用配置参数进行配置，这些参数是由.app文件中的env键指定的{Par, Val}元组列表。
 
 ```erlang
-{application, ch_app,
- [{description, "Channel allocator"},
-  {vsn, "1"},
-  {modules, [ch_app, ch_sup, ch3]},
-  {registered, [ch3]},
-  {applications, [kernel, stdlib, sasl]},
-  {mod, {ch_app,[]}},
-  {env, [{file, "/usr/local/log"}]}
- ]}.
+{
+	application, ch_app,
+	[
+     	{description, "Channel allocator"},
+  		{vsn, "1"},
+  		{modules, [ch_app, ch_sup, ch3]},
+  		{registered, [ch3]},
+  		{applications, [kernel, stdlib, sasl]},
+  		{mod, {ch_app,[]}},
+  		{env, [
+			{file, "/usr/local/log"}
+        ]}
+	]
+}.
 ```
 
 Par是一个原子，Val是任意项。配置项的值可以通过调用application:get_env(App, Par)来获取。
 
+在应用中可以通过调用application/get_env(App, Par)或一些类似的函数来检索配置参数的值，参见Kernel中的application(3)手册页面。
+
+example：
+
+```erlang
+application:start(ch_app).
+application:get_env(ch_app, file).
+```
+
+.app文件中的值可以被系统文件中的值覆盖，这个一个包含了相关应用配置参数的文件：
+
+```erlang
+[{Application1, [{Par11,Val11},...]},
+ ...,
+ {ApplicationN, [{ParN1,ValN1},...]}].
+```
+
+系统配置命名为Name.config，Erlang要使用命令行参数-config Name来启动。更详细的信息参数Kernel中的config(4)手册页。
+
+example：
+
+使用以下内容创建一个test.config文件：
+
+```erlang
+[{ch_app, [{file, "testlog"}]}].
+```
+
+文件中file的值会覆盖.app文件中file字段的值。
+
+```erlang
+% erl -config test
+Erlang (BEAM) emulator version 5.2.3.6 [hipe] [threads:0]
+
+Eshell V5.2.3.6  (abort with ^G)
+1> application:start(ch_app).
+ok
+2> application:get_env(ch_app, file).
+{ok,"testlog"}
+```
+
+如果要使用发布处理（release handing），正好要使用到一个叫做sys.config的系统配置文件。
+
+最后要注意.app文件中的值和系统配置文件中的值可以通过命令行参数来覆盖：
+
+```erlang
+% erl -ApplName Par1 Val1 ... ParN ValN
+```
+
+example：
+
+```erlang
+% erl -ch_app file '"testlog"'
+Erlang (BEAM) emulator version 5.2.3.6 [hipe] [threads:0]
+
+Eshell V5.2.3.6  (abort with ^G)
+1> application:start(ch_app).
+ok
+2> application:get_env(ch_app, file).
+{ok,"testlog"}
+```
 
 
-注：.app文件中的值和系统配置文件中的值可以直接从命令行覆盖。
+
+### 应用启动类型
+
+启动应用时，定义启动类型：
+
+```erlang
+application:start(Application, Type).
+```
+
+application:start(Application)和调用application:start(Application, temporary)是一样的。Type也可以是permanent或transient：
+
+- 如果一个permanent应用终止，所以其他应用和erlang运行时系统也会被终止。
+- 如果一个transient应用以normal原因终止，则会报告终止信息，但是其他应用不会被终止；如果一个transient应用非正常终止，也就是以normal以外的原因终止，所有其他应用和运行时系统也会被终止。
+- 如果一个temporary应用被终止，会报告终止信息但是其他应用不会被终止。
+
+transient模式的实际作用不大，因为当一颗监督树终止时，会将原因设置为shutdown而非normal。
+
+
+
+应用程序总是可以通过调用application:stop/1显式地停止。不管是哪种模式，都不会影响其他应用程序。
 
 
 
 
 
-启动类型
-
-
-
-
-
-
-
-问题：
-
-启动和停止应用。
-
-配置文件怎么编写。
-
-其他章节说了什么？

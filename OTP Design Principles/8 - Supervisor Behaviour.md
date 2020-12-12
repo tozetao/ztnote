@@ -1,26 +1,38 @@
+在监督树模型中，怎么启动一个子进程的同时并传递参数。
+
+
+
+
+
+
+
 ## Supervisor Behaviour
 
-督程行为。
+本节应与STDLIB中的supervisor(3)手册页一起阅读，其中描述了督程行为的细节。
 
-Supervisor是监督者的意思，在erlang代表监督进程，简称督程。主要用于管理子进程的。
+在这里将Supervisor翻译为督程。
 
 
 
-### 监督原则
+### Supervision Principles
 
-监督进程负责启动、停止和监视子进程。监督进程的基本思想是在必要的时候通过重启它们来保持子进程的活动。
+译为监督原则。
 
-要启动的子进程由子进程规范列表指定。子进程会按照列表的顺序进行初始化，并以相反的顺序终止。
+supervisor负责启动、停止和监控它的子进程。supervisor的基本思想是在必要的时候通过重启它们来保持子进程的存活。
+
+要启动和监控的子进程由子进程规范列表指定，子进程按照这个列表指定的顺序启动，并按照相反的顺序停止。
 
 
 
 example：
 
+supervisor启动服务的回调模块来自于gen_server Behaviour，看起来如下所示：
+
 ```erlang
 -module(ch_sup).
--export([start_link/0]).
-
 -behaviour(supervisor).
+
+-export([start_link/0]).
 -export([init/1]).
 
 init(_Args) ->
@@ -36,63 +48,90 @@ init(_Args) ->
     {ok, {SupFlags, ChildSpecs}}.
 ```
 
+init/1返回值中的SupFlags变量表示supervisor flags，ChildSpecs变量是子进程规范列表。
 
 
 
 
-### 督程标志（supervisor flags）
+
+### Supervisor Flags
+
+Supervisor Flags翻译为督程标志，定义了督程自身的一些属性。
+
+这是督程标志的类型定义：
 
 ```erlang
-sup_flags = #{strategy => strategy(),
-             intensity => intensity(),
-             period => period()}.
+sup_flags = #{
+	strategy => strategy(),
+	intensity => intensity(),
+	period => period()
+}.
 ```
 
-- strategy
+- strategy指定重启策略
 
-  配置督程的重启策略
-
-- idtensity、period
-
-  这俩个参数指定的重启频率，如果一个子进程在period时间内执行了超过idtensity次重启，就会终止所有子进程然后退出。
-
-
-
-### 重启策略
-
-重启策略是由init回调函数返回的督程标志Map中的strategy键指定的。重启策略有以下选项：
-
-- one_for_one
-
-  如果子进程终止，则只有该进程可以重新启动。
-
-- one_for_all
-
-  如果子进程终止，则所有其他子进程都会终止，然后重新启动所有子进程（包括已终止的子进程）。
-
-- rest_for_one
-
-  如果一个子进程终止，其余的子进程（指以开始顺序结束的进程之后的子进程）也将终止。然后重新启动终止的子进程和其余的子进程。
+- idtensity和period指定最大重启强度。
 
 
 
 
+#### Restart Strategy
 
-### 最大重启强度
+Restart Strategy译为重启策略。
 
-督程有一个内置机制来限制在给定时间间隔内可以重启的次数。由init回调函数返回的督程标志的intensity、period键指定。
+重启策略是由init回调函数返回的督程标志中的strategy key指定的：
+
+```
+SupFlags = #{strategy => Strategy, ...}
+```
+
+SupFlags是一个Map，在Map中strategy key是可选的。如果没有提供，默认策略是one_for_one。
+
+
+
+one_for_one
+
+如果一个子进程终止，只有该子进程会被重启。
+
+注：one_for_one监督模式中，任意一个子进程死亡都会被重启。
+
+
+
+one_for_all
+
+如果一个子进程终止，其他的子进程都会被终止。接着所有的子进程，包含刚才终止的子进程都会被重启
+
+
+
+rest_for_one
+
+如果一个子进程终止，其余的子进程（指的是按照启动顺序排在终止进程之后的子进程）也被终止。然后终止的子进程和其余的子进程都会被重启。
+
+
+
+simple_one_for_one
+
+参数simple_one_for_one章节。
+
+
+
+#### Maximum Restart Intensity
+
+译为最大重启强度。
+
+Supervisors（督程）有一个内置机制用于限制在给定的时间间隔内可以重启的次数。这是通过init回调函数所返回的Supervisor Flags（督程标志）中的intensity、period俩个key指定的。
 
 ```erlang
 SupFlags = #{intensity => MaxR, period => MaxT}.
 ```
 
-如果在过去MaxT秒时间内重启的次数大于MaxR，则督程将终止所有子进程，然后终止自身。这种情况下自身以shutdown原因终止的。
+在最近的MaxT秒内发生的重启次数超过MaxR，则督程会终止所有子进程，接着终止它自己。督程的终止原因将是shutdown。
 
-重启机制的目的在于防止一个进程因为相同的原因反复死亡，但又重新启动的情况。
+当督程终止时，那么紧挨着的更高级别的督程会采取一些行动，它要么重启刚才终止的督程，要么终止它自己。
 
-idtensity和period的默认值分别是1和5，即在过期5秒内重启的次数大于1，
+重启机制的用意在于避免当一个进程因为同样的原因反复死亡却又被重启的情况。
 
-
+在supervisor flags（督程标志）中intensity和period是可选的，如果没有设置它们的默认值分别时1和5.
 
 
 
