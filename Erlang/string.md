@@ -56,5 +56,11 @@ characters_to_binary(Data) -> Result
 
 
 
-注意：普通的erlang:list_to_binary()、erlang:binary_to_list()会有编码问题。回头看下文档验证下。
+注：关于io:format的t修饰符，t可以用于打印unicode列表数据，也可以用于打印utf8编码的二进制数据。
+
+
+
+
+
+问题：普通的erlang:list_to_binary()、erlang:binary_to_list()会有编码问题。回头看下文档验证下。
 

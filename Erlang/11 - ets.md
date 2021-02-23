@@ -200,6 +200,165 @@ from_dets(Tab, DetsTab) -> true
 
 
 
+```erlang
+to_dets(Tab, DetsTab) -> DetsTab
+```
+
+把一个已打开的ETS表Tab里的对象数据插入到一个已创建的磁盘ETS表Dets中。表Dets里的数据在对象数据插入前会被请空。
+
+
+
+```erlang
+fun2ms(LiteralFun) -> MatchSpec
+```
+
+伪函数，通过parse_transform将函数调用中作为参数的LiteralFun转换为匹配规范。literal的意思是，这个fun必须以文本的形式写成函数的参数，它不能被保存在一个变量中，然后传递给fun2ms函数。
+
+ms_transform模块提供了解析转换的功能，在源码中必须包含STDLIB的ms_transform.hrl文件，这个伪函数才能工作。如果未能在源文件中包含hrl文件，将导致运行时错误，而不是编译时错误。
+
+该文件通过-include_lib("stdlib/include/ms_transform.hrl")来包含。
+
+fun是受限的，它只能接收一个参数（即要匹配的对象）：一个唯一的变量或元组。它必须使用is_guard断言。像if、case、receive之类的语法是不允许出现在匹配规范中的。
+
+该函数的返回值就是一个匹配规范。
+
+注：匹配规范参数ets:select/2的定义。
+
+
+
+```erlang
+select(Tab, MatchSpec) -> [Match]
+```
+
+使用一个匹配规范从Tab表中匹配对象。此函数比ets:match/2更常用。以下是一些最简单行是的匹配描述：
+
+```
+Match = [MatchFunction]
+MatchFunction = {MatchHead, [Guard], [Result]}
+MatchHead = "Pattern as in ets:match"
+Guard = {"Guardtest name", ...}
+Result = "Term construct"
+```
+
+这意味着匹配规范总是由一个或多个元组组成的列表。元组的第一个元素应是ets:match/2的文档中所描述的匹配模式；第二个元素应是含0个或多个断言测试的列表；第三个元素应是包含关于实际返回值的描述列表，通常是一个对返回值全描述的列表，即返回匹配对象的所有项目。
+
+
+
+返回值的结构使用MatchHead所绑定的"match variables"，或者使用特殊的匹配值，比如'\$_'会返回整个匹配对象，而'$$'则返回包含所有匹配值的列表。
+
+example：
+
+```erlang
+Tab = ets:new(test_ets_new, [private]).
+ets:insert(Tab, [{a, 1}, {b, 2}]).
+
+%% 输出[[b,2],[a,1]]，可以返回的元素是所有匹配值组成的列表
+ets:select(Tab, [{{'$1', '$2'}, [], ['$$']}]).
+
+%% 输出[{b,2},{a,1}]
+ets:select(Tab, [{{'$1', '$2'}, [], ['$_']}]).
+```
+
+返回值也可以通过写一个简单的列表来构建符合选项，例如：
+
+```erlang
+ets:select(Tab, [{{'$1', '$2'}, [], [['$1', '$2']]}]).
+```
+
+也就是将匹配头中的所有绑定变量当作一个列表。如果要构造元组，必须写一个参数数量1的元组，其中元组中的单元素就是自己要构造的元素，因为普通元组会被误认为Guard。
+
+```erlang
+ets:select(Tab, [{{'$1', '$2'}, [], [{{'$1', '$2'}}]}]).
+```
+
+这个语法与Runtime_Tools中的trace patterns(dbg3)模块中使用的语法相当。
+
+
+
+Guards被构造为元组，其中第一个元素是测试名，其余元素是测试参数。
+
+要检查绑定到匹配变量'$1'的元素的特定类型（比如列表），可以将guard test写成{is_list, '$1'}。如果验证失败，表中的对象不匹配，就会尝试下一个MatchFunction（如果有的话）。大多数存在于erlang的guard test都可以使用，但是只有前缀为is_的guard才允许使用（is_floag, is_atom等）。
+
+Guards部分也可以包含逻辑运算和算数运算，这些运算的编写语法与guard test相同，所以下面写在erlang中的guard test：
+
+```erlang
+is_integer(X), is_integer(Y), X + Y < 1000
+```
+
+转换成Guards表示为，X、Y分别用\$1、\$2代替：
+
+```erlang
+[{is_integer, '$1'}, {is_integer, '$2'}, {'<', {'+', '$1', '$2'}, 4711}]
+```
+
+
+
+对于orderd_set类型的表，对象的访问顺序与first/next遍历相同。这表示匹配规范是相对于first/next顺序的对象执行的，相应的结果列表也是按照该执行顺序进行的。
+
+
+
+
+
+
+
+
+
+
+
+
+
+```erlang
+match(Tab, Pattern) -> [Match]
+```
+
+根据匹配模式Pattern匹配ETS表Tab里的对象数据。
+
+一个匹配模式也许包含的项值有：
+
+- 绑定部分（Erlang项）
+- ’_‘ 可以匹配任何erlang项
+- 匹配变量：'$N'(N >= 0)，使用时不能缺少分号。
+
+该函数为每个匹配对象返回一个元素列表，其中每个元素是一个绑定变量模式的有序列表（即匹配变量所表示的值）。
+
+example:
+
+```erlang
+ets:new(Tab, {named_table, bag}).
+ets:insert(Tab, [{rufsen, dog, 7}, {brunte, horse, 5}, {ludde, dog, 5}]).
+
+ets:match(Tab, {'_', dog, '$0'}).
+%% 输出[[7], [5]]
+%% 返回所有匹配对象的元素列表，每个元素的值都是有$0组成的。
+
+ets:match(Tab, {'_', '$0', '$1'}).
+%% 输出[[dog, 7], [house, 5], [dog, 5]]
+```
+
+注：匹配模式中如果指定了键，匹配是很有效率的。如果没有指定键，例如它是一个变量或者_，那么会搜索整个表。表越大搜索的时间就越长。
+
+
+
+```erlang
+match(Tab, Pattern, Limit) -> {[Match], Continuation} | '$end_of_table'
+```
+
+与match/2一样，不同的是Limit限制了返回的匹配数据数目。同时返回结果的Continuation变量，可以用于ets:match/2来获取下一批数据。这比使用ets:first/1和ets:next/2方法遍历获取表里的对象数据会更有效率。
+
+```erlang
+match(Continuation) -> {[Match], Continuation} | '$end_of_table'
+```
+
+继续从ets:match/3方法开始匹配数据，调用ets:match/3方法跟匹配数据一起返回的变量Continuation可用在下一次调用这个函数来获取下一批的匹配数据。
+
+如果没有更多的数据在表里，那么则返回'$end_of_table'。
+
+
+
+
+
+
+
 
 
 

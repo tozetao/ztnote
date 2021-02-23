@@ -1,4 +1,21 @@
 ```c
+int epoll_create(int size);
+int epoll_create1(int flags);
+```
+
+创建一个epoll实例，从Linux2.6.8开始，参数size被自动忽略，但是该值仍需一个大于0的整数。
+
+这个实例用于调用epoll_ctl和epoll_wait，如果该实例不在需要使用，比如服务器关闭，需要调用close()方法来释放epoll实例，这样系统内核可以回收epoll实例分配使用的内核资源。
+
+关于参数size，在开始时是用来告知内核要监听的文件描述符大小，以便初始化系统内核数据结构。在新的实现中已经能够动态分配需要的内核数据结构了，因此size设置为大于0的数即可。
+
+
+
+
+
+
+
+```c
 #include <sys/epoll.h>
 
 int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
@@ -9,6 +26,8 @@ int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
 如果监测某个事件发生，就将所有就绪的事件从内核事件表（由epfd参数指定）中复制到它的第二个参数events指向的数组中。
 
 events数组只存储epoll_wait检测到的就绪事件，而不像select和poll的数组参数，既用于传入用户注册的事件，又用于输出内核检测到的就绪事件。这极大的提供了索引就绪文件描述符的效率。
+
+
 
 
 

@@ -1,0 +1,14 @@
+var goodsDesc = document.forms[this.formName].elements[id];
+
+        if(goodsDesc != undefined && goodsDesc.value != ''){
+            matches = goodsDesc.value.match(/<img.*?(?:>|\/>)/gi);
+            console.log(matches);
+            console.log(matches.length);
+            if(matches.length > 6){
+                this.addErrorMsg(msg);
+            }
+        }
+
+
+
+$pattern = '/<img[\s\S]*?src\s*=\s*[\"|\'|\\\](.*?)[\"|\'|\\\][\s\S]*?>/';

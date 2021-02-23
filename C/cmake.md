@@ -268,3 +268,6 @@ message(STATUS var1 var2)
 var1是前置文件，var2是变量值。
 
 message可以输出变量值。
+
+
+
