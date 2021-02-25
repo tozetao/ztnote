@@ -557,3 +557,4 @@ webpack-merge: 合并多个webpack配置对象。
 vue router
 
 --history-api-fallback：配置vue router指向index.html页面
+
