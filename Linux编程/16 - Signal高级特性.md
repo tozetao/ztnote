@@ -1,0 +1,169 @@
+### 特定信号的处理
+
+- SIGKILL和SIGSTOP
+
+  SIGKILL信号默认行为是终止一个进程，SIGSTOP信号的默认行为是停止一个进程。俩者的默认行为是无法改变的，试图使用signal()或signaction()来注册信号处理器程序会一直返回错误。
+
+  不允许改变这些信号的行为是为了能够杀死或停止一个失控进程。
+
+- SIGCONT
+
+  不是很懂，后续再看。
+
+
+
+### 进程的睡眠状态
+
+内核会经常令进程进入休眠，而休眠状态分为俩种：
+
+- TASK_INTERRUPTIBLE
+
+  可中断的进程睡眠状态，进程正在等待某一事件。
+
+  例如在等待终端输入，等待数据写入当前的空管道，进程在该状态下耗费的时间可长可短，如果为这种状态下的进程产生一个信号，那么操作将中断，而传递来的信号将唤醒进程。
+
+  ps命令在显示处于TASK_INTERRUPTIBLE状态的进程，会将STAT字段标记为S
+
+- TASK_UNINTERRUPTIBLE
+
+  不可中断的睡眠状态，进程正在等待某些特定类型的事件。
+
+  比如磁盘I/O的完成，如果为这种状态下的进程产生一个信号，那么在进程摆脱这种状态之前，系统将不会把信号传递给进程。
+
+  ps命令显示这类进程的STAT字段是标记为D。
+
+- TASK_KILLABLE
+
+  内核在2.6.25新增的状态，用于解决因硬件故障或内核缺陷挂起的进程而SIGKILL信号无法杀死该进程的情况。
+
+
+
+## 实时信号
+
+实时信号定义在POSIX.1b文件中，相比标准信号不同的是：
+
+- 程序自定义
+
+  实时信号的信号范围比标准信号的范围要大，它可以用于程序自定义；在标准信号中可随意使用的信号只有SIGUSR1和SIGUSR2。
+
+- 队列化管理
+
+  队列化管理是指同个实时信号多次发送给进程，将会按照实时信号发送的顺序多次传递给进程；相反同个标准信号在阻塞情况下发送给进程，解除阻塞后信号也只会传递一次。
+
+- 传递顺序的保证
+
+  不同实时信号的传递顺序可得到保障，如果有多个不同的实时信号处于等待状态，那么最先传递最小编号的信号，信号的编号越小则优先级越高。
+
+- 可携带数据
+
+  当发送一个实时信号时，可为该信号指定携带数据，供接收进程的信号处理器函数处理，携带的数据只能是一个整形数或指针值。
+
+标准要求实现的各种实时信号不得少于\_POSIX\_RTSIG_MAX（定义为8）个，linux内核定义了32个不同的实时信号，编号范围32-63。
+
+在<signal.h>头文件，定义了实时信号的相关常量。
+
+- RTSIG_MAX
+
+  表示实时信号的可用数量
+
+- SIGRTMIN
+
+  表示可用实时信号的最小值
+
+- SIGTRMAX
+
+  表示可用实时信号的最大值。
+
+实时信号的整型值在不同的unix系统中有不同的实现，因此在指定一个实时信号时，需要通过SIGTRMIN + x的方式，例如SIGTRMIN + 1表示第二个实时信号。
+
+同时SIGTRMIN与SIGTRMAX不一定是整型值，也可能是函数实现，因此不能编码代码给预处理器处理：
+
+```c
+#if SIGTRMIN + 100 > SIGTRMAX
+#error "wot enough relatime signals"
+#endif
+```
+
+
+
+### 队列的限制
+
+为进程的实时信号排队是需要内核维护对应的数据结构的，由于这些数据结构会销毁内存，因此内核对排队的实时信号的数量做了限制。
+
+标准允许实现为每个进程可排队的各类实时信号数量设置上限，并要求不得少于\_POXIS_SIGQUEUE\_MAX（定义为32）。
+
+可以通过SIGQUEUE_MAX常量查看允许排队的实时信号数量，或者通过sysconf(_SC_SIGQUEUE_MAX)获取
+
+```c
+int limit = sysconf(_SC_SIGQUEUE_MAX);
+// 查看内核允许的排队实时信号的最大数量
+```
+
+
+
+### sigqueue()
+
+```c
+#define _POSIX_C_SOURCE 199309
+#include <signal.h>
+
+int sigqueue(pid_t pid, int sig, const union sigval value);
+// returns 0 on success, or -1 on error. 
+
+union sigval {
+    int sival_int;
+    void *siva_ptr;
+}
+```
+
+sigqueue()函数用于发送实时信号和信号的携带数据，它能够保证信号是以排队的方式来发送的。kill()、raise()系统调用虽然也能够发送实时信号，但是发送信号的排队处理是依赖于系统实现的。
+
+参数value是sigval联合体，指定携带的数据，sival_ptr属性比较少使用，因为指针的作用范围是在进程内部，对另一进程是没有意义的。
+
+使用sigqueue()发送信号的权限与kill()的要求相同，也可以发送空信号（即信号0），但是不能讲pid指定为负值向整个进程组发送信号。
+
+如果超出排队信号的数量限制，sigqueue()调用会失败，并将errno置为EAGAIN。
+
+
+
+### 处理实时信号
+
+要为一个实时信号注册处理器函数，接收进程应以SA_SIGINFO标志发起对sigaction()的调用，这样调用处理器函数就会附带额外参数，其中就包括实时信号携带的数据。
+
+```c
+void handler(int sig, siginfo_t *siginfo);
+```
+
+使用SA_SIGINFO标志注册的处理函数，第二个参数将会是一个siginfo_t结构体，包含实时信号的附加信息。
+
+对于一个实时信号，会在siginfo_t结构中设置以下字段：
+
+- si_signo
+
+  实时信号的值
+
+- si_code
+
+  表示信号来源，对于通过sigqueue()发送的实时信号，值总是为SI_QUEUE。
+
+- si_value
+
+  发送方进程发送信号携带的数据，即sigval union联合体。
+
+- si_pid
+
+  发送方进程的ID
+
+- si_uid
+
+  发送方的实际用户ID
+
+example：设置SA_SIGINFO常量
+
+```c
+struct sigaction act;
+
+sigemptyset(&act.sa_mask);
+act.sa_sigaction = handler;
+act.sa_flags = SA_RESTART | SA_SIGINFO;
+```
