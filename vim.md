@@ -199,7 +199,7 @@ ctrl+o，返回到调用函数代码处。
 
 ### 问题
 
-cscope、gtags-cscope有什么作用？
+使用其他的terminal，测试vim主题效果。
 
 
 
@@ -211,11 +211,15 @@ cscope、gtags-cscope有什么作用？
 
 quickfix的使用
 
+查找到一个tag后，如果在新窗口打开？
+
 编译运行
 
 动态检查
 
-查找到一个tag后，如果在新窗口打开？
+cscope、gtags-cscope有什么作用？
+
+
 
 
 
@@ -320,15 +324,55 @@ tab切换
 
 
 
-### gutentags
+```ini
+set syntax=on			" 语法高亮
+set noeb				" 去掉输入错误的提示声音
+
+set autoindent			" 自动缩进
+set cindent
+
+set tabstop=4			" Tab键的宽度
+set softtabstop=4		" 统一缩进为4
+set shiftwidth=4
+set noexpandtab			" 不要用空格代替制表符
+set smartindent			" 为C程序提供自动缩进
+set smarttab			" 在行和段开始处使用制表符
+set number				" 显示行号
+
+set ignorecase			"搜索忽略大小写
+set hlsearch			"搜索逐字符高亮
+set incsearch
+set gdefault			"行内替换
+
+set enc=utf-8				"编码设置
+set fencs=utf-8,ucs-bom,shift-jis,gb18030,gbk,gb2312,cp936
+set langmenu=zh_CN.UTF-8	"语言设置
+set helplang=cn
+
+set laststatus=2	" 总是显示状态行
+set cmdheight=2		" 命令行（在状态行下）的高度，默认为1，这里是2
+
+filetype on			" 侦测文件类型
+filetype plugin on	" 载入文件类型插件
+filetype indent on	" 为特定文件类型载入相关缩进文件
 
 
+set iskeyword+=_,$,@,%,#,-		" 带有如下符号的单词不要被换行分割
+set linespace=0					" 字符间插入的像素行数目
+set wildmenu					" 增强模式中的命令行自动完成操作
+set backspace=2					" 使回格键（backspace）正常处理indent, eol, start等
+set whichwrap+=<,>,h,l			" 允许backspace和光标键跨越行边界
 
-编辑情况下怎么进行选中和复制
+set mouse=a						" 可以在buffer的任何地方使用鼠标（类似office中在工作区双击鼠标定位）
+set selection=exclusive
+set selectmode=mouse,key
 
-逗号和引号问题
+set showmatch				" 高亮显示匹配的括号
+set matchtime=1				" 匹配括号高亮的时间（单位是十分之一秒）
+set scrolloff=3				" 光标移动到buffer的顶部和底部时保持3行距离
+```
 
-打开一个工程目录并切换
+
 
 
 
@@ -361,3 +405,55 @@ set用于设置选项，let用于设置变量。
   本地函数
 
 - 其他略...
+
+
+
+
+
+
+
+
+
+### vim配色
+
+shell配色
+
+修改~/.bashrc
+
+```shell
+if [ "$TERM" == "xterm" ];then
+    export TERM=xterm-256color
+fi 
+```
+
+重连服务器后，输入tput colors命令，会发现现在支持的颜色数目是256。
+
+
+
+接着修改xshell的配色。
+
+
+
+
+
+最后修改vim配置。
+
+```ini
+set background=dark
+if $TERM=="xterm-256color"                               
+      set t_Co=256
+      let g:solarized_termcolors=256
+      colorscheme  solarized
+    else
+      set t_Co=8
+      colorscheme desert
+endif
+```
+
+
+
+
+
+
+
+http://bytefluent.com/devify/
