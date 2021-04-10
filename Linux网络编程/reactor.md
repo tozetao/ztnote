@@ -32,6 +32,14 @@ event_loop是reactor对象，event_loop和线程相关联，每个event_loop在�
 
 
 
+#### init
+
+init函数会初始化event_loop对象，同时初始化好event dispatcher。
+
+
+
+
+
 ```c
 int event_loop_do_channel_event(struct event_loop *eventLoop, int fd, struct channel *chanel1, int type);
 ```
@@ -173,7 +181,7 @@ struct event_dispatcher {
 
 
 ```c
-const struct event_dispatcher_data {
+const struct poll_dispatcher_data {
     int event_count;
     int nfds;
     int realloc_copy;
@@ -188,17 +196,83 @@ const struct event_dispatcher_data {
 
 
 
+#### dispatch
+
+这里看poll dispatcher的实现。
+
+首先使用poll函数监听有哪些文件描述符准备就绪，设置最多阻塞1秒时间。
 
 
 
 
 
 
-event_dispatcher_data
 
 
 
 ### channelMap
+
+一个map，键是文件描述符，值是channel结构。
+
+```c
+struct channel_map {
+    
+    void **entries;
+    
+    // entrie元素个书
+    int nentries;
+}
+```
+
+
+
+```c
+void map_init(struct channel_map *map)
+{
+    map->nentries = 0;
+    map->entries = NULL;
+}
+```
+
+channel map的初始化。
+
+
+
+```c
+int map_make_space(struct channel_map *map, int slot, int msize)
+{
+    if (map->nentries <= slot) {
+        // 当前map的大小
+        int nentries = map->nentries ? map->nentries : 32;
+        void **tmp;
+        
+        // 如果map的size小于slot，那么扩充map的size
+        while (nentries <= slot)
+            nentries <<= 1;
+
+        // 若map的空间不足那么会自动扩充，同时保留原有数据；若空间足够就返回原空间地址
+        tmp = (void **) realloc(map->entries, nentries * msize);
+        if (tmp == NULL)
+            return (-1);
+
+        // 将tmp[map->nentries]位置后面的n个字节填充为0.
+        memset(&tmp[map->nentries], 0,
+               (nentries - map->nentries) * msize);
+
+        // 更新map的大小，存储对象
+        map->nentries = nentries;
+        map->entries = tmp;
+    }
+
+    return (0);
+}
+```
+
+
+
+
+
+
 
 
 
@@ -221,9 +295,18 @@ struct channel {
 
 
 
-进程之间的通信
 
-socketpair()
+
+```c
+int channel_event_active(struct event_loop *eventLoop, int fd, int revents)
+{
+    
+}
+```
+
+这个函数激活对应套接字上的事件处理函数。
+
+
 
 
 
@@ -258,4 +341,4 @@ event_loop_run()做了什么？
 
 reactor涉及的系统知识有：
 - 锁与条件变量
-- 进程之间的socket通信
+- socketpair()
