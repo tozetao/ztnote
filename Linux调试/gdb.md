@@ -251,23 +251,79 @@ kernel.core_pattern=core.%u.%p
 
 ## php-fpm core dump
 
-开启core dump，让php-fpm输出core文件。
-
-- ulimit -c unlimited
-
-  设置core dump大小
-
-- 修改内核core dump文件位置
-
-- rlimit_core = unlimited
-
-  修改php-fpm.conf，配置fpm在收到SIGSEGV信号后记录core dump。
-
-- 重启fpm
-
-注：在php5.6中测试中是不需要第三个步骤的，设置好core的路径后重启fpm就可以看到core dump文件。
 
 
+1. 开启core dumps
+
+```shell
+echo '/tmp/core-%e.%p' > /proc/sys/kernel/core_pattern
+echo 0 > /proc/sys/kernel/core_uses_pid
+ulimit -c unlimited
+```
+
+2. 修改php-fpm配置
+
+```shell
+rlimit_core = unlimited
+```
+
+3. 重启php-fpm
+
+
+
+example：产生core文件
+
+```php
+class A
+{
+
+  private $b;
+
+  function __construct()
+  {
+    $this->b = new B();
+  }
+}
+
+class B
+{
+
+  private $a;
+
+  function __construct()
+  {
+    $this->a = new a();
+  }
+}
+
+$b = new B();
+```
+
+php5系列的版本通过这种设置执行以上代码是能够发生段错误的，但是在php7系列的版本就不行。
+
+
+
+
+
+
+
+#### 永久打开core dump文件
+
+有俩种方式，一种是修改/etc/security/limits.conf文件，加入：*    soft     core   unlimited；另外一种是修改/etc/profile文件，加入：ulimit -S -c 0 > /dev/null2 > &1
+
+
+
+临时修改core dump文件名
+
+```shell
+echo "/tmp/core-%e.%p" > /proc/sys/kernel/core_pattern
+```
+
+永久修改core dump文件名
+
+```shell
+/sbin/sysctl -w kernel.core_pattern=/tmp/core-%e.%p
+```
 
 
 
@@ -278,6 +334,16 @@ kernel.core_pattern=core.%u.%p
 ## 参考资料
 
 c（core dump）：https://blog.csdn.net/u010150046/article/details/77775114
+
+
+
+
+
+https://mengkang.net/1195.html
+
+https://www.cnblogs.com/gatherstars/p/6019766.html
+
+https://segmentfault.com/a/1190000015579363
 
 
 
