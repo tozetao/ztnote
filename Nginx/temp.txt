@@ -1,6 +1,0 @@
-nginx参数命令
-
-tcpdump：抓取tcp数据包，配合share软件查看
-
-debug日志
-	

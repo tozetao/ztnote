@@ -30,7 +30,11 @@ server {
 
 # 找到index.php文件，发起一次内部重定向/index.php，第一个location又被匹配到，所以是返回php目录下的index.php文件
 ```
-注1：index指令会发起一次内部重定向，因为nginx会使用index指令，将配置的文件附加到request_uri，之后再进行
+注：index指令会发起一次内部重定向，因为nginx会使用index指令，将配置的文件附加到request_uri，之后再进行
+
+
+
+
 
 ### nginx执行阶段
 1. 分析uri，如果uri对应web服务器目录，nginx会自动用/补全uri，如果不是uri的最后段会作为文件处理

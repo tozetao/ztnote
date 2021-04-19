@@ -1,15 +1,16 @@
 ## nginx日志管理
 
-
-
 在nginx.conf文件中server段中，可以看到一行注释信息，
 > #access_log logs/host.access.log main
 
 这说明该server的访问日志文件是logs/host.access.log，使用的格式是"main"格式。
 
+
+
 ### 1. main格式说明
 main格式是一种定义好的日志格式，将其命名并方便引用。
 日志的格式是可以自己定义的，main格式如下：
+
 ```
 log_main main 
 	'$remote_addr - $remote_user [$time_local] "$request" '
@@ -23,6 +24,8 @@ log_main main
 ```
 http_user_agent：检查浏览页面着的操作系统、浏览器版本等信息。
 http_x_forwarded_for：在经过代理时，代理将你的ip地址附加在此头信息中，传输你的原始ip。
+
+
 
 ### 2. 自定义日志格式
 nginx允许对不同的server做不同的log日志处理，但是有的web服务器是不支持的例如lighttp，nginx默认会使用main格式来记录日志。

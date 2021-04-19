@@ -216,10 +216,9 @@ const struct poll_dispatcher_data {
 
 ```c
 struct channel_map {
-    
     void **entries;
     
-    // entrie元素个书
+    // 当前map容量的大小
     int nentries;
 }
 ```
@@ -242,7 +241,7 @@ channel map的初始化。
 int map_make_space(struct channel_map *map, int slot, int msize)
 {
     if (map->nentries <= slot) {
-        // 当前map的大小
+        // 当前map容量的大小
         int nentries = map->nentries ? map->nentries : 32;
         void **tmp;
         
@@ -250,7 +249,7 @@ int map_make_space(struct channel_map *map, int slot, int msize)
         while (nentries <= slot)
             nentries <<= 1;
 
-        // 若map的空间不足那么会自动扩充，同时保留原有数据；若空间足够就返回原空间地址
+        // 扩充map的内存大小
         tmp = (void **) realloc(map->entries, nentries * msize);
         if (tmp == NULL)
             return (-1);
@@ -259,7 +258,7 @@ int map_make_space(struct channel_map *map, int slot, int msize)
         memset(&tmp[map->nentries], 0,
                (nentries - map->nentries) * msize);
 
-        // 更新map的大小，存储对象
+        // 更新map容量大小，指针
         map->nentries = nentries;
         map->entries = tmp;
     }
@@ -267,6 +266,14 @@ int map_make_space(struct channel_map *map, int slot, int msize)
     return (0);
 }
 ```
+
+该用户用于扩展map的空间大小。
+
+slot是期望的大小，但是函数会给map分配的容量大小为2的n次方，所以map容量会大于slot期望的大小。msize是map中元素的尺寸。
+
+执行成功返回0，失败返回-1.
+
+
 
 
 
