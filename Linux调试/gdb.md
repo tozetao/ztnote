@@ -324,6 +324,16 @@ rlimit_core = unlimited
 
 环境：PHP5.6.5，PHP-FPM未设置core-ulimited选项
 
+测试代码：
+
+```php
+function recursion($num)
+{
+    recursion(++$num);
+}
+recursion(0);
+```
+
 产生条件：在执行ulimit -c unlimited命令并重启FPM进程后，如果进程异常退出可以产生core文件（注：即使关闭当前会话也会产生）。
 
 关闭条件：执行ulimit -c 0再重启进程后就不会产生core文件了。
@@ -336,7 +346,20 @@ rlimit_core = unlimited
 
 
 
+
+
 > 测试3：在不同会话中执行程序
+
+测试代码：
+
+```c
+int main()
+{
+    char *pc = "hello";
+    free(pc);
+    return 0;
+}
+```
 
 会话1：ulimit -c unlimited。如果程序异常可以产生core dump文件。
 
