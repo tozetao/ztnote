@@ -38,15 +38,15 @@ init函数会初始化event_loop对象，同时初始化好event dispatcher。
 
 
 
-
+#### channel事件处理
 
 ```c
 int event_loop_do_channel_event(struct event_loop *eventLoop, int fd, struct channel *chanel1, int type);
 ```
 
-该函数是根据type来决定如何处理channel，type可以是添加、更新和删除。channel最后会被加入到待处理列表中。
+该函数用于处理channel事件。参数type指channel事件，分别为1添加、2删除、3更新。
 
-这里的type的作用暂时未知。
+
 
 
 
@@ -54,7 +54,7 @@ int event_loop_do_channel_event(struct event_loop *eventLoop, int fd, struct cha
 void event_loop_channel_buffer_nolock(struct event_loop *eventLoop, int fd, struct channel *channel1, int type);
 ```
 
-该函数会将channel封装为一个channel_element结构，并加入到channel_element链表中。
+该函数会将channel封装为一个channel_element结构，并加入到eventLoop的链表中。
 
 
 
@@ -70,7 +70,7 @@ struct channel_element {
 
 channel_element是链表结构。
 
-event_loop结构体通过head、tail俩个指针指向了链表的头元素和尾元素以此来实现链表。
+event_loop结构体通过head、tail俩个指针指向了链表的头元素和尾元素以此来实现一个单向链表。
 
 
 
@@ -79,7 +79,7 @@ event_loop结构体通过head、tail俩个指针指向了链表的头元素和�
 ```c
 void event_loop_wakeup(struct evetn_loop *eventLoop) {
     char one = 'a';
-    size_t n = write(eventLoop->socketPair[0], &one, sizeof one);
+    ssize_t n = write(eventLoop->socketPair[0], &one, sizeof one);
     if (n != sizeof one) {
         LOG("wakeup event loop thread failed");
     }
@@ -87,7 +87,7 @@ void event_loop_wakeup(struct evetn_loop *eventLoop) {
 
 ```
 
-向socket写入一个字符，暂时不知道作用。
+该函数在非主线程中执行，向socket写入一个字符，暂时不知道作用。
 
 
 
@@ -103,7 +103,8 @@ int event_loop_handle_pending_channel(struct event_loop *eventLoop)
     pthread_mutex_lock(&eventLoop->mutex);
     eventLoop->is_handle_pending = 1;
 
-    // 遍历pending列表中的元素，执行处理
+    // 变量链表中所有channel元素，根据channel的事件类型执行对应处理。
+    // 注：在整个处理过程中，is_handle_pending = 1
     struct channel_element *channelElement = eventLoop->pending_head;
     while (channelElement != NULL) {
         //save into event_map
@@ -129,7 +130,19 @@ int event_loop_handle_pending_channel(struct event_loop *eventLoop)
 }
 ```
 
-开始处理pending列表中的channel。
+当前线程是主线程的时候开始执行，该函数用于处理event_loop中channel element链表的所有元素。不同类型的channel会调用不同的函数来进行处理。
+
+
+
+add channel 
+
+加入channel map中，加入dispatcher中。
+
+
+
+remove channel
+
+从channel map中删除，从dispatcher中删除。
 
 
 
@@ -212,13 +225,13 @@ const struct poll_dispatcher_data {
 
 ### channelMap
 
-一个map，键是文件描述符，值是channel结构。
+一个map，键是文件描述符，值是channel结构体。
 
 ```c
 struct channel_map {
     void **entries;
     
-    // 当前map容量的大小
+    // map容量的大小
     int nentries;
 }
 ```
@@ -241,7 +254,7 @@ channel map的初始化。
 int map_make_space(struct channel_map *map, int slot, int msize)
 {
     if (map->nentries <= slot) {
-        // 当前map容量的大小
+        // map容量的大小
         int nentries = map->nentries ? map->nentries : 32;
         void **tmp;
         
@@ -269,11 +282,33 @@ int map_make_space(struct channel_map *map, int slot, int msize)
 
 该用户用于扩展map的空间大小。
 
-slot是期望的大小，但是函数会给map分配的容量大小为2的n次方，所以map容量会大于slot期望的大小。msize是map中元素的尺寸。
+- slot
 
-执行成功返回0，失败返回-1.
+  期望新建map的大小。map的大小并不是slot参数指定的值，是一个大于等于slot的值。
+
+- msize
+
+  map中元素的大小，单位字节。
+
+函数执行成功返回0，失败返回-1.
 
 
+
+```c
+void map_clear(struct channel_map *map)
+{
+    if (map->entries != NULL) {
+        for(i = 0; i < map->entries; ++i) {
+            if (map->entries[i] != NULL) {
+                free(map->entries[i]);
+            }
+        }
+        free(map->entries);
+        map->entries = NULL;
+    }
+    map->nentries = 0;
+}
+```
 
 
 
@@ -304,14 +339,21 @@ struct channel {
 
 
 
+
+
 ```c
-int channel_event_active(struct event_loop *eventLoop, int fd, int revents)
-{
-    
+int channel_write_event_enable(struct channel *channel) {
+    struct event_loop *eventLoop = (struct event_loop *) channel->data;
+    channel->events = channel->events | EVENT_WRITE;
+    event_loop_update_channel_event(eventLoop, channel->fd, channel);
 }
 ```
 
-这个函数激活对应套接字上的事件处理函数。
+启用channel的write事件。
+
+
+
+
 
 
 
@@ -341,11 +383,25 @@ event_loop_run()做了什么？
 
 
 
+问题：
+
+将一个channel事件加入到event_loop后，event_loop做了什么处理？
+
+非同一个线程就执行wakeup，同一个线程就执行handle_pending_channel。这又有什么区别？
+
+event_loop的owner_thread_id = pthread_self();
 
 
 
 
 
-reactor涉及的系统知识有：
+
+
+
+
+
+
+
+涉及知识点：
 - 锁与条件变量
 - socketpair()
