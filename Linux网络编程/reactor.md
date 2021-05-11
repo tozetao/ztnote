@@ -46,6 +46,11 @@ int event_loop_do_channel_event(struct event_loop *eventLoop, int fd, struct cha
 
 该函数用于处理channel事件。参数type指channel事件，分别为1添加、2删除、3更新。
 
+处理流程为：
+
+- 将channel对象加入event_loop对象的channel map链表中。
+- 
+
 
 
 
@@ -146,6 +151,7 @@ remove channel
 
 
 
+update channel
 
 
 
@@ -153,8 +159,16 @@ remove channel
 
 
 
+```c
+int channel_event_active(struct event_loop *eventLoop, int fd, int revents);
+```
 
+channel事件被触发时的处理。
 
+- fd：文件描述符，一般是socket
+- revents：触发的事件，它是一个掩码，值可能是EVETN_READ、EVENT_WRITE的组成。
+
+函数会从channel map中取出channel并执行channel所设置的回调函数来处理socket。
 
 
 
@@ -211,13 +225,30 @@ const struct poll_dispatcher_data {
 
 #### dispatch
 
-这里看poll dispatcher的实现。
+poll dispatcher的实现。
+
+
+
+```c
+poll_dispatch(struct event_loop *eventLoop, struct channel *channel1);
+```
+
+函数实现逻辑：
+
+- 执行poll系统函数，监听要处理的连接。
+- 
+
+
 
 首先使用poll函数监听有哪些文件描述符准备就绪，设置最多阻塞1秒时间。
 
 
 
+```c
+poll_add(struct event_loop *eventLoop, struct channel *channel1);
+```
 
+poll_add的实现很简单，就是将channel对应的socket加入到pollset集合中，由系统去监听它。
 
 
 
@@ -367,15 +398,86 @@ int channel_write_event_enable(struct channel *channel) {
 
 
 
-server中的线程池是怎么实现的？
+
+
+### thread pool
 
 
 
-server start做了什么？
+```c
+struct thread_pool {
+    // 创建thread_pool的主线程
+    struct event_loop *mainLoop;
+    // 是否已启动
+    int started;
+    // 线程数量
+    int thread_number;
+    
+    // 数组指针，指向创建的event_loop_thread数组
+    struct event_loop_thread *eventLoopThreads;
+    
+    // 在数组中的位置，决定选择哪个event_loop_thread服务。
+    int position;
+};
+```
 
 
 
-event_loop_run()做了什么？
+```c
+void thread_pool_start(struct thread_pool *threadPool)
+{
+    assertInSameThread(threadPool->mainLoop);
+    // ...
+    
+    threadPool->eventLoopThreads = malloc(threadPool->thread_number * sizeof(struct event_loop_thread));
+}
+```
+
+启动线程池，必须由主线程来启动。
+
+
+
+
+
+```c
+struct event_loop_thread {
+    struct event_loop *eventLoop;
+    
+    pthread_t thread_tid;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+    
+    char *thread_name;
+    
+    // 已处理的连接数
+    long thread_count;
+};
+```
+
+子线程结构体。
+
+
+
+```c
+int event_loop_thread_init(struct event_loop_thread *eventLoopThread, int i)
+{
+    
+}
+```
+
+初始化一个子线程。主要初始化锁、条件变量和线程名字。
+
+
+
+```c
+struct event_loop *event_loop_thread_start(struct event_loop_thread *eventLoopThread)
+{
+    
+}
+```
+
+
+
 
 
 
@@ -385,23 +487,16 @@ event_loop_run()做了什么？
 
 问题：
 
-将一个channel事件加入到event_loop后，event_loop做了什么处理？
+wakeup有什么作用。
 
-非同一个线程就执行wakeup，同一个线程就执行handle_pending_channel。这又有什么区别？
-
-event_loop的owner_thread_id = pthread_self();
+线程池的实现。
 
 
 
+poll
 
+锁与条件变量
 
+socketpair()
 
-
-
-
-
-
-
-涉及知识点：
-- 锁与条件变量
-- socketpair()
+poll与socketpair的使用。
