@@ -487,16 +487,8 @@ struct event_loop *event_loop_thread_start(struct event_loop_thread *eventLoopTh
 
 问题：
 
-wakeup有什么作用。
+poll与socketpair的使用。
 
 线程池的实现。
 
-
-
-poll
-
-锁与条件变量
-
-socketpair()
-
-poll与socketpair的使用。
+wakeup有什么作用。
