@@ -415,3 +415,12 @@ int main(int c, char **v) {
 
 
 
+
+
+
+
+a.h：引用b的对象。
+
+b.h：引用a的对象。
+
+server.c载入a
