@@ -487,7 +487,11 @@ struct event_loop *event_loop_thread_start(struct event_loop_thread *eventLoopTh
 
 问题：
 
-poll与socketpair的使用。
+poll的使用
+
+socketpair的使用
+
+listen socket只需要处理读事件，连接socket的可读、可写事件如何处理？
 
 线程池的实现。
 
