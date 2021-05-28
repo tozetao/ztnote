@@ -34,7 +34,17 @@ event_loop是reactor对象，event_loop和线程相关联，每个event_loop在�
 
 #### init
 
-init函数会初始化event_loop对象，同时初始化好event dispatcher。
+```c
+struct event_loop *event_loop_init_with_name(char *thread_name);
+```
+
+该函数做了一些初始化处理，分别有：
+
+- 初始化event_loop对象
+
+- 初始化channel_map对象
+
+- 初始化dispatcher对象
 
 
 
@@ -48,8 +58,9 @@ int event_loop_do_channel_event(struct event_loop *eventLoop, int fd, struct cha
 
 处理流程为：
 
-- 将channel对象加入event_loop对象的channel map链表中。
-- 
+- 将channel对象封装为channel_element结构体，加入到event_loop的链表中。
+- 接着遍历整个链表，处理所有channel_element元素。
+- event_loop会根据channel_element的类型调用不同的方法进行处理。
 
 
 
@@ -63,45 +74,7 @@ void event_loop_channel_buffer_nolock(struct event_loop *eventLoop, int fd, stru
 
 
 
-
-
 ```c
-struct channel_element {
-    int type;	// 1: add, 2: delete
-    struct channel *channel;
-    struct channel_element *next;
-};
-```
-
-channel_element是链表结构。
-
-event_loop结构体通过head、tail俩个指针指向了链表的头元素和尾元素以此来实现一个单向链表。
-
-
-
-
-
-```c
-void event_loop_wakeup(struct evetn_loop *eventLoop) {
-    char one = 'a';
-    ssize_t n = write(eventLoop->socketPair[0], &one, sizeof one);
-    if (n != sizeof one) {
-        LOG("wakeup event loop thread failed");
-    }
-}
-
-```
-
-该函数在非主线程中执行，向socket写入一个字符，暂时不知道作用。
-
-
-
-
-
-
-
-```c
-
 int event_loop_handle_pending_channel(struct event_loop *eventLoop)
 {
     //get the lock
@@ -135,23 +108,82 @@ int event_loop_handle_pending_channel(struct event_loop *eventLoop)
 }
 ```
 
-当前线程是主线程的时候开始执行，该函数用于处理event_loop中channel element链表的所有元素。不同类型的channel会调用不同的函数来进行处理。
+遍历event_loop的channel map所有元素，每个元素都是一个channel，接着会根据channel的type调用不同的函数来处理。
 
 
 
-add channel 
+
+
+```c
+void event_loop_wakeup(struct evetn_loop *eventLoop) {
+    char one = 'a';
+    ssize_t n = write(eventLoop->socketPair[0], &one, sizeof one);
+    if (n != sizeof one) {
+        LOG("wakeup event loop thread failed");
+    }
+}
+
+```
+
+该函数在非主线程中执行，向socket写入一个字符，暂时不知道作用。
+
+
+
+
+
+
+
+```c
+struct channel_element {
+    int type;	// 1: add, 2: delete
+    struct channel *channel;
+    struct channel_element *next;
+};
+```
+
+channel_element是链表结构。event_loop结构体通过head、tail俩个指针指向了链表的头元素和尾元素以此来实现一个单向链表。
+
+
+
+
+
+#### add channel 
+
+```c
+int event_loop_handle_pending_add(struct event_loop *eventLoop, int fd, struct channel *channel);
+```
+
+add类型的处理主要做了俩件事情：
+
+- 将channel加入到channel map中。
+- 将channel交由dispatcher处理，dispatcher会根据设置channel的fd所要监听的事件。
 
 加入channel map中，加入dispatcher中。
 
 
 
-remove channel
+#### remove channel
 
-从channel map中删除，从dispatcher中删除。
+```c
+int event_loop_handle_pending_remove(struct event_loop *eventLoop, int fd, struct channel *channel1);
+```
+
+remove channel的处理。
+
+- 从dispatcher中清除channel的fd监听的事件
+- 从channel map中删除该channel
 
 
 
-update channel
+#### update channel
+
+```c
+int event_loop_handle_pending_update(struct event_loop *eventLoop, int fd, struct channel *channel);
+```
+
+update channel的处理。
+
+- dispatcher更新channel的fd所要监听的事件。
 
 
 
@@ -169,6 +201,42 @@ channel事件被触发时的处理。
 - revents：触发的事件，它是一个掩码，值可能是EVETN_READ、EVENT_WRITE的组成。
 
 函数会从channel map中取出channel并执行channel所设置的回调函数来处理socket。
+
+
+
+
+
+```c
+int channel_event_activate(struct eent_loop *eventLoop, int fd, int revents);
+```
+
+该函数用于处理f'd触发的事件。
+
+处理逻辑：
+
+- 从channel map中取出f'd对应的channel。
+- 根据fd触发的事件调用channel对应的回调函数来处理。
+
+
+
+
+
+#### run
+
+```c
+while (!eventLoop->quit) {
+    //block here to wait I/O event, and get active channels
+    dispatcher->dispatch(eventLoop, &timeval);
+
+    //为什么要调用这个函数?
+    //handle the pending channel
+    event_loop_handle_pending_channel(eventLoop);
+}
+```
+
+
+
+
 
 
 
@@ -235,12 +303,12 @@ poll_dispatch(struct event_loop *eventLoop, struct channel *channel1);
 
 函数实现逻辑：
 
-- 执行poll系统函数，监听要处理的连接。
-- 
+- 监听给定的描述符数组
+- 如果有就绪的描述符，则调用调用channel_event_active处理
 
 
 
-首先使用poll函数监听有哪些文件描述符准备就绪，设置最多阻塞1秒时间。
+
 
 
 
@@ -392,9 +460,88 @@ int channel_write_event_enable(struct channel *channel) {
 
 
 
-### TCPServer
+### tcp_server
 
 创建的时候可以指定线程，如果线程数为0就只有一个线程，既负责acceptor的连接处理，也负责已连接socket的I/O处理。
+
+
+
+#### init
+
+绑定acceptor，绑定处理连接、处理连接数据的回调函数。
+
+
+
+
+
+
+
+新连接的处理
+
+新连接的处理封装在listen socket的channel的handle_connection_established回调函数中。
+
+```c
+int handle_connection_established(void *data)
+```
+
+处理逻辑：
+
+- accept一个新的连接。
+- 封装成tcp_connection对象
+
+```c
+struct tcp_connection *
+tcp_connection_new(int connected_fd, struct event_loop *eventLoop, 	
+                   connection_completed_call_back connectionCompletedCallBack, 
+                   connection_closed_call_back connectionClosedCallBack, 
+                   message_call_back messageCallBack, 
+                   write_completed_call_back writeCompletedCallBack);
+```
+
+初始化tcp_connection对象，处理步骤为：
+
+- 设置连接对象的回调函数。
+
+- 初始化连接读写的buffer。
+
+将connected_fd封装成channel，加入到event_loop中。
+
+
+
+
+
+#### 读取连接数据
+
+```c
+int handle_read(void *data);
+```
+
+- 从fd中读取到一定数量的数据。
+- 再交给应用层去处理
+
+
+
+```c
+int onMessage(struct buffer *input, struct tcp_connection *tcpConnection);
+```
+
+处理读取出来的数据，最后再发送给客户端。
+
+这里实现会尝试向连接发送数据，如果不能一次性发送完毕，会写入到tcp_connection的输出缓冲区中，等待下次一次发送。
+
+
+
+#### 发送数据
+
+```c
+int handle_write(void *data);
+```
+
+该函数是一个回调函数，如果fd所对应的tcp_connection输出缓冲区有数据就会尝试将这些数据发完。
+
+
+
+
 
 
 
@@ -485,14 +632,35 @@ struct event_loop *event_loop_thread_start(struct event_loop_thread *eventLoopTh
 
 
 
+
+
+
+在处理一个新连接的时候，为什么在这里会从线程池中获取一个event_loop？
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 问题：
 
-poll的使用
+如何处理一个新的连接？
 
-socketpair的使用
-
-listen socket只需要处理读事件，连接socket的可读、可写事件如何处理？
+如何读取一个连接的数据，向该连接写入数据？
 
 线程池的实现。
 
 wakeup有什么作用。
+
+基于poll的简单server
