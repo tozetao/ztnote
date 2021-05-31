@@ -476,7 +476,7 @@ int channel_write_event_enable(struct channel *channel) {
 
 
 
-新连接的处理
+#### 新连接
 
 新连接的处理封装在listen socket的channel的handle_connection_established回调函数中。
 
@@ -635,7 +635,6 @@ struct event_loop *event_loop_thread_start(struct event_loop_thread *eventLoopTh
 
 
 
-在处理一个新连接的时候，为什么在这里会从线程池中获取一个event_loop？
 
 
 
@@ -644,23 +643,17 @@ struct event_loop *event_loop_thread_start(struct event_loop_thread *eventLoopTh
 
 
 
+homework
 
+read、write的返回值
 
+阻塞和非阻塞
 
+epoll
 
+c10k
 
+基于poll的简单服务器。
 
+实现http服务器。
 
-
-
-问题：
-
-如何处理一个新的连接？
-
-如何读取一个连接的数据，向该连接写入数据？
-
-线程池的实现。
-
-wakeup有什么作用。
-
-基于poll的简单server
