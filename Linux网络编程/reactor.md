@@ -643,17 +643,3 @@ struct event_loop *event_loop_thread_start(struct event_loop_thread *eventLoopTh
 
 
 
-homework
-
-read、write的返回值
-
-阻塞和非阻塞
-
-epoll
-
-c10k
-
-基于poll的简单服务器。
-
-实现http服务器。
-
