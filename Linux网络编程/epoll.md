@@ -1,3 +1,5 @@
+### 初始化
+
 ```c
 int epoll_create(int size);
 int epoll_create1(int flags);
@@ -13,7 +15,7 @@ int epoll_create1(int flags);
 
 
 
-
+### 监听描述符
 
 ```c
 #include <sys/epoll.h>
@@ -30,6 +32,8 @@ events数组只存储epoll_wait检测到的就绪事件，而不像select和poll
 
 
 
+
+### epoll_event结构体
 
 ```c
 // epoll_event结构
@@ -82,7 +86,7 @@ for(int i = 0; i < ret; i++) {
 }
 ```
 
-
+#### 事件类型
 
 - EPOLLOUT
 
@@ -92,13 +96,13 @@ for(int i = 0; i < ret; i++) {
 
   数据可读，包括普通数据和优先数据。
 
+与其他的多路复用不同，epoll有俩种LT与ET俩种模式，这俩种模式对于可读和可写触发事件的解读是不一样的。
 
 
-LT与ET对于可读和可写触发事件的解读是不一样的。
 
 
 
-LT模式
+#### LT模式
 
 Level Trigger，电平触发模式。是epoll默认的工作模式。
 
@@ -106,7 +110,7 @@ Level Trigger，电平触发模式。是epoll默认的工作模式。
 
 
 
-ET模式
+#### ET模式
 
 - 对于EPOLLIN事件
 
@@ -118,7 +122,7 @@ ET模式
 
   只有在从不可写变为可写的情况下才会触发一次。因此必须将文件描述符缓冲区一直写满，让errno返回EAGAIN为止，或者发送完所有数据为止。
 
-  满的缓冲区刚空出空间的时候触发事件?
+
 
 
 
