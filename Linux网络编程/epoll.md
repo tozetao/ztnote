@@ -132,3 +132,20 @@ EPOLLONESHOT事件
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://www.zhihu.com/question/22576054/answer/89395376
+
+https://www.zhihu.com/question/20502870/answer/89738959
