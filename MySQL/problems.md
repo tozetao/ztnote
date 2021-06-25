@@ -108,3 +108,55 @@ commit;
 
 
 如果其他用户向A转账，它们之间是彼此没有冲突的。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+select m.id, m.name, s.sys_alert_id from sys_alerts as m
+	left join sys_alert_reads as s on m.id = s.sys_alert_id and s.sys_alert_id = null;
+
+select m.id, m.name, s.sys_alert_id from sys_alerts as m
+	left join sys_alert_reads as s on m.id = s.sys_alert_id
+	where s.sys_alert_id = null;
+
+为什么第一条语句可以查询出子表中null的记录，而第二条语句不可以呢？
+
+
+
