@@ -2,19 +2,19 @@ map是一个哈希表。
 
 
 
-声明
+#### 声明
 
 ```go
 var m map[K]V
 ```
 
-map的声明方式，K是键，必须是可以使用 == 操作符比较的类型，而V是键对应的值，它可以是任意类型。
+map的声明方式，K是键，V是值。Key必须是可以使用 == 操作符比较的类型，而V可以是任意类型。
 
-map的零值是nil，对一个nil的map插入一个key是会发生panic异常的。
+一个map在声明时未进行初始化，它的零值是nil，对一个nil的map插入一个key是会发生panic异常的。
 
 
 
-初始化
+#### 初始化
 
 ```go
 m := map[k]v{}
@@ -25,30 +25,44 @@ map可以通过字面值初始化，也可以通过make()函数来初始化。�
 
 
 
-访问元素
-
-如果一个key是存在的，将会返回key所对应的值；如果一个key是不存在的，将会返回对应值类型的零值。
+#### 操作
 
 ```go
-ages := make(map[string]int)
-fmt.Println(ages["a"])		// 0
+// 添加
+scores["lisi"] = 100
+scores["zhangsan"] = 50
+
+// 访问
+fmt.Println(scores["lisi"])
+fmt.Println(scores["not_found"])    //如果一个key是不存在的，将会返回对应值类型的零值。
+
+// 判断是否存在
+_, ok := scores["not_found"]
+fmt.Println(ok)
 ```
 
-如果要判断一个key是否存在map中，可以使用短变量赋值方式来访问key：
+
+
+
+
+#### 遍历
 
 ```go
-age, ok := ages["abc"]
+m := map[string]string{
+    "Sam": "Male",
+    "Alice": "Female",
+}
+
+for key, value := range m {
+    fmt.Println(key, ":", value)
+}
 ```
 
-ok是一个布尔值，它表示key"abc"是否在map中。
 
 
 
-遍历
 
-
-
-内置函数
+#### 内置函数
 
 
 
