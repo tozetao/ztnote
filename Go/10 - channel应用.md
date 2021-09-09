@@ -111,7 +111,7 @@ for i := 0; i < 100; i++ {
 	go func(){
         defer <-sema
         sema <- struct{}{}
-    }(
+    }()
 }
 ```
 

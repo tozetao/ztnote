@@ -1,4 +1,7 @@
-掌握go基础语法：数据类型、error、goroutinue、并发
+sync包
+runtime包
+context包
+
 go进阶训练营
 MySQL
 redis
