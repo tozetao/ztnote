@@ -549,8 +549,6 @@ int handle_write(void *data);
 
 ### thread pool
 
-
-
 ```c
 struct thread_pool {
     // 创建thread_pool的主线程

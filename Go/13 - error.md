@@ -1,12 +1,6 @@
-### Error
+### 错误
 
-Go认为，如果函数运行失败是预期的结果，那么应该返回错误而不是异常。
-
-这样设计的原因是对于某个应该在控制流程中处理的错误而言，将其当作异常抛出会混乱对错误的描述，并且这个异常会将堆栈信息返回给终端用户，这些复杂且无法快速定位错误。
-
-
-
-在Go中，预定义了error接口类型用来表示错误类型。
+Go程序使用error值来表示错误状态，error类型是一个内建接口。
 
 ```go
 type error interface{
@@ -14,7 +8,18 @@ type error interface{
 }
 ```
 
-error类型如果是nil表示程序运行成功，如果是non-nil表示程序运行失败。
+通常函数会返回一个error值，调用它的代码应该判断error是否为nil来进行错误处理。
+
+```go
+i, err := strconv.Atoi("42")
+if err != nil {
+    fmt.Printf("couldn't convert number: %v\n", err)
+    return
+}
+fmt.Println("Converted integer:", i)
+```
+
+error为nil时表示成功，非nil的error表示失败。
 
 
 
@@ -22,11 +27,11 @@ error类型如果是nil表示程序运行成功，如果是non-nil表示程序�
 
 ### panic
 
-不可预知的错误称为panic，比如数组下标越位、引用空指针等。
+不可恢复的错误称为panic，比如数组下标越位、引用空指针等。
 
-当发生panic时，会马上中断当前函数的执行，同时所有的defer语句会被执行，然后将控制权交还给接收到panic的函数调用者。
+当panic被调用后，程序将立刻终止当前函数的执行 ，并开始回溯goroutine的栈，运行任何被推迟（defer）的函数。若回溯到goroutine栈的顶端，程序就会终止。
 
-这样向上冒泡到最顶层，并执行每层的defer，在栈顶处程序崩溃并输出日志信息。日志信息包括函数调用的堆栈跟踪信息和panic value。
+example：
 
 ```go
 func main() {
@@ -35,57 +40,57 @@ func main() {
 
 func f(x int) {
     defer fmt.Printf("defer %d\n", x)
-    
+
 	fmt.Printf("f(%d)\n", x + 0 / x)
 	f(x - 1)
 }
+// 输出结果
+// f(3)
+// f(2)
+// f(1)
+// defer  0
+// defer  1
+// defer  2
+// defer  3
 ```
 
-panic会引起程序崩溃，一般用于严重错误，对于大部分可预期的错误，应该使用Go的错误处理机制。
+该案例中f函数会一直递归，当实参x为0时，0/x会产生一个panic，这时中断函数的执行，向上回溯goroutine的栈，执行defer函数。
 
-注：对于每个goroutine，日志信息都会有与之相对的发生panic时的函数调用堆栈信息。
+
 
 
 
 ### recover
 
-recover函数用于从panic异常中恢复，它能够使程序重新获得控制权，停止终止过程而恢复程序正常运行。
+产生panic时程序会终止函数的运行并一直向上回溯goroutine的栈，而内建的recover函数可以取回goroutine的控制权来恢复程序运行。
 
-recover只能在defer修饰的函数中使用，如果发生了panic，recover会使程序从panic异常中恢复并返回panic value，导致panic的函数不会继续运行，但能正常返回；如果是正常执行，调用recover会返回nil。
+调用recover将停止回溯过程，并返回传入panic函数的实参。由于在回溯时只有被推迟（defer）的函数执行，因此recover函数只能用在被推迟函数中。
 
-说明：因为程序发生panic时会执行defer语句，所以在defer函数中捕获panic。
+recover函数会返回panic产生的error，我们可以针对error的类型进行相应的处理。
+
+
+
+example：
+
+recover的简单应用，在服务器中recover产生panic的goroutine，避免影响其他goroutine的正常运行。
 
 ```go
-func main() {
-	fmt.Printf("Calling test\r\n")
-
-	test()
-
-	//由于test()函数捕获了panic异常，因此后续的代码能够正常执行。
-	fmt.Printf("Test completed\r\n")
+func server(workChan <-chan *Work) {
+    for work := range workChan {
+        go safelyDo(work)
+    }
 }
 
-func badCall() {
-	panic("bad end")
-}
-
-func test() {
-	defer func() {
-		if e := recover(); e != nil {
-			fmt.Printf("Pancing %s\n", e)
-		}
-	}()
-
-	badCall()
-
-	//这里不会被执行到
-	fmt.Println("after bad call")	
+// recover panic，避免影响其他goroutine的执行。
+func safelyDo(work *Work) {
+    defer func() {
+        if err := recover(); err != nil {
+            log.Println("work failed: ", err)
+        }
+    }()
+    do(work)
 }
 ```
-
-
-
-
 
 
 

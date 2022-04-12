@@ -1,29 +1,56 @@
+### chan
 
-
-### channel
-
-通道是一种用于发送类型化数据的管道，负责协程之间的通信。
-
-数据在通道进行传递时，在任何给定时间，一个数据被设计为只有一个协程可以对其访问，所以不会发生数据竞争，通过这种设计避免了共享内存导致的竞争问题。
+chan是Go独有的数据类型，是一种用于发送类型化数据的管道，有发送和接收俩个操作，用于协程之间的通信。
 
 
 
-### 行为
+对通道的发送和接收操作的基本特性有：
 
-一个channel有发送和接收俩个操作，都是通信行为。
+- 对于同一个通道，发送操作之间是互斥的，接收操作之间也是互斥的。
 
-发送和接收操作都是使用 ```<-``` 操作符：
+在同一时刻go的运行时系统只会执行对同一个通道中的任意个发送操作中的某一个，直到这个元素值被完全复制到通道之后，其他针对该通道的发送操作才可能被执行。
 
-```go
-channel <- x			//send
-result := <-channel		//receive
-```
+对于接收操作也是同样处理，运行时系统同一时间只会执行任意个接收操作中的某一个，直到该元素值被完全移除该通道，其他接收操作才可能执行。
+
+另外对于通道中同一个元素来说，发送和接收的操作也是互斥的。例如虽然会出现发送元素时，正在被复制进通道但是未复制完成的元素值，这时接收端是绝对不会看到和取走该元素值。
+
+- 发送操作和接收操作对元素值的处理都是不可分割的，元素值是指的是要发送的数据。
+
+这里的不可分割指的是处理元素的操作是原子性的，不会被打断的。
+
+比如接收操作在从通道中复制完元素的副本后，一定会删除掉通道中的元素，不可能出现复制完毕后通道中仍然残留该元素值。
+
+这是为了保证通道中元素的完整性和唯一性，对于通道中的同一个元素值来说，它只可能是某个发送操作放入的，同时也只可能是被某一个接收操作取出的。
 
 
 
-一个未指定容量的channel称为无缓冲的channel。对于一个无缓冲的channel来说，接收和发送操作将导致俩个goroutine发生一次同步操作。
+- 发送操作在完全完成之前会被阻塞。接收操作也是如此。
 
-也就是说，在一个无缓冲的channel上执行发送操作将会导致发送者goroutine阻塞，直到有另一个goroutinue在相同的channel上成功接收到数据，俩个goroutinue才能继续执行后面的语句。
+发送操作包括"复制元素值"和"放置副本到通道中"俩个步骤，在这俩个步骤完成之前，发起发送操作的那句代码会一直阻塞在那里，直到完成发送才会解除阻塞。
+
+另外接收操作通常包含"复制元素值"、"放置副本到接收端"和 "删除通道中元素值"，这几个动作未完成之前，发起接收操作的代码也会阻塞，直到完成接收操作，运行时系统才会通知该代码所在的goroutine继续运行。
+
+
+
+总结：这些特性是为了保证操作的互斥以及元素值的完整性。
+
+
+
+
+
+
+
+
+
+### 非缓冲通道
+
+一个未指定容量的chan称为非缓冲通道。
+
+对于非缓冲通道，无论时发送操作还是接收操作，一开始执行就会被阻塞，直到配对另一方开始执行，数据才能继续传递。
+
+因此非缓冲通道是在用同步的方式传递数据，只有收发双方对上了，数据才传递成功。相比之下缓冲通道是在用异步的方式传递数据。
+
+example：
 
 ```go
 func main() {
@@ -41,7 +68,6 @@ func send(channel chan int) {
 }
 
 func receive(channel chan int) {
-	//接收者睡眠2秒再进行接收数据，观察发送者的阻塞情况
 	fmt.Println("sleep 2 second")
 	time.Sleep(time.Duration(2) * time.Second)
 	<-channel
@@ -49,7 +75,9 @@ func receive(channel chan int) {
 }
 ```
 
-反之一个goroutinue在channel上先触发接收操作，那么它也会被阻塞。直到有另外个goroutinue在同个channel上发送数据。
+观察运行状况可以发现发送和接收是一个同步行为，如果接收方未接收到通道中的数据，那么发送方也会阻塞发送代码那里，直到接收方收到数据。
+
+反之在通道上先触发接收操作，那么它也会被阻塞，直到有发送方在同个channel上发送数据。
 
 ```go
 func main() {
@@ -78,6 +106,208 @@ func receive(channel chan int) {
 
 
 
+
+
+
+
+
+### 缓冲通道
+
+带缓冲的channel持有一个元素队列，在创建channel时指定容量的大小就可以得到带有缓冲的channel。
+
+向channel发送数据就是向管道队列的尾部插入数据，接收channel数据就是从队列头部获取数据。
+
+对于缓冲通道，如果通道已满，那么针对它的所有发送都会被阻塞，直到通道中有元素被取走。同时发送方在阻塞时，它们所在的goroutine会顺序的放入到通道内部中的等待发送队列，所以唤醒时通知的顺序总是公平的。
+
+相对的，如果通道为空，那么对它的所有接收操作都会被阻塞，直到通道中有新的元素出现。这时Go运行时系统会通知最早等待接收数据的那个goroutine，并使它再次执行接收操作。
+
+同样的通道也有等待接收队列，当接收方触发阻塞时，所在的goroutine也会顺序放入到等待接收队列中。
+
+注：跟非缓冲通道最大的不同点是缓冲通道是使用异步的方式来发送数据的，如果缓冲通道未满，发送方在发送完元素之后可以继续往下执行代码，不用等到接收方处理发送的数据。
+
+example：
+
+```go
+func send() {
+	numberChan := make(chan int, 2)
+    // 不阻塞
+	numberChan <- 1
+	fmt.Println("send 1")
+    // 不阻塞
+	numberChan <- 2
+	fmt.Println("send 2")
+
+    // 阻塞
+	numberChan <- 3
+	fmt.Println("send 3")
+}
+```
+
+
+
+example：等待发送队列的测试
+
+```go
+ch := make(chan int, 2)
+
+ch <- 10
+ch <- 20
+
+// 这几个goroutine发送时阻塞的顺序与接收顺序总是一致的。
+for i := 0; i < 3; i++ {
+    go func(i int) {
+        fmt.Printf("goroutine i = %d\n", i)
+        ch <- i
+    }(i)
+}
+
+time.Sleep(time.Second * 3)
+for i := 0; i < 5; i++ {
+    val, ok := <- ch
+    fmt.Println("val: ", val, ", ok: ", ok)
+}
+```
+
+
+
+
+
+
+
+
+
+### 单向通道
+
+单向的channel指的是channel只能用于发送或者接收。
+
+典型的应用场景是：当一个channel作为一个函数参数时，它一般总是被专门用于只发送或只接收。
+
+```go
+func main() {
+	var ch = make(chan string)
+
+	for i := 0; i < 3; i++ {
+		go download(ch, "a.com/" + string(i + '1'))
+	}
+	receive(ch)
+}
+// 只用于写
+func download(ch chan <- string, url string) {
+	ch <- url
+}
+
+// 只用于读
+func receive(ch <-chan string) {
+	for i := 0; i < 3; i++ {
+		msg := <-ch
+		fmt.Println("finish url: ", msg)
+	}
+}
+```
+
+
+
+### 关闭的通道
+
+channel是可以关闭的。
+
+对于一个关闭的channel，基于该channel的任何发送行为都会引发panic，但是可以对一个关闭的channel执行接收操作，并且可以接收到已经发送成功的数据。
+
+如果channel中已经没有数据，接收者goroutine继续对该channel执行接收操作不会阻塞，并且会返回空值（通道对应类型的初始值）。
+
+```go
+func main() {
+	var ch = make(chan int)
+	go send(ch)
+	receive(ch)
+}
+
+func send(channel chan int) {
+	for i := 0; i < 5; i++ {
+		channel <- i
+	}
+	close(channel)
+}
+
+func receive(channel chan int) {
+	for {
+		val, ok := <-channel
+		fmt.Println("val: ", val, ", ok: ", ok)
+		if ok {
+			continue
+		}
+		break
+	}
+}
+```
+
+
+
+### select
+
+select是多路复用，能够检测多个通道是否有可以执行的非阻塞操作。select语句的写法与switch语句类似，都是有几个case的候选分支和最后的default分支，比如：
+
+```go
+select {
+	case <-ch1:
+    	//...
+    case ch <- x:
+    	//...
+    default:
+    	//...
+}
+```
+
+select分支的选择规则：
+
+- 对于每一个case表达式，都至少包含一个发送操作或接收操作。
+
+- 包含的候选分支的case表达式先求值，并且求值的顺序是依从代码编写的顺序从上到下的。
+
+- 对于每一个case表达式，如果其中的发送表达式或接收表达式在求值时，相应的操作正处于阻塞状态，那么该case表达式的求值就是不成功的。
+
+- 仅当select语句中的所有case表达式都被求值后，它才会开始选择候选分支。如果没有满足条件的候选分支可以执行，则会选择默认分支执行。
+
+  如果这时没有默认分支，那么select会被阻塞。直到候选分支中有满足选择条件，select语句才会被唤醒，该候选分支才会被执行。
+
+- 如果select语句发现同时有多个候选分支满足选择条件，那么它就会用一种伪随机的算法在这些分支中选择一个并执行。注意即使是在select被唤醒时碰到的这种情况，也会这样做。
+
+example：
+
+```go
+//运行下面代码n次，可以发现channel的选择是随机的。
+func main() {
+    abort := make(chan struct{})
+	x := make(chan int)
+	y := make(chan string)
+
+	go func() {
+		os.Stdin.Read(make([]byte, 1))
+		abort <- struct{}{}
+	}()
+
+	go func() {
+		x <- 100
+	}()
+
+	go func() {
+		y <- "hello"
+	}()
+
+	select {
+		case n := <-x:
+			fmt.Println(n)
+		case s := <-y:
+			fmt.Println(s)
+		case <-abort:
+			fmt.Println("abort")		
+	}
+}
+```
+
+
+
+### example
 
 example：并行的好处
 
@@ -129,166 +359,4 @@ func download(url string) {
 ```
 
 这个实例说明了接收者的处理速度决定了发送者的发送效率。
-
-
-
-
-
-### 带缓冲的channel
-
-带缓冲的channel持有一个元素队列，在创建channel时指定容量的大小就可以得到带有缓冲的channel。
-
-向channel发送数据就是向管道队列的尾部插入数据，接收channel数据就是从队列头部获取数据。如果队列是空的，发送操作将会执行到队列满时阻塞；如果队列是满的，接收操作将会执行到队列为空时阻塞。
-
-```go
-func send() {
-	numberChan := make(chan int, 2)
-
-	numberChan <- 1
-	fmt.Println("send 1")
-
-	numberChan <- 2
-	fmt.Println("send 2")
-
-	numberChan <- 3
-	fmt.Println("send 3")
-}
-```
-
-
-
-
-
-### 单向的channel
-
-单向的channel指的是channel只能用于发送或者接收。
-
-典型的应用场景是：当一个channel作为一个函数参数时，它一般总是被专门用于只发送或只接收。
-
-```go
-func main() {
-	var ch = make(chan string)
-
-	for i := 0; i < 3; i++ {
-		go download(ch, "a.com/" + string(i + '1'))
-	}
-	receive(ch)
-}
-// 只用于写
-func download(ch chan <- string, url string) {
-	ch <- url
-}
-
-// 只用于读
-func receive(ch <-chan string) {
-	for i := 0; i < 3; i++ {
-		msg := <-ch
-		fmt.Println("finish url: ", msg)
-	}
-}
-```
-
-
-
-### 关闭的channel
-
-channel是可以关闭的。
-
-对于一个关闭的channel，基于该channel的任何发送行为都会引发panic，但是可以对一个关闭的channel执行接收操作，并且可以接收到已经发送成功的数据。
-
-如果channel中已经没有数据，接收者goroutine继续对该channel执行接收操作不会阻塞，并且会返回空值（通道对应类型的初始值）。
-
-```go
-func main() {
-	var ch = make(chan int)
-	go send(ch)
-	receive(ch)
-}
-
-func send(channel chan int) {
-	for i := 0; i < 5; i++ {
-		channel <- i
-	}
-	close(channel)
-}
-
-func receive(channel chan int) {
-	for {
-		val, ok := <-channel
-		fmt.Println("val: ", val, ", ok: ", ok)
-		if ok {
-			continue
-		}
-		break
-	}
-}
-```
-
-
-
-### select
-
-select是多路复用，即能够检测多个channel是否可执行的非阻塞操作。
-
-select语句的写法与switch语句类似，都是有几个case和最后的default分支，比如：
-
-```go
-select {
-	case <-ch1:
-    	//...
-    case ch <- x:
-    	//...
-    default:
-    	//...
-}
-```
-
-每个case代表一个channel通信操作，可以是通道发送或通道接收。
-
-select会等待case中有能够执行的channel，当有非阻塞的channel时，select才会去通信并执行case之后的语句。对于一个没有任何case的select会永远等待下去。
-
-default分支表示当其他case都不满足条件时，将会默认执行的代码部分。
-
-
-
-如果多个case同时就绪时，select会随机的选择一个执行，来保证每个channel都有平等的被select执行的机会。
-
-```go
-//运行下面代码n次，可以发现channel的选择是随机的。
-func main() {
-    abort := make(chan struct{})
-	x := make(chan int)
-	y := make(chan string)
-
-	go func() {
-		os.Stdin.Read(make([]byte, 1))
-		abort <- struct{}{}
-	}()
-
-	go func() {
-		x <- 100
-	}()
-
-	go func() {
-		y <- "hello"
-	}()
-
-	select {
-		case n := <-x:
-			fmt.Println(n)
-		case s := <-y:
-			fmt.Println(s)
-		case <-abort:
-			fmt.Println("abort")		
-	}
-}
-```
-
-
-
-### goroutine泄漏
-
-在go协程使用通道通信时，需要注意通道是否会因为阻塞而导致无法被垃圾回收。
-
-如果因为通道阻塞而导致整个协程阻塞，阻塞的通道和协程无法回收的话，就会造成goroutine泄漏。
 

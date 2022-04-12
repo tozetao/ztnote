@@ -27,7 +27,7 @@ UTF8是一个将Unicode码点编码为可变长字节序列的编码。
 
 ### String
 
-在Go语言中，字符串字面量使用UTF8编码。也就是说如果是ASCII字符会使用1个byte存储，如果是中国字符会使用2-3个byte存储。
+在Go语言中，字符串字面量使用UTF8编码。也就是说如果是ASCII字符会使用1个byte存储，如果是中文字符会使用2-3个byte存储。
 
 example：
 
@@ -53,6 +53,8 @@ fmt.Println(utf8.RuneCountInString(s))	//9
 ```
 
 
+
+### 转移字符
 
 我们也在字符串面值中可以使用反斜杠 \\ 的转义序列插入任意的数据。常见的ASCII转移字符有：
 
@@ -87,10 +89,10 @@ fmt.Println(r)
 
 
 
-for range会隐式的对字符串解码
+对于字符串，range会通过解析UTF-8，分离成每个独立的unicode码点。错误的编码将会占据一个字节，并用U+FFFD来表示。
 
 ```go
-for _, val := range "中国你好!" {
-    fmt.Printf("%c", val)
+for _, char := range "日本 \x80 寓" {// \x80 is an illegal UTF-8 encoding
+    fmt.Printf("%U %c\n", char, char)
 }
 ```
