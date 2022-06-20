@@ -1,12 +1,10 @@
-### Asynchronous and deferred operations
-
 异步操作不是PHP原生的，但是仍然可能会有一些重的任务要同时执行，或者延迟知道它们完成为止。
 
 为了使编写异步代码更容易，Magento Open Source提供了DeferredInterface，以便于异步操作一起使用。这允许客户端代码与异步操作一起工作，就像它与标准操作一样。
 
 
 
-#### DeferredInterface
+### DeferredInterface
 
 ```php
 interface DeferredInterface
@@ -77,13 +75,13 @@ public function aMethod() {
 
 
 
-#### ProxyDeferredFactory
+### ProxyDeferredFactory
 
 
 
 
 
-#### Using DeferredInterface for background operations
+### Using DeferredInterface for background operations
 
 如上所述，第一类异步操作是在后台执行的操作。DeferredInterface可以用于给客户端代码一个尚未收到结果（not-yet-received result）的承诺，并通过调用get()方法等待它。
 
@@ -160,7 +158,7 @@ class ShipController
 
 
 
-#### Using DeferredInterface for deferred operations
+### Using DeferredInterface for deferred operations
 
 第二类异步操作是被推迟的操作，只有在绝对需要结果时才执行。
 
@@ -246,6 +244,6 @@ class EntitiesController
 
 
 
-#### Examples
+### Examples
 
 请参阅我们的异步HTTP客户端Magento\Framework\HTTP\AsyncClientInterface和Magento\Shipping\Model\Shipping以及各种Magento\Shipping\Model\Carrier\AbstractCarrierOnline实现，以了解如何使用DeferreInterface处理异步代码。
