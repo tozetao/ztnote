@@ -1,6 +1,20 @@
-Discovery and cluster formation setting（Discovery与集群组建设置）
+### Network host setting
 
-在投入生成之前需要配置discovery和cluster formation俩个重要的选项，以便集群中的节点能够相互发现并选出一个master节点。
+默认情况下，Elasticsearch只绑定环回地址，如127.0.0.1和[::1]。这足以在一台服务器上运行一个或多个节点的集群，用于开发和测试，但一个有弹性的生产集群必须涉及其他服务器上的节点。虽然有许多关于网络的设置，但通常你需要配置的是network.host。
+
+```yaml
+network.host: 192.168.1.10
+```
+
+注：当你为network.host提供一个值时，Elasticsearch假定你正在从开发模式转向生产模式，并将一些系统启动检查从警告升级为异常。参见开发模式和生产模式的区别。
+
+
+
+### Discovery and cluster formation setting
+
+Discovery与集群组建设置。
+
+在投入生产之前需要配置discovery和cluster formation俩个重要的选项，以便集群中的节点能够相互发现并选出一个master节点。
 
 
 

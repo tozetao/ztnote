@@ -1,0 +1,118 @@
+export JAVA_HOME=/usr/local/jdk1.8.0_333
+export JRE_HOME=${JAVA_HOME}/jre
+export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
+export PATH=.:${JAVA_HOME}/bin:$PATH
+
+
+
+
+
+initial_master_nodes="my_node_1,my_node_2,my_node_3"
+es_max_mem=128
+i=1
+
+echo -e '\n' >> config/elasticsearch.yml
+echo 'cluster.name: my_app' >> config/elasticsearch.yml
+echo "node.name: my_node_$i" >> config/elasticsearch.yml
+echo 'path.data: ./data' >> config/elasticsearch.yml
+echo 'path.logs: ./logs' >> config/elasticsearch.yml
+echo "http.port: 921$i" >> config/elasticsearch.yml
+echo "transport.port: 930$i" >> config/elasticsearch.yml
+echo 'network.host: 0.0.0.0' >> config/elasticsearch.yml
+
+# 所有节点都连接到9031这个节点上去
+echo 'discovery.seed_hosts: ["localhost:9301"]' >> config/elasticsearch.yml
+echo 'cluster.initial_master_nodes: ['$initial_master_nodes']' >> config/elasticsearch.yml
+
+echo -e '\n' >> config/jvm.options
+echo "-Xms${es_max_mem}m" >> config/jvm.options
+echo "-Xmx${es_max_mem}m" >> config/jvm.options
+
+
+lnmp1.8进行安装，PHP7.4, MySQL8.0
+
+系统：ubuntu20
+
+前置要求
+-------------------------------------------
+
+ext-sodium扩展
+-------------------------------------------
+- 安装libsodium库
+wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz
+tar -zxf libsodium-1.0.18-stable.tar.gz
+cd libsodium-stable
+./configure
+make && make check
+make install
+
+- 编译PHP扩展
+cd ./php-7.4.21/ext/sodium
+/usr/local/php/bin/phpize
+./configure --with-php-config=/usr/local/php/bin/php-config
+
+composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition magento2
+
+./bin/magento setup:install \
+--base-url=http://admin.shop.com \
+--db-host=192.168.1.115 \
+--db-name=magento \
+--db-user=root \
+--db-password=root \
+--admin-firstname=admin \
+--admin-lastname=admin \
+--admin-email=admin@admin.com \
+--admin-user=admin \
+--admin-password=admin123 \
+--language=en_US \
+--currency=USD \
+--timezone=America/Chicago \
+--use-rewrites=1 \
+--search-engine=elasticsearch7 \
+--elasticsearch-host=http://192.168.1.115 \
+--elasticsearch-port=9211 \
+--elasticsearch-index-prefix=magento2 \
+--elasticsearch-timeout=15
+
+magento2安装
+---------------------------------------------------------------------------------------------------------
+https://marketplace.magento.com/customer/accessKeys/
+473464608@qq.com
+WOshishei_83
+
+composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition magento2
+
+
+
+
+问题
+---------------------------------------------------------------------------------------------------------
+1. 找不到js、css文件
+./bin/magento setup:static-content:deploy -f
+./bin/magento cache:flush
+
+2. 后台需要双重验证
+./bin/magento module:disable Magento_TwoFactorAuth
+
+3. ./bin/magento info:adminuri
+
+
+
+su <file system owner> -s /bin/bash -c <command>
+sudo -u <file system owner>  <command>
+su www -s /bin/bash -c “php artisan schedule:run”
+
+su www -s /bin/bash -c "php /var/www/magento2/bin/magento module:status"
+su www -s /bin/bash -c "php /var/www/magento2/bin/magento module:enable Mageplaza_HelloWorld"
+
+su www -s /bin/bash -c "php /var/www/magento2/bin/magento setup:upgrade"
+su www -s /bin/bash -c "php /var/www/magento2/bin/magento setup:static-content:deploy -f"，（-f选项是在default和developer模式下强制使用）
+su www -s /bin/bash -c "php /var/www/magento2/bin/magento cache:clean"
+
+
+magento2的命令:
+setup:di:compile，用于生成类
+module:enable --clear-static-content，用于清除模块的静态视图文件。
+
+php bin/magento setup:upgrade
+
