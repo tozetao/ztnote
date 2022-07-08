@@ -116,3 +116,157 @@ module:enable --clear-static-content，用于清除模块的静态视图文件�
 
 php bin/magento setup:upgrade
 
+
+
+
+
+《LuckTimes》后台正式服已更新2.0.2版本:
+1、新增了邮件功能
+2、新增了活动弹窗设置、支付方式设置、分享设置、提现配置、登录配置、锚定货币的设置
+3、新增了分享排行榜
+4、代理分成的设计
+5、新增重置下级代理密码
+6、新增下级代理创建子代理开关
+7、更改管理员给代理玩家充值、兑换、取消充值的逻辑
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Ubuntu20 PHP8安装
+--------------------------------------------------------------
+./configure \
+--prefix=/usr/local/php8 \
+--with-config-file-path=/usr/local/php8/etc \
+--enable-fpm \
+--with-fpm-user=www  \
+--with-fpm-group=www \
+--enable-inline-optimization \
+--disable-debug \
+--disable-rpath \
+--enable-shared  \
+--enable-soap \
+--with-libxml-dir \
+--with-xmlrpc \
+--with-openssl \
+--with-mcrypt \
+--with-mhash \
+--with-pcre-regex \
+--with-sqlite3 \
+--with-zlib \
+--enable-bcmath \
+--with-iconv=/usr/local/libiconv \
+--with-bz2 \
+--enable-calendar \
+--with-curl \
+--with-cdb \
+--enable-dom \
+--enable-exif \
+--enable-fileinfo \
+--enable-filter \
+--with-pcre-dir \
+--enable-ftp \
+--with-gd \
+--with-openssl-dir \
+--with-jpeg-dir \
+--with-png-dir \
+--with-zlib-dir  \
+--with-freetype-dir \
+--enable-gd-native-ttf \
+--enable-gd-jis-conv \
+--with-gettext \
+--with-gmp \
+--with-mhash \
+--enable-json \
+--enable-mbstring \
+--enable-mbregex \
+--enable-mbregex-backtrack \
+--with-libmbfl \
+--with-onig \
+--enable-pdo \
+--with-mysqli=mysqlnd \
+--with-pdo-mysql=mysqlnd \
+--with-zlib-dir \
+--with-pdo-sqlite \
+--with-readline \
+--enable-session \
+--enable-shmop \
+--enable-simplexml \
+--enable-sockets  \
+--enable-sysvmsg \
+--enable-sysvsem \
+--enable-sysvshm \
+--enable-wddx \
+--with-libxml-dir \
+--with-xsl \
+--enable-zip \
+--enable-mysqlnd-compression-support \
+--with-pear \
+--enable-opcache
+
+
+cp php.ini-production /usr/local/php8/etc/php.ini
+cp /usr/local/php8/etc/php-fpm.conf.default /usr/local/php8/etc/php-fpm.conf
+cp /usr/local/php8/etc/php-fpm.d/www.conf.default /usr/local/php8/etc/php-fpm.d/www.conf
+
+cp sapi/fpm/init.d.php-fpm /etc/init.d/php8-fpm
+chmod +x /etc/init.d/php8-fpm
+
+warning: pear/PEAR dependency package "pear/Archive_Tar" installed version 1.4.14 is not the recommended version 1.4.4
+[PEAR] PEAR           - installed: 1.10.13
+Warning! a PEAR user config file already exists from a previous PEAR installation at '/root/.pearrc'. You may probably want to remove it.
+Wrote PEAR system config file at: /usr/local/php8/etc/pear.conf
+You may want to add: /usr/local/php8/lib/php to your php.ini include_path
+/workspace/soft/php-8.1.7/build/shtool install -c ext/phar/phar.phar /usr/local/php8/bin/phar.phar
+ln -s -f phar.phar /usr/local/php8/bin/phar
+Installing PDO headers:           /usr/local/php8/include/php/ext/pdo/
+
+
+
+"allow-contrib": false,
+
+
+
+
+
+
+
+
+
+
+
+前置环境：
+apt install libgmp-dev
+sudo apt-get install libreadline6-dev
+
+wget http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz
+tar -zxvf libiconv-1.16.tar.gz
+cd libiconv-1.16
+./configure --prefix=/usr/local/libiconv
+make && sudo make install
+编译 PHP 时需要带上 --with-iconv=/usr/local/libiconv
+
+
+
+
+php8 -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php8 composer-setup.php
+php8 -r "unlink('composer-setup.php');"
+
+
