@@ -1,42 +1,37 @@
-vim模式
+## 基本操作
 
-- insert mode
+### 映射
 
-- normal mode
+vim的映射可以理解为：使用指定的快捷键或组合键去覆盖原有键位的功能。
 
+- imap
 
+  insert模式下的映射
 
-### 基本操作
+- nmap
 
-#### map
-
-> imap
-
-insert模式下的映射
-
-> nmap
-
-normal模式下的映射。
+  normal模式下的映射。
 
 
 
-> no recursion
-
-map这种映射可能产生递归映射，因此该命令可以用于禁止递归映射，缩写为：nore。
+no recursion：由于映射可能会产生递归映射，此命令可以用于禁止递归映射，缩写为：nore。
 
 ```ini
 inoremap jk <Esc>
 inoremap <Esc> <Nop>
 
+# 插入模式下，禁用使用上下左右键
 inoremap <up> <Nop>
 inoremap <Down> <Nop>
 inoremap <Left> <Nop>
 inoremap <Right> <Nop>
 
+# 普通模式下，禁用使用上下左右键
 nnoremap <up> <Nop>
 nnoremap <Down> <Nop>
 nnoremap <Left> <Nop>
 nnoremap <Right> <Nop>
+
 
 nnoremap H ^
 nnoremap L $
@@ -44,6 +39,10 @@ nnoremap ,h H
 ```
 
 
+
+常见操作：
+
+https://www.zhihu.com/search?type=content&q=vim
 
 
 

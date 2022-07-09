@@ -47,7 +47,7 @@ p{
 HTML文档标签是一个一棵树来呈现的，标签和标签之间有依赖的层级关系，
 派生选择器允许定位到一个标签，通过标签或者样式的层级关系，来定义子元素的样式。
 
-example1：
+example：
 ```html
 <style>
 	.content{
@@ -59,16 +59,16 @@ example1：
 	}
 </style>
 
-<div id='content'>
+<div class='content'>
 	<ul>
 		<li>this is demo</li>
 		<li>this is demo</li>
 	</ul>
 </div>
 ```
-上述例子中指定所有引用.content类选择器标签下的ul li标签的样式
+上述例子中指定所有引用.content类选择器标签下的ul li标签的样式，只要ul li标签是.content类选择器标签的后裔，指定的样式就会生效。
 
-example2：
+
 
 
 

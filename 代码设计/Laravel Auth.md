@@ -1,6 +1,39 @@
 
 
-自定义Guard、UserProvider。
+
+
+
+
+
+
+
+
+
+
+
+
+> Laravel中是如何对用户进行认证的？
+
+在使用Auth的静态方法时，本质上是执行AuthManager的静态方法。而AuthManager在执行静态方法时，是调用guard实例来执行的。
+
+```php
+    /**
+     * Dynamically call the default driver instance.
+     *
+     * @param  string  $method
+     * @param  array  $parameters
+     * @return mixed
+     */
+    public function __call($method, $parameters)
+    {
+        // guard是获取当前的守卫对象
+        return $this->guard()->{$method}(...$parameters);
+    }
+```
+
+
+
+首先AuthManager定义了如何创建guard和provider，我们在使用Auth时调用的静态方法，都是由AuthManager来执行的。而AuthManager会调用guard对象来执行所调用的方法。
 
 
 
@@ -18,18 +51,105 @@
 
 ### AuthManager
 
-认证管理类。提供创建看守器、提供器对象的接口，也提供注册自定义看守器和提供器的接口。
+认证管理类，实现了Factory接口。
 
 ```php
+// Illuminate\Contracts\Auth\Factory
+// Factory接口定义了guard的setter和getter接口。
 interface Factory
 {
+    // 通过$name获取一个grard示例
     public function guard($name = null);
     
+    // 设置Factory应该提供的默认守卫（guard）
     public function shouldUse($name);
 }
 ```
 
-AuthManager所实现的接口。
+AuthManager关联guard、provider对象，简单的说，AuthManager定义了如何创建guard和provider。
+
+- guard：守卫，提供统一的认证接口。
+- provider：守卫的用户提供者，表示如何从存储系统中提取用户数据。
+
+
+
+```php
+    /**
+     * Resolve the given guard.
+     *
+     * @param  string  $name	守卫名
+     * @return \Illuminate\Contracts\Auth\Guard|\Illuminate\Contracts\Auth\StatefulGuard
+     *
+     * @throws \InvalidArgumentException
+     */
+    protected function resolve($name)
+    {
+        // 获取守卫的配置，定义在auth.php配置文件中。
+        // 主要获取守卫的驱动（driver）和用户提供者（povider），这里的驱动其实就是guard的实现。
+        $config = $this->getConfig($name);
+
+        if (is_null($config)) {
+            throw new InvalidArgumentException("Auth guard [{$name}] is not defined.");
+        }
+
+        // 自定义驱动的处理
+        if (isset($this->customCreators[$config['driver']])) {
+            return $this->callCustomCreator($name, $config);
+        }
+        
+        // 默认驱动的处理，有session、token俩种默认驱动。
+        $driverMethod = 'create'.ucfirst($config['driver']).'Driver';
+
+        if (method_exists($this, $driverMethod)) {
+            return $this->{$driverMethod}($name, $config);
+        }
+
+        throw new InvalidArgumentException(
+            "Auth driver [{$config['driver']}] for guard [{$name}] is not defined."
+        );
+    }
+```
+
+解析给予的守卫。默认有session和token俩种守卫。
+
+
+
+```php
+/**
+     * Create the user provider implementation for the driver.
+     * 为驱动创建用户提供者
+     *
+     * @param  string|null  $provider
+     * @return \Illuminate\Contracts\Auth\UserProvider|null
+     *
+     * @throws \InvalidArgumentException
+     */
+public function createUserProvider($provider = null)
+{
+    if (is_null($config = $this->getProviderConfiguration($provider))) {
+        return;
+    }
+
+    if (isset($this->customProviderCreators[$driver = ($config['driver'] ?? null)])) {
+        return call_user_func(
+            $this->customProviderCreators[$driver], $this->app, $config
+        );
+    }
+
+    switch ($driver) {
+        case 'database':
+            return $this->createDatabaseProvider($config);
+        case 'eloquent':
+            return $this->createEloquentProvider($config);
+        default:
+            throw new InvalidArgumentException(
+                "Authentication user provider [{$driver}] is not defined."
+            );
+    }
+}
+```
+
+为驱动创建用户提供者。默认有eloquent、database俩种默认的用户提供者。
 
 
 
@@ -39,9 +159,7 @@ AuthManager所实现的接口。
 
 ### Guard
 
-Guard是提供用户认证的统一接口。
-
-根据应用的不同，可以有多种不同的Guard实现。Laravel默认提供了基于Session和Token的Guard。
+Guard是提供用户认证的统一接口。根据应用的不同，可以有多种不同的Guard实现。Laravel默认提供了基于Session和Token的Guard。
 
 ```php
 // 定义一个守卫的基础接口
@@ -67,17 +185,20 @@ interface Guard
 }
 ```
 
-SessionGuard
+
+
+StatefulGuard：有状态的守卫，SessionGuard会实现该接口。
 
 ```php
 
 // 定义有状态的守卫的接口
-interface StatefulGuard
+interface StatefulGuard extends Guard
 {
     // 使用基于的证书来认证一个用户
     public function attempt(array $credentials = [], $remember = false);
 
     // 将用户登陆到一个没有session或cookie的应用中
+	// PS：在单次请求中将用户登录到应用中，这样做将不会使用session或cookie
     public function once(array $credentials = []);
 
 	// 将用户登陆到一个应用中。
@@ -85,7 +206,7 @@ interface StatefulGuard
 
     /**
      * Log the given user ID into the application.
-     *
+     * 通过ID将用户登录到应用。
      * @param  mixed  $id
      * @param  bool   $remember
      * @return \Illuminate\Contracts\Auth\Authenticatable
@@ -102,7 +223,7 @@ interface StatefulGuard
 
     /**
      * Determine if the user was authenticated via "remember me" cookie.
-     *
+     * 确定用户是否通过remember me cookie进行认证
      * @return bool
      */
     public function viaRemember();
@@ -118,19 +239,58 @@ interface StatefulGuard
 
 
 
-
-
-### UserProvider
-
-UserProvider是Illuminate\Contracts\Auth\UserProvider接口。
-
-UserProvider是用户提供者，只负责根据用户凭证从存储系统中检索用户。所检索到的用户实例必须实现了Illuminate\Contracts\Auth\Authenticatable接口。
-
-
-
-注意：这里的Provider不要跟Laravel的服务提供者搞混了，服务提供者只是在系统启动时初始化对应的服务对象而已。这里的UserProvider是一个用户检索对象。
+SessionGuard（Illuminate\Auth\SessionGuard）的接口实现：
 
 ```php
+    /**
+     * Log a user into the application.
+     *
+     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
+     * @param  bool  $remember
+     * @return void
+     */
+    public function login(AuthenticatableContract $user, $remember = false)
+    {
+        // 根据标识，将用户存储到session中。
+        $this->updateSession($user->getAuthIdentifier());
+
+        // If the user should be permanently "remembered" by the application we will
+        // queue a permanent cookie that contains the encrypted copy of the user
+        // identifier. We will then decrypt this later to retrieve the users.
+        if ($remember) {
+            $this->ensureRememberTokenIsSet($user);
+
+            $this->queueRecallerCookie($user);
+        }
+
+        // If we have an event dispatcher instance set we will fire an event so that
+        // any listeners will hook into the authentication events and run actions
+        // based on the login and logout events fired from the guard instances.
+        $this->fireLoginEvent($user, $remember);
+
+        // 简单的对user属性赋值
+        $this->setUser($user);
+    }
+```
+
+
+
+
+
+
+
+### Provider
+
+Provider是用户提供者，只负责根据凭证从存储系统中检索用户。
+
+所有的Provider都要实现Illuminate\Contracts\Auth\UserProvider接口，它定义了检索如何从存储源去检索接口。而检索到的用户实例必须是实现了Illuminate\Contracts\Auth\Authenticatable接口的实例。
+
+
+
+
+
+```php
+// Illuminate\Contracts\Auth\UserProvider
 interface UserProvider
 {
     /**
@@ -178,7 +338,7 @@ interface UserProvider
 }
 ```
 
-retrieveByCredentials方法接收传递给Auth:attempt方法的凭证数组。然后该方法将根据凭证查询存储系统中的用户数据。这个方法需要返回Authenticatable实现的实例，且这个方法不能实现任何密码认证或校验。
+retrieveByCredentials方法接收传递给Auth:attempt方法的凭证，然后该方法将根据凭证查询存储系统中的用户数据。这个方法需要返回Authenticatable实现的实例，且这个方法不能实现任何密码认证或校验。
 
 
 
