@@ -148,3 +148,321 @@ Doctrine支持各种类型字段，每个字段都有其自己的选项。要查
 
 注：不要使用保留的SQL关键字作为表或列的名称（例如group或user）。参见[Reserved SQL keywords documentation](https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/basic-mapping.html#quoting-reserved-words) ，了解如何避免这些关键字。或者在类上面用@ORM\Table(name="groups")改变表名，或者用name="group_name"选项配置列名。
 
+
+
+### Migrations: Creating the Database Tables/Schema
+
+Product类已经完全配置完毕，并且可用于保存到product表中。如果你仅定义了这个类，你的数据库实际上还没有这张表，你可以使用早已安装的DoctrineMigrationsBundle去添加这张表:
+
+```
+php bin/console make:migration
+```
+
+如果一切正常，你应会看到下面这些信息：
+
+```
+SUCCESS!
+
+Next: Review the new migration "migrations/Version20211116204726.php"
+Then: Run the migration with php bin/console doctrine:migrations:migrate
+```
+
+如果你打开这个文件，可以看到它包含了要更新数据库的SQL语句。去运行这些SQL语句来执行迁移:
+
+```
+php bin/console doctrine:migrations:migrate
+```
+
+该命令会执行在你的数据库中所有还未执行过的迁移文件。当你部署时你应该在生产环境中去运行该命令以保证你的生产数据库的最新状态。
+
+
+
+### Migrations & Adding more Fields
+
+但如果你需要给Product添加一个新的字段属性，比如描述，该怎么办？你可以编辑这个类来添加新的属性。但是，你也可以再次使用make:entity。
+
+```
+$ php bin/console make:entity
+
+Class name of the entity to create or update
+> Product
+
+New property name (press <return> to stop adding fields):
+> description
+
+Field type (enter ? to see all types) [string]:
+> text
+
+Can this field be null in the database (nullable) (yes/no) [no]:
+> no
+
+New property name (press <return> to stop adding fields):
+>
+(press enter again to finish)
+```
+
+该操作会添加description属性和getDescription()、setDescription()方法。
+
+```php
+// src/Entity/Product.php
+  // ...
+
+  class Product
+  {
+      // ...
+
++     /**
++      * @ORM\Column(type="text")
++      */
++     private $description;
+
+      // getDescription() & setDescription() were also added
+  }
+```
+
+新属性已映射，但是不存在于product表中。对此可以再生成一个新迁移：
+
+```
+php bin/console make:migration
+```
+
+这时候生成的文件中的SQL语句应该是这样的：
+
+```sql
+ALTER TABLE product ADD description LONGTEXT NOT NULL
+```
+
+迁移系统是智能的。它将所有实体与数据库的当前状态进行比较，并生成同步它们所需的 SQL！像之前一样，执行你的迁移：
+
+```shell
+php bin/console doctrine:migrations:migrate
+```
+
+这会执行一个新的迁移，因为DoctrineMigrationsBundle知道第一个迁移操作早已执行。在幕后是管理migration_versions表来进行跟踪的。
+
+每当你改变了你的schema，运行这俩个命令去生成迁移并执行它。当你部署时要提交这些迁移文件并执行它。
+
+注：如果你更倾向于手动添加一个新的属性，make:entity命令也能为你生成getter和setter方法：
+
+```
+php bin/console make:entity --regenerate
+```
+
+如果你做了一些改变并想重新生成所有getter和setter方法，也可以传递 --overwrite选项。
+
+
+
+### Persisting Objects to the Database
+
+是时候保存对象到数据库中了! 让我们创建一个控制器来进行实验：
+
+```
+php bin/console make:controller ProductController
+```
+
+在控制器中你可以创建一个新的Product对象，使用它来保存数据并持久化到表中。
+
+```php
+// src/Controller/ProductController.php
+namespace App\Controller;
+
+// ...
+use App\Entity\Product;
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpFoundation\Response;
+
+class ProductController extends AbstractController
+{
+    /**
+     * @Route("/product", name="create_product")
+     */
+    // ManagerRegistry $doctrine会告诉Symfony注入Doctrine服务到控制器中。
+    public function createProduct(ManagerRegistry $doctrine): Response
+    {
+        // 获取Doctrine的实体管理对象，这是Doctrine中最重要的对象。它负责从数据库中获取或保存对象。
+        $entityManager = $doctrine->getManager();
+
+        $product = new Product();
+        $product->setName('Keyboard');
+        $product->setPrice(1999);
+        $product->setDescription('Ergonomic and stylish!');
+
+        // 告诉Doctrine去管理$product对象。该语句并不会立刻触发对数据库的操作。
+        $entityManager->persist($product);
+
+        // actually executes the queries (i.e. the INSERT query)
+        // 当flush()被调用时，Doctrine会查看它所管理的所有对象，查看这些对象是否需要被持久化到数据库中。
+        // 在这个例子中，$product对象的数据在数据库中并不存在，
+        // 所以entity manager执行了一个插入操作，在产品表中创建了新的一行记录。
+        $entityManager->flush();
+
+        return new Response('Saved new product with id '.$product->getId());
+    }
+}
+```
+
+试试看！http://localhost/product，你刚在product表中创建了第一行数据。为了证明你可以执行查询数据库：
+
+```
+php bin/console dbal:run-sql 'SELECT * FROM product'
+# on Windows systems not using Powershell, run this command instead:
+# php bin/console dbal:run-sql "SELECT * FROM product"
+```
+
+注：如果flush()调用失败会抛出Doctrine\ORM\ORMException异常。详见[Transactions and Concurrency](https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/transactions-and-concurrency.html).
+
+无论你是创建或者是更新对象，工作流程总是相似的：Doctrine是智能的，足以判断你的entity是要执行插入或者更新操作。
+
+
+
+
+
+### Validating Objects
+
+[The Symfony validator](https://symfony.com/doc/5.4/validation.html) 会重用Doctrine元数据去执行一些基本验证任务：
+
+```php
+// src/Controller/ProductController.php
+namespace App\Controller;
+
+use App\Entity\Product;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+// ...
+
+class ProductController extends AbstractController
+{
+    /**
+     * @Route("/product", name="create_product")
+     */
+    public function createProduct(ValidatorInterface $validator): Response
+    {
+        $product = new Product();
+        // This will trigger an error: the column isn't nullable in the database
+        $product->setName(null);
+        // This will trigger a type mismatch error: an integer is expected
+        $product->setPrice('1999');
+
+        // ...
+
+        $errors = $validator->validate($product);
+        if (count($errors) > 0) {
+            return new Response((string) $errors, 400);
+        }
+
+        // ...
+    }
+}
+```
+
+尽管Product实体没有显示定义任何验证配置（[validation configuration](https://symfony.com/doc/5.4/validation.html)），但是Symfony会自省Doctrine映射配置，推断出一些验证规则。例如考虑name属性在数据库中不能为null，一个NotNull的约束会自动被添加到该属性中（如果它不包含该约束）。
+
+下表总结了Doctrine元数据和Symfony自动添加相应的验证约束之间的映射关系。
+
+| Doctrine attribute | Validation constraint                                        | Notes                                                        |
+| :----------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
+| nullable=false     | [NotNull](https://symfony.com/doc/5.4/reference/constraints/NotNull.html) | Requires installing the [PropertyInfo component](https://symfony.com/doc/5.4/components/property_info.html) |
+| type               | [Type](https://symfony.com/doc/5.4/reference/constraints/Type.html) | Requires installing the [PropertyInfo component](https://symfony.com/doc/5.4/components/property_info.html) |
+| unique=true        | [UniqueEntity](https://symfony.com/doc/5.4/reference/constraints/UniqueEntity.html) |                                                              |
+| length             | [Length](https://symfony.com/doc/5.4/reference/constraints/Length.html) |                                                              |
+
+因为Form compontent和API Platform内部使用了Validator component，所以你的form和web APIs也将自动受益于这些自动验证约束。
+
+自动验证是非常好的特性可以提交你的工作效率，但是它不能完全替代验证配置。你仍然需要添加一些验证约束来确保用户提供的数据是正确的。
+
+### Fetching Objects from the Database
+
+从数据库中取回一个对象是更容易的事情。假设你希望能够在/product/1去查看你的新商品：
+
+```php
+// src/Controller/ProductController.php
+namespace App\Controller;
+
+use App\Entity\Product;
+use Symfony\Component\HttpFoundation\Response;
+// ...
+
+class ProductController extends AbstractController
+{
+    /**
+     * @Route("/product/{id}", name="product_show")
+     */
+    public function show(ManagerRegistry $doctrine, int $id): Response
+    {
+        $product = $doctrine->getRepository(Product::class)->find($id);
+
+        if (!$product) {
+            throw $this->createNotFoundException(
+                'No product found for id '.$id
+            );
+        }
+
+        return new Response('Check out this great product: '.$product->getName());
+
+        // or render a template
+        // in the template, print things with {{ product.name }}
+        // return $this->render('product/show.html.twig', ['product' => $product]);
+    }
+}
+```
+
+另一种可能性是使用Symfony的Autowiring并由依赖注入容器注入的ProductRepository。
+
+```php
+// src/Controller/ProductController.php
+namespace App\Controller;
+
+use App\Entity\Product;
+use App\Repository\ProductRepository;
+use Symfony\Component\HttpFoundation\Response;
+// ...
+
+class ProductController extends AbstractController
+{
+    /**
+     * @Route("/product/{id}", name="product_show")
+     */
+    public function show(int $id, ProductRepository $productRepository): Response
+    {
+        $product = $productRepository
+            ->find($id);
+
+        // ...
+    }
+}
+```
+
+试试看：localhost:8000/product/1
+
+当你查询特定类型的对象时，你总会使用"Repository"。你可以把repository看作是一个PHP类，它唯一的工作就是帮你获取某类实体。
+
+一旦你拥有了一个repository对象，你就有了一些辅助方法：
+
+```php
+$repository = $doctrine->getRepository(Product::class);
+
+// look for a single Product by its primary key (usually "id")
+$product = $repository->find($id);
+
+// look for a single Product by name
+$product = $repository->findOneBy(['name' => 'Keyboard']);
+// or find by name and price
+$product = $repository->findOneBy([
+    'name' => 'Keyboard',
+    'price' => 1999,
+]);
+
+// look for multiple Product objects matching the name, ordered by price
+$products = $repository->findBy(
+    ['name' => 'Keyboard'],
+    ['price' => 'ASC']
+);
+
+// look for *all* Product objects
+$products = $repository->findAll();
+```
+
+你可以为更复杂的查询添加自定义方法。稍后将在[数据库和 Doctrine ORM](https://symfony.com/doc/5.4/doctrine.html#doctrine-queries)部分详细介绍。
+
+注：当渲染一个HTML页面时，页面底部的网络调试工具栏将显示查询的数量和执行的时间。如果数据库查询的数量过高，图标会变成黄色，表明有些东西可能不正确。点击该图标，可以打开Symfony分析器，看到所执行的确切查询。如果你没有看到网页调试工具栏，请运行以下命令安装Symfony分析器包： composer require --dev symfony/profiler-pack。
+
