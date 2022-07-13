@@ -237,14 +237,139 @@ blog_show:
     controller: App\Controller\BlogController::show
 ```
 
+变量名的一部分（本例为{slug}）被用于创建一个变量，该变量会被作为路由内容存储并传递给控制器。如果一个用户访问/blog/my-first-post URL，Symfony会执行BlogController控制器的show()方法，并传递参数\$slug = 'my-first-post'给show方法。
 
+路由可以定义任意数量的参数，但每个参数只能在每个路由上使用一次（例如，/blog/posts-about-{category}/page/{pageNumber}）。
 
 
 
 
 
 #### Parameters Validation
+
+想象一下，你的应用程序有一个blog_show路由（URL：/blog/{slug}）和一个blog_list路由（URL：/blog/{page}）。鉴于路由参数接受任何值，没有办法区分这两个路由。
+
+如果用户请求/blog/my-first-post，两条路由都会匹配，Symfony会使用最先定义的路由。要解决这个问题，可以使用requirements选项给{page}参数添加一些验证。
+
+```yaml
+# config/routes.yaml
+blog_list:
+    path:       /blog/{page}
+    controller: App\Controller\BlogController::list
+    requirements:
+        page: '\d+'
+
+blog_show:
+    path:       /blog/{slug}
+    controller: App\Controller\BlogController::show
+```
+
+requirements选项定义了PHP正则表达式，路由参数必须匹配这些正则表达式才能匹配整个路由。在这个例子中，\d+ 是一个正则表达式，可以匹配任何长度的数字。现在：
+
+| URL                   | Route       | Parameters                |
+| --------------------- | ----------- | ------------------------- |
+| `/blog/2`             | `blog_list` | `$page` = `2`             |
+| `/blog/my-first-post` | `blog_show` | `$slug` = `my-first-post` |
+
+注1：路由requirements（也包括路由path选项）可以包括配置参数，只需要定义一次复杂的正则表达式就可以在多个路由中重复使用它。
+
+注2：参数也支持 [PCRE Unicode properties](https://www.php.net/manual/en/regexp.reference.unicode.php)，它是匹配通用字符类型的转义序列。例如， \p{Lu} 匹配任何语言中的任何大写字符， \p{Greek} 匹配任何希腊字符，等等。
+
+提示：当在路由中使用正则表达式时，你可以设置 utf8 路由选项为true，这可以使得 . 字符匹配任意个UTF8字符而不只是单个字节的匹配。
+
+```
+# config/routes.yaml
+blog_list:
+    path:       /blog/{page<\d+>}
+    controller: App\Controller\BlogController::list
+```
+
+如果愿意，可以使用语法{parameter\u name<requirements>}将requirements内联到每个参数中。此功能使配置更加简洁，但当需求复杂时，它会降低路由可读性：
+
+```
+# config/routes.yaml
+blog_list:
+    path:       /blog/{page<\d+>}
+    controller: App\Controller\BlogController::list
+```
+
+
+
 #### Optional Parameters
+
+在前面的例子中，blog_list的URL是/blog/{page}。如果用户访问/blog/1，它将匹配。但如果他们访问/blog，它将不匹配。只要你给路由添加一个参数，它就必须有一个值。
+
+你可以通过为{page}参数添加一个默认值，使blog_list在用户访问/blog时再次匹配。当使用Annotations或Attributes时，默认值被定义在控制器Action的参数中。在其他配置格式中，它们是通过defaults选项来定义的。
+
+```yaml
+# config/routes.yaml
+blog_list:
+    path:       /blog/{page}
+    controller: App\Controller\BlogController::list
+    defaults:
+        page: 1
+    requirements:
+        page: '\d+'
+
+blog_show:
+    # ...
+```
+
+```php
+// src/Controller/BlogController.php
+namespace App\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+class BlogController extends AbstractController
+{
+    #[Route('/blog/{page}', name: 'blog_list', requirements: ['page' => '\d+'])]
+    public function list(int $page = 1): Response
+    {
+        // ...
+    }
+}
+```
+
+现在，当用户访问/blog时，blog_list路由将被匹配，$page将默认为1的值。
+
+警告：你可以有一个以上的可选参数（例如：/blog/{slug}/{page}），但可选参数之后的所有内容必须是可选的。例如，/{page}/blog是一个有效的路径，但page永远是必需的（即/blog不会匹配这个路径）。
+
+如果你想在生成的URL中总是包含一些默认值（例如强制生成/blog/1而不是前面例子中的/blog），在参数名称前添加！字符。/blog/{！page}
+
+和requirements一样，默认值也可以使用{parameter_name?default_value}语法内置在每个参数中。这个功能与内置requirements兼容，所以你可以在一个参数中同时内置两者。
+
+```php
+// src/Controller/BlogController.php
+namespace App\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+class BlogController extends AbstractController
+{
+    #[Route('/blog/{page<\d+>?1}', name: 'blog_list')]
+    public function list(int $page): Response
+    {
+        // ...
+    }
+}
+```
+
+```yaml
+# config/routes.yaml
+blog_list:
+    path:       /blog/{page<\d+>?1}
+    controller: App\Controller\BlogController::list
+```
+
+提示：要给任何参数一个空的默认值，在? 字符后不加任何东西（例如：/blog/{page?}）。如果你这样做，别忘了更新相关控制器参数的类型，以允许传递空值（例如，用?int $page替换int $page）。
+
+
+
 #### Priority Parameter
 #### Parameter Conversion
 #### Special Parameters
