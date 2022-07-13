@@ -370,6 +370,8 @@ class ProductController extends AbstractController
 
 自动验证是非常好的特性可以提交你的工作效率，但是它不能完全替代验证配置。你仍然需要添加一些验证约束来确保用户提供的数据是正确的。
 
+
+
 ### Fetching Objects from the Database
 
 从数据库中取回一个对象是更容易的事情。假设你希望能够在/product/1去查看你的新商品：
