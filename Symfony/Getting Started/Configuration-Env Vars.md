@@ -12,7 +12,7 @@ your-project/
 ├─ ...
 ```
 
-routes.yaml定义了路由配置，services.yaml配置了服务容器中的服务，bundles.php文件在你的应用中启用或禁用packages。
+routes.yaml定义了路由配置，services.yaml配置了服务容器中的服务，bundles.php文件用于在你的应用中启用或禁用packages。
 
 你主要在config/packages目录下工作。这个目录存储了你应用中安装的每个包的配置。Packages（Symfony也叫做bundles，其他项目可能叫做"plugins/modules"）为你的项目添加随时可用的功能。
 
@@ -64,7 +64,7 @@ class Kernel extends BaseKernel
 
 格式之间没有任何实际差别。事实上，在程序运行之前Symfony会将它们转换并缓存为PHP，所以它们之间没有任何性能差异。
 
-当安装软件包后会使用YAML作为默认格式，是因为它间接可读。以下是不同格式之间的优缺点：
+当安装软件包后会使用YAML作为默认格式，是因为它简洁可读。以下是不同格式之间的优缺点：
 
 - YAML
 
@@ -103,7 +103,7 @@ some_package:
     email_address: '%app.admin_email%'
 ```
 
-如果一些参数值包含%字符，你需要通过添加一个%来转移它，这样Symfony就不会认为它是对参数名的引用。
+如果一些参数值包含%字符，你需要通过添加一个%来转义它，这样Symfony就不会认为它是对参数名的引用。
 
 ```yaml
 # config/services.yaml

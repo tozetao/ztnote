@@ -1,5 +1,6 @@
-配置
 symfony命令
+路由
+组件
 doctrine
 SemanticUI
 
@@ -20,8 +21,8 @@ SemanticUI
 
 147 绿野仙踪
 148 僵尸鼓楼
-默认是金刚
 
+默认是金刚
 黄金世纪就是秦始皇
 
 132忽略掉
