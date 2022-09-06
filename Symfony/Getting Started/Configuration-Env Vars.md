@@ -29,8 +29,6 @@ api_platform:
 
 Tip：要学习更多关于可用的配置选项，查阅配置手册（https://symfony.com/doc/current/reference/index.html），或者运行config:dump-reference命令。
 
-
-
 #### Configuration Formats
 
 与其他框架不同的是，Symfony不强加给你一个特定的格式来配置你的应用程序。Symfony让你在YAML、XML和PHP之间进行选择，在整个Symfony文档中，所有的配置例子都会以这三种格式显示。
@@ -67,14 +65,12 @@ class Kernel extends BaseKernel
 当安装软件包后会使用YAML作为默认格式，是因为它简洁可读。以下是不同格式之间的优缺点：
 
 - YAML
-
+  
   简单、干净、可读，但不是所有的IDE都支持它的自动提示和验证。学习YAML语法（https://symfony.com/doc/current/components/yaml/yaml_format.html）。
 
 - XML：大多数IDE都支持自动完成/验证，并且可以被PHP原生解析，但有时它生成的配置被认为过于冗长。学习XML的语法。
 
 - PHP：非常强大，它允许你用数组或ConfigBuilder创建动态配置。
-
-
 
 #### Importing Configration Files
 
@@ -83,7 +79,7 @@ class Kernel extends BaseKernel
 ```yaml
 # config/services.yaml
 parameters:
-	app.admin_email: 'something@example.com'
+    app.admin_email: 'something@example.com'
 ```
 
 注：当使用XML配置，在<parameter>标签中的值不会被修饰过滤。这意味着下面参数的值为'\n    something@example.com\n'：
@@ -108,8 +104,8 @@ some_package:
 ```yaml
 # config/services.yaml
 parameters:
-    # Parsed as 'https://symfony.com/?foo=%s&amp;bar=%d'
-    url_pattern: 'https://symfony.com/?foo=%%s&amp;bar=%%d'
+    # Parsed as 'https://symfony.com/?foo=%s&bar=%d'
+    url_pattern: 'https://symfony.com/?foo=%%s&bar=%%d'
 ```
 
 由于参数的解析方式，你不能使用它们来动态的构建导入的路径。这意味着以下的方式是行不通的：
@@ -120,8 +116,6 @@ $loader->import('%kernel.project_dir%/somefile.yaml');
 ```
 
 在Symfony应用中配置参数是很普遍的。一些package甚至会定义自己的配置参数（例如当安装translation package，一个新的locale参数会被添加到config/services.yaml文件中）。
-
-
 
 ### Configuration Environments
 
@@ -176,13 +170,7 @@ when@prod: &webpack_prod
 when@test: *webpack_prod
 ```
 
-
-
 疑问：也就是说，除了共有的配置文件，不同的环境会按照规则去加载配置文件。？
-
-
-
-
 
 #### Selecting the Active Environment
 
@@ -205,8 +193,6 @@ php bin/console command_name
 APP_ENV=prod php bin/console command_name
 ```
 
-
-
 #### Creating a New Environment
 
 Symfony默认提供的三个环境对大多数项目来说已经足够了，但你也可以定义你自己的环境。例如，你可以这样定义一个staging环境，客户可以在进入生产前测试项目。
@@ -218,8 +204,6 @@ Symfony默认提供的三个环境对大多数项目来说已经足够了，但�
 提示：环境之间彼此相似是很常见的，所以你可以在config/packages/<environment-name>/目录之间使用符号链接来重复使用相同的配置。
 
 你可以使用环境变量，而不是创建新的环境，就像下一节所说的那样。通过这种方式你就可以使用相同的应用程序和环境（例如prod），但由于是基于环境变量的配置你可以改变它的行为（例如，同在不同的场景中运行应用程序：staging、quality assurance、client review等）。
-
-
 
 #### Configuration Based on Environment Variables
 
@@ -255,9 +239,7 @@ return static function (ContainerConfigurator $container) {
 - 将值加密为密钥
 - 在你的web服务器或者shell中将该值设置为真是的环境变量。
 
-警告：要注意导出$\_SERVER和$\_ENV变量的内容或输出phpinfo()的内容会显示环境变量的值，暴露敏感信息，如数据库凭证。环境变量的值也会在Symfony剖析器的网页界面上暴露出来。在实践中，这不应该是一个问题，因为网络剖析器在生产中绝不能被启用。
-
-
+警告：要注意导出\$\_SERVER和$\_ENV变量的内容或输出phpinfo()的内容会显示环境变量的值，暴露敏感信息，如数据库凭证。环境变量的值也会在Symfony剖析器的网页界面上暴露出来。在实践中，这不应该是一个问题，因为网络剖析器在生产中绝不能被启用。
 
 #### Configuring Environment Variables in .env Files
 
@@ -278,8 +260,6 @@ DATABASE_URL="mysql://db_user:db_password@127.0.0.1:3306/db_name"
 
 注：由于.env文件在每次请求时都会被读取和解析，如果你使用Docker，就不需要清除Symfony缓存或重新启动PHP容器。
 
-
-
 #### .env File Syntax
 
 通过#前缀来添加注释：
@@ -299,8 +279,6 @@ DB_PASS=${DB_USER}pass # include the user as a password prefix
 
 注：当某些环境变量依赖于其他环境变量的值时，这个顺序很重要。在上面的例子中，DB_PASS必须被定义在DB_USER之后。此外，如果你定义了多个.env文件并把DB_PASS放在前面，它的值将取决于其他文件中定义的DB_USER值，而不是这个文件中定义的值。
 
-
-
 在未设置环境变量下设置默认值：
 
 ```
@@ -314,8 +292,6 @@ DB_PASS=${DB_USER:-root}pass # results in DB_PASS=rootpass
 START_TIME=$(date)
 ```
 
-
-
 #### Overriding Environment Values via .env.local
 
 如果你需要覆盖一个环境变量（例如在本地机器有一个不同值的环境变量），你可以在.env.local文件中做这件事情：
@@ -328,26 +304,24 @@ DATABASE_URL="mysql://root:@127.0.0.1:3306/my_database_name"
 该文件应该被git忽略并且不应该提交到你的版本库中。其他几个.env文件可以在适当情况下设置环境变量。
 
 - .env
-
+  
   定义应用程序需要的环境变量的默认值。
 
 - .env.local
-
+  
   覆盖所有环境的默认值，但是仅在包含该文件的机器上。这个文件不应该被提交到版本库中并且在test环境中也会被忽略（因为在test环境中对于每个人都应该产生相同的结果）。
 
 - .env.\<environment>（eg. .env.test）
-
+  
   可用于覆盖某个环境下的所有环境变量（这些文件应该被提交到版本库中）。
 
 - .env.<environment\>（eg. .env.test.local）
-
+  
   定义了某个环境下特定机器的环境变量的覆盖。它类似于.env.local，但覆盖的内容仅适用于某个环境。
 
 真实的环境变量总是胜于任何.env文件所创建的环境变量。
 
 .env和.env.\<environment>文件应该被提交到仓库中，因为这些文件对于所有机器和开发者都是相同的。然而以.local（.env.local和.env.\<environment\>.local）的env文件不应该提交到仓库中，因为这些文件仅只有你才会去使用它们。事实上，Symfony自带的.gitignore文件可以防止它们被提交。
-
-
 
 #### Configuring Environment Variables in Producation
 
@@ -364,15 +338,11 @@ $ composer dump-env prod
 
 注：更新你的部署工具和工作流程，在每次部署之后运行dump-env命令以提高应用性能。
 
-
-
 #### Encrypting Environment Variables（Secrets）
 
 如果一个变量的值是敏感的（如API密钥或数据库密码），你可以使用秘密管理系统对该值进行加密，而不是定义一个真正的环境变量或将其添加到一个.env文件中。
 
 secrets managgement system（https://symfony.com/doc/5.4/configuration/secrets.html）。
-
-
 
 ### Accessing Configuration Parameters
 
@@ -474,8 +444,6 @@ class MessageGenerator
 }
 ```
 
-
-
 ### Using PHP ConfigBuilders
 
 注：ConfigBuilders特性在Symfony5.3中引入。
@@ -506,8 +474,6 @@ return static function (SecurityConfig $security) {
 ```
 
 注：只有在Symfony/Config命名空间下的根类是ConfigBuilders。其他嵌套配置是常规PHP对象（例如Symfony\Config\Framework\CacheConfig），当将它们用作类型提示参数时是不会自动注入的。
-
-
 
 ### [Keep Going!](https://symfony.com/doc/5.4/configuration.html#keep-going)
 

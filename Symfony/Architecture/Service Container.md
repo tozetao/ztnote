@@ -577,3 +577,86 @@ services:
         # ...
 ```
 
+为了具有多个定义，添加namespace选项，并使用任何唯一的字符串作为每个服务配置的key：
+
+```yaml
+# config/services.yaml
+services:
+    command_handlers:
+        namespace: App\Domain\
+        resource: '../src/Domain/*/CommandHandler'
+        tags: [command_handler]
+
+    event_subscribers:
+        namespace: App\Domain\
+        resource: '../src/Domain/*/EventSubscriber'
+        tags: [event_subscriber]
+```
+
+
+
+
+
+### Explicitly Configuring Services and Arguments
+
+在Symfony 3.3之前，所有的服务和（典型的）参数都是显式配置的：没有自动加载服务，autowiring也不常见。
+
+这两个功能都是可选的。而且，即使你使用它们，也可能在某些情况下你想手动wire一个服务。例如，假设你想为SiteUpdateManager类注册2个服务--每个服务都有一个不同的管理邮箱。在这种情况下，每个服务都需要有一个唯一的服务ID。
+
+```yaml
+# config/services.yaml
+services:
+    # ...
+
+    # this is the service's id
+    site_update_manager.superadmin:
+        class: App\Service\SiteUpdateManager
+        # you CAN still use autowiring: we just want to show what it looks like without
+        autowire: false
+        # manually wire all arguments
+        arguments:
+            - '@App\Service\MessageGenerator'
+            - '@mailer'
+            - 'superadmin@example.com'
+
+    site_update_manager.normal_users:
+        class: App\Service\SiteUpdateManager
+        autowire: false
+        arguments:
+            - '@App\Service\MessageGenerator'
+            - '@mailer'
+            - 'contact@example.com'
+
+    # Create an alias, so that - by default - if you type-hint SiteUpdateManager,
+    # the site_update_manager.superadmin will be used
+    App\Service\SiteUpdateManager: '@site_update_manager.superadmin'
+```
+
+在这种情况下，有两个服务被注册：site_update_manager.superadmin和site_update_manager.normal_users。感谢别名，如果你输入类型提示SiteUpdateManager，将会传递第一个服务（site_update_manager.superadmin）。如果你想传递第二个，你需要手动wire该服务（[manually wire the service](https://symfony.com/doc/5.4/service_container.html#services-wire-specific-service)）。
+
+警告：如果你没有创建别名，而是从 src/ 中加载所有的服务，那么就已经创建了三个服务（自动的服务+你的两个服务），当你输入类型提示SiteUpdateManager 时，自动加载的服务将被默认传递。这就是为什么创建别名是一个好主意。
+
+
+
+### Learn more
+
+- [How to Create Service Aliases and Mark Services as Private](https://symfony.com/doc/5.4/service_container/alias_private.html)
+- [Defining Services Dependencies Automatically (Autowiring)](https://symfony.com/doc/5.4/service_container/autowiring.html)
+- [Service Method Calls and Setter Injection](https://symfony.com/doc/5.4/service_container/calls.html)
+- [How to Work with Compiler Passes](https://symfony.com/doc/5.4/service_container/compiler_passes.html)
+- [How to Configure a Service with a Configurator](https://symfony.com/doc/5.4/service_container/configurators.html)
+- [How to Debug the Service Container & List Services](https://symfony.com/doc/5.4/service_container/debug.html)
+- [How to work with Service Definition Objects](https://symfony.com/doc/5.4/service_container/definitions.html)
+- [How to Inject Values Based on Complex Expressions](https://symfony.com/doc/5.4/service_container/expression_language.html)
+- [Using a Factory to Create Services](https://symfony.com/doc/5.4/service_container/factories.html)
+- [How to Import Configuration Files/Resources](https://symfony.com/doc/5.4/service_container/import.html)
+- [Types of Injection](https://symfony.com/doc/5.4/service_container/injection_types.html)
+- [Lazy Services](https://symfony.com/doc/5.4/service_container/lazy_services.html)
+- [How to Make Service Arguments/References Optional](https://symfony.com/doc/5.4/service_container/optional_dependencies.html)
+- [How to Manage Common Dependencies with Parent Services](https://symfony.com/doc/5.4/service_container/parent_services.html)
+- [How to Retrieve the Request from the Service Container](https://symfony.com/doc/5.4/service_container/request.html)
+- [How to Decorate Services](https://symfony.com/doc/5.4/service_container/service_decoration.html)
+- [Service Subscribers & Locators](https://symfony.com/doc/5.4/service_container/service_subscribers_locators.html)
+- [How to Define Non Shared Services](https://symfony.com/doc/5.4/service_container/shared.html)
+- [How to Inject Instances into the Container](https://symfony.com/doc/5.4/service_container/synthetic_services.html)
+- [How to Work with Service Tags](https://symfony.com/doc/5.4/service_container/tags.html)

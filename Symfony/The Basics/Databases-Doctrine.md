@@ -6,8 +6,6 @@
 - 如果你需要更低级别去访问和执行关系型数据库的原生SQL操作（比如PHP的PDO），阅读其他文章（[this other article](https://symfony.com/doc/5.4/doctrine/dbal.html) ）
 - 如果你需要与MongoDB数据库交互，阅读[DoctrineMongoDBBundle docs](https://symfony.com/doc/current/bundles/DoctrineMongoDBBundle/index.html) 
 
-
-
 ### Installing Doctrine
 
 首先，通过[Symfony pack](https://symfony.com/doc/5.4/setup.html#symfony-packs) orm和MakerBundle安装Doctrine支持，这有助于生成一些代码：
@@ -16,8 +14,6 @@
 $ composer require symfony/orm-pack
 $ composer require --dev symfony/maker-bundle
 ```
-
-
 
 #### Configuring the Database
 
@@ -44,8 +40,6 @@ DATABASE_URL="mysql://db_user:db_password@127.0.0.1:3306/db_name?serverVersion=m
 
 注：如果用户名、密码、主机或数据库名包含任何在URI中被认为是特殊字符（比如+、@、$、/等），你必须对其进行编码。保留字符的完整列表见RFC 3986，或使用urlencode函数对其进行编码。在这种情况下，你需要在config/packages/doctrine.yaml文件中移除resolve:前缀以便面错误：url:'%env(resolve:DATABASE_URL)%'
 
-
-
 现在你的连接参数已设置，Doctrine可以根据db_name创建数据库：
 
 ```
@@ -55,8 +49,6 @@ php bin/console doctrine:database:create
 在config/packages/doctrine.yaml中有许多你可以配置的选项，包括server_version，这些可能会影响Doctrine功能。
 
 提示：可以运行 php bin/console doctrine命令去查看所有Doctrine命令。
-
-
 
 Creating an Entity Class
 
@@ -148,8 +140,6 @@ Doctrine支持各种类型字段，每个字段都有其自己的选项。要查
 
 注：不要使用保留的SQL关键字作为表或列的名称（例如group或user）。参见[Reserved SQL keywords documentation](https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/basic-mapping.html#quoting-reserved-words) ，了解如何避免这些关键字。或者在类上面用@ORM\Table(name="groups")改变表名，或者用name="group_name"选项配置列名。
 
-
-
 ### Migrations: Creating the Database Tables/Schema
 
 Product类已经完全配置完毕，并且可用于保存到product表中。如果你仅定义了这个类，你的数据库实际上还没有这张表，你可以使用早已安装的DoctrineMigrationsBundle去添加这张表:
@@ -174,8 +164,6 @@ php bin/console doctrine:migrations:migrate
 ```
 
 该命令会执行在你的数据库中所有还未执行过的迁移文件。当你部署时你应该在生产环境中去运行该命令以保证你的生产数据库的最新状态。
-
-
 
 ### Migrations & Adding more Fields
 
@@ -250,8 +238,6 @@ php bin/console make:entity --regenerate
 
 如果你做了一些改变并想重新生成所有getter和setter方法，也可以传递 --overwrite选项。
 
-
-
 ### Persisting Objects to the Database
 
 是时候保存对象到数据库中了! 让我们创建一个控制器来进行实验：
@@ -313,10 +299,6 @@ php bin/console dbal:run-sql 'SELECT * FROM product'
 
 无论你是创建或者是更新对象，工作流程总是相似的：Doctrine是智能的，足以判断你的entity是要执行插入或者更新操作。
 
-
-
-
-
 ### Validating Objects
 
 [The Symfony validator](https://symfony.com/doc/5.4/validation.html) 会重用Doctrine元数据去执行一些基本验证任务：
@@ -359,18 +341,16 @@ class ProductController extends AbstractController
 
 下表总结了Doctrine元数据和Symfony自动添加相应的验证约束之间的映射关系。
 
-| Doctrine attribute | Validation constraint                                        | Notes                                                        |
-| :----------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
-| nullable=false     | [NotNull](https://symfony.com/doc/5.4/reference/constraints/NotNull.html) | Requires installing the [PropertyInfo component](https://symfony.com/doc/5.4/components/property_info.html) |
-| type               | [Type](https://symfony.com/doc/5.4/reference/constraints/Type.html) | Requires installing the [PropertyInfo component](https://symfony.com/doc/5.4/components/property_info.html) |
-| unique=true        | [UniqueEntity](https://symfony.com/doc/5.4/reference/constraints/UniqueEntity.html) |                                                              |
-| length             | [Length](https://symfony.com/doc/5.4/reference/constraints/Length.html) |                                                              |
+| Doctrine attribute | Validation constraint                                                               | Notes                                                                                                       |
+|:------------------ |:----------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------- |
+| nullable=false     | [NotNull](https://symfony.com/doc/5.4/reference/constraints/NotNull.html)           | Requires installing the [PropertyInfo component](https://symfony.com/doc/5.4/components/property_info.html) |
+| type               | [Type](https://symfony.com/doc/5.4/reference/constraints/Type.html)                 | Requires installing the [PropertyInfo component](https://symfony.com/doc/5.4/components/property_info.html) |
+| unique=true        | [UniqueEntity](https://symfony.com/doc/5.4/reference/constraints/UniqueEntity.html) |                                                                                                             |
+| length             | [Length](https://symfony.com/doc/5.4/reference/constraints/Length.html)             |                                                                                                             |
 
 因为Form compontent和API Platform内部使用了Validator component，所以你的form和web APIs也将自动受益于这些自动验证约束。
 
 自动验证是非常好的特性可以提交你的工作效率，但是它不能完全替代验证配置。你仍然需要添加一些验证约束来确保用户提供的数据是正确的。
-
-
 
 ### Fetching Objects from the Database
 
@@ -467,4 +447,3 @@ $products = $repository->findAll();
 你可以为更复杂的查询添加自定义方法。稍后将在[数据库和 Doctrine ORM](https://symfony.com/doc/5.4/doctrine.html#doctrine-queries)部分详细介绍。
 
 注：当渲染一个HTML页面时，页面底部的网络调试工具栏将显示查询的数量和执行的时间。如果数据库查询的数量过高，图标会变成黄色，表明有些东西可能不正确。点击该图标，可以打开Symfony分析器，看到所执行的确切查询。如果你没有看到网页调试工具栏，请运行以下命令安装Symfony分析器包： composer require --dev symfony/profiler-pack。
-
