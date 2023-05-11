@@ -1,0 +1,3 @@
+就算不拿全才全栈来要求 phper ，对于一个开发者、一个 phper ，输出控制能否了解下、fpm/cli 模式能否了解、单次请求从 nginx 到 fpm 到 php 的执行和响应流程、psr 若干个规范的理解，做不到都应按照实习、应届生处理。
+
+再退一步讲，作为一个 curd boy ，怎么做好 curd 工作也是个可以研究的问题。超大表的 curd 实现、ActiveRecord 与 Repository 的区别、curd 的缓存怎么管理。哎。

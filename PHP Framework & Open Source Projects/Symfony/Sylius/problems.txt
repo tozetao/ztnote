@@ -1,0 +1,25 @@
+
+
+- 先学习用这个框架进行开发：
+    https://www.teebb.com/course-detail/symfony5-quanmiankaifa
+    https://space.bilibili.com/452133624/channel/seriesdetail?sid=355222
+
+- 服务容器的学习。
+- Symfony学习网站：https://symfonycasts.com/
+- 如何创建一个Symfony5 bundle：https://davegebler.com/post/php/how-to-create-a-symfony-5-bundle
+
+- ResourceBundle的学习：
+- sylius的架构?
+
+
+
+
+
+容器是如何管理不同的bundle中的服务的？
+ResourceBundle的作用？
+CoreBundle有什么作用？
+他的路由组是怎么关联到那些bundle的？’
+
+
+https://www.youtube.com/watch?v=pZv93AEJhS8
+Create a Microservice with Symfony Full 5 Hour Course (Symfony 6 Tutorial 2022)
