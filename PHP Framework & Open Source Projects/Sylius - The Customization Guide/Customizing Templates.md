@@ -210,13 +210,13 @@ If you want to search easier for the event name you want to modify, the Sylius T
 
 如果你想更容易地搜索你想修改的事件名称，Sylius模板事件可以通过它提供的调试工具在你的浏览器中轻松找到。只要使用 "explore"（在Chrome浏览器中）或其他浏览器中的类似工具，就可以检查你的网页的HTML代码。在这里，你将能够看到注释块，其中将显示模板的名称以及事件名称：
 
-![./sylius_event_debug.png](D:\study\ztnote\PHP Framework & Open Source Projects\Sylius\sylius_event_debug.png)
+![./sylius_event_debug.png](.\sylius_event_debug.png)
 
 In the example above we were looking for the HTML responsible for rendering of the Sylius Logo. Mentioned markup is surrounded by statements of where the event, as well as block, started. What is more, we can see which twig template is responsible for rendering this block and what the priority of this rendering is.
 
 在上面的例子中，我们正在寻找负责渲染Sylius Logo的HTML。提到的Logo被event以及block的begin声明语句所包裹。此外，我们可以看到哪个twig模板负责渲染这个块，以及渲染的优先级是什么。
 
-![./sylius_logo_locate.png](D:\study\ztnote\PHP Framework & Open Source Projects\Sylius\sylius_logo_locate.png)
+![./sylius_logo_locate.png](.\sylius_logo_locate.png)
 
 This will have all the necessary information that you need for further customization.
 
@@ -230,7 +230,7 @@ The `Template events` section in Symfony Profiler gives you the list of events u
 
 Symfony Profiler中的 "Template evetns"部分为你提供了用于渲染页面的事件及其block的列表。除了上面提到的关于block的所有信息，你还会看到一个特别有利于优化的信息，那就是 "Duration"。
 
-![./sylius_template_events_metrics.png](D:\study\ztnote\PHP Framework & Open Source Projects\Sylius\sylius_template_events_metrics.png)
+![./sylius_template_events_metrics.png](.\sylius_template_events_metrics.png)
 
 
 
@@ -391,7 +391,7 @@ Now if the customer’s birthday is today, they will be greeted with a happy bir
 
 现在，如果客户的生日是今天，他们将收到一条生日快乐的信息。
 
-![./sylius_template_events_greeting.png](D:\study\ztnote\PHP Framework & Open Source Projects\Sylius\sylius_template_events_greeting.png)
+![./sylius_template_events_greeting.png](.\sylius_template_events_greeting.png)
 
 ### What more can I do with the Sylius Template Events?
 

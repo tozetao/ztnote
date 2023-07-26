@@ -1,0 +1,41 @@
+IDEA
+====================================
+- 先看看如何查询帖子？找不到帖子又如何进行处理？解析请求干了啥？
+
+- 开发插件，理解hook原理
+    https://github.com/JoeSz/WordPress-Plugin-Boilerplate-Tutorial
+    https://www.wbolt.com/wordpress-hooks.html
+
+
+用户角色和权限：https://www.wbolt.com/wordpress-user-roles.html
+文本编辑器：https://www.wbolt.com/wordpress-text-editor.html
+
+
+- wordpress如何进行路由？
+
+- 代码是如何组织的？代码文件是如何加载的？
+
+- 如何过滤请求参数，如何防止XSS、CSRF攻击？
+
+- 业务逻辑的代码如何组织？
+
+- 如何处理页面？
+
+- 如何查询数据库？
+    查看Database API
+
+- 插件接口是如何实现的？
+
+- 主题是如何实现的？
+
+- wordpress多站点？
+
+资源
+====================================
+- Common APIs Handbook：https://developer.wordpress.org/apis/
+
+- codex：https://codex.wordpress.org/
+    查看Themes、Plugin部分
+
+- 开发者资源：https://developer.wordpress.org/
+    新版本的开发者资源。
