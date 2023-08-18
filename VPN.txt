@@ -20,9 +20,6 @@ sudo apt-get install shadowsocks-libev
 运行：sudo ss-local -c /etc/shadowsocks.json &　　
 
 
-
-
-
 git配合shasowsocks加速
 ------------------------------------------------------
 git config --global http.proxy "socks5://127.0.0.1:1080"
