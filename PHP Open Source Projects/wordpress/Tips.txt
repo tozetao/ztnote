@@ -1,12 +1,9 @@
 IDEA
 ====================================
-  https://github.com/JoeSz/WordPress-Plugin-Boilerplate-Tutorial
-  https://www.wbolt.com/wordpress-hooks.html
+https://github.com/JoeSz/WordPress-Plugin-Boilerplate-Tutorial
+https://www.wbolt.com/wordpress-hooks.html
 
-- 开发一个小插件
-  为后台增加一个菜单项，增加一个页面，能够使用到数据库
 - 开发一个主题
-
 
 下面这几个问题可以查看帖子的实现。
 - 如何过滤请求参数，确定参数是自己期望的类型？
@@ -23,6 +20,8 @@ IDEA
 - 业务逻辑的代码如何组织？
 - 如何处理页面？
 
+
+- NONCE实现原理
 
 
 - hooks原理
