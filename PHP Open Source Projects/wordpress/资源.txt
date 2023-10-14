@@ -1,0 +1,132 @@
+WordPress 主题开发
+---------------------------------------------
+https://www.555d.cn/zhutikf/ztkf
+https://www.bilibili.com/video/BV1xb411T7rj/?spm_id_from=333.337.search-card.all.click&vd_source=b523f3099e7841ae2482385148852dbd
+
+
+设计到WooCommerce的主题开发
+---------------------------------------------
+Wordpress WooCommerce Theme Development Tutorials
+https://www.youtube.com/watch?v=JMVTHnWxe0Y&list=PLT9miexWCpPUKzUhMvXiBqoFGsnqBPZ_v
+
+Customizing WooCommerce the Right Way Using Action and Filter Hooks
+https://www.youtube.com/watch?v=NdlYa0P_VlA
+
+Customizing WooCommerce with Confidence
+https://www.youtube.com/watch?v=8ed8_bqcZW4
+
+
+
+WP个人博客
+https://wpshushu.com/
+https://www.ixiqin.com/category/tech/
+
+WordPress优化
+https://www.alexyang.me
+
+Vue3 开发WordPress设置选项
+https://juejin.cn/column/7249152627887947833
+
+
+WP使用教程
+https://www.zhihu.com/column/c_1322188569571115008
+https://www.stubbornhuang.com/category/%e5%bb%ba%e7%ab%99/wordpress/
+
+
+WPJAM Basic 使用教程
+https://www.zhihu.com/column/c_1315696881905819648
+
+
+
+
+
+前端技术驱动的 WordPress 主题开发
+https://www.bilibili.com/video/BV1YW41167px/?vd_source=b523f3099e7841ae2482385148852dbd
+
+
+学会正确使用 TailwindCSS - 取其所长，为我所用
+https://www.bilibili.com/video/BV1Vv4y1U7Cy/?spm_id_from=333.999.0.0&vd_source=b523f3099e7841ae2482385148852dbd
+
+
+PHP MVC full course
+https://www.youtube.com/watch?v=6ERdu4k62wI
+
+
+为 WordPress 加入 Redis 缓存优化访问性能
+https://www.ixiqin.com/2022/01/30/redis-object-cache/
+
+
+**资源**
+
+- 用户角色和权限：https://www.wbolt.com/wordpress-user-roles.html
+- 文本编辑器：https://www.wbolt.com/wordpress-text-editor.html
+
+- Common APIs Handbook：https://developer.wordpress.org/apis/
+
+- codex：https://codex.wordpress.org/
+  查看Themes、Plugin部分
+
+- 开发者资源：https://developer.wordpress.org/
+  新版本的开发者资源。
+
+
+
+**woocommerce**
+https://developer.woocommerce.com/#get-started
+https://www.v2ex.com/t/974506#reply180
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+一个关于 分布式系统&数据库 的论坛
+https://distsys.cn/
+
+DDIA
+https://ddia.qtmuniao.com/
+https://github.com/Vonng/ddia
+
+DDIA视频
+https://space.bilibili.com/30933812/channel/collectiondetail?sid=240551
+
+数据库技术博客
+https://opensource.actionsky.com/blog/
+
+YII、Symfony、Laravel博客
+https://www.guanguans.cn/
+
+《领域驱动设计之PHP实现》全书翻译 - DDD入门
+https://segmentfault.com/a/1190000021576876
+
+CS自学指南
+https://csdiy.wiki/
+
+
+
+
+
+
+
+
+
+
