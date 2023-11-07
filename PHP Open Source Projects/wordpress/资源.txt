@@ -1,10 +1,4 @@
-WordPress 主题开发
----------------------------------------------
-https://www.555d.cn/zhutikf/ztkf
-https://www.bilibili.com/video/BV1xb411T7rj/?spm_id_from=333.337.search-card.all.click&vd_source=b523f3099e7841ae2482385148852dbd
-
-
-设计到WooCommerce的主题开发
+WooCommerce主题开发
 ---------------------------------------------
 Wordpress WooCommerce Theme Development Tutorials
 https://www.youtube.com/watch?v=JMVTHnWxe0Y&list=PLT9miexWCpPUKzUhMvXiBqoFGsnqBPZ_v
