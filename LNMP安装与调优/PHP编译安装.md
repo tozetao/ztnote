@@ -16,8 +16,8 @@
 
   ```
   ./configure \
-  --prefix=/usr/local/php7 \
-  --with-config-file-path=/usr/local/php7/etc \
+  --prefix=/usr/local/php-7.3.33 \
+  --with-config-file-path=/usr/local/php-7.3.33/etc \
   --enable-fpm \
   --with-fpm-user=phpfpm \
   --with-fpm-group=phpfpm \

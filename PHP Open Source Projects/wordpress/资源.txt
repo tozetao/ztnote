@@ -1,3 +1,13 @@
+帖子类型和权限
+---------------------------------------------
+https://justintadlock.com/archives/2010/07/10/meta-capabilities-for-custom-post-types
+
+
+
+
+
+
+
 WooCommerce主题开发
 ---------------------------------------------
 Wordpress WooCommerce Theme Development Tutorials
