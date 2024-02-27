@@ -65,28 +65,24 @@
 
 在安装完毕后，需要从安装包中拷贝php.ini配置文件到etc目录中。
 
-note：php-fpm没有提供命令来控制自身服务，因此需要通过进程信号来管理php-fpm服务
+```
+启动
+/sbin/php-fpm
 
-- 启动
+关闭
+kill -INT `cat /usr/local/php-fpm/var/run/php-fpm.pid`
 
-  /sbin/php-fpm
+重启
+kill -USR2 `cat /usr/local/php-fpm/var/run/php-fpm.pid`
 
-- 关闭
+php-fpm常用参数:
+-c：指定启动时的php.ini配置文件
+-y：指定启动时的php-fpm.conf配置文件
+-t：测试fpm配置文件是否出错
 
-  kill -INT \`cat /usr/local/php-fpm/var/run/php-fpm.pid`
-
-- 重启
-
-  kill -USR2 \`cat /usr/local/php-fpm/var/run/php-fpm.pid`
-
-  HUP进行信号无法重启PHP主进程，它会杀死master进程。
-
-  USR1进程信号会杀死所有PHP进程。
-
-php-fpm常用参数
-- -c：指定启动时的php.ini配置文件
-- -y：指定启动时的php-fpm.conf配置文件
-- -t：测试fpm配置文件是否出错
+HUP进行信号无法重启PHP主进程，它会杀死master进程。
+USR1进程信号会杀死所有PHP进程。
+```
 
 
 
