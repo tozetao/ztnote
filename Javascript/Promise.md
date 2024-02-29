@@ -106,9 +106,10 @@ then()方法会执行onFulfilled，onRejected回调函数，用于执行任务�
 
    3.3 后续执行后返回的是一个任务对象，新任务的状态和数据与该任务对象一致
 
-示例1
+以下是各种后续处理的示例：
 
 ```js
+// 示例1
 // 学习 考试 出成绩 填志愿 入学
 const pro1 = new Promise((resolve, reject) => {
 	console.log('学习')
@@ -146,9 +147,10 @@ setTimeout(() => {
 }, 1000)
 ```
 
-示例3
+
 
 ```js
+// 示例3
 const pro1 = new Promise((resolve, reject) => {
 	console.log('学习')
     resolve('1')
@@ -165,9 +167,10 @@ setTimeout(() => {
 }, 1000)
 ```
 
-示例3.3
+
 
 ```js
+// 示例3.3
 const pro1 = new Promise((resolve, reject) => {
 	console.log('学习')
     resolve('1')
@@ -187,40 +190,9 @@ setTimeout(() => {
 
 
 
-测试案例：
-
-```js
-const pro1 = new Promise((resolve, reject) => {
-    setTimeout(() => {
-        resolve(1)
-    }, 1000)
-})
-
-const pro2 = pro1.then((data) => {
-    console.log(data)
-    return data + 1
-})
-
-const pro3 = pro2.then((data) => {
-    console.log(data)
-})
-
-console.log(pro1, pro2, pro3)
-
-setTimeout(() => {
-    console.log(pro1, pro2, pro3)
-}, 2000)
-
-问题：then()会立即执行，并把执行函数放到微队列中去，那么前一个任务的状态和数据是如何影响到后一个任务的呢?
-```
 
 
-
-
-
-
-
-source code
+**链式调用的原理分析**
 
 ```js
 const Pending = 'Pending'
@@ -268,6 +240,191 @@ resolve => Promise2
 reject  => Promise2
 
 通过js的bind函数，构建了一个链表，以此来实现任务的链式处理。
-
 ```
+
+
+
+
+
+
+
+### then()使用示例
+
+有了then()方法，就可以进行链式调用，以此来消除回调地狱。
+
+```js
+// 常见的任务处理
+const pro = new Promise();
+
+// 任务成功后，执行处理1，失败后执行处理2
+pro.then(onFulfilled).catch(onRejected)
+
+// 任务成功后，执行onFulfilled1，onFulfilled1执行成功后，再执行onFulfilled2
+pro.then(onFulfilled1).then(onFulfilled2)
+
+// 任务成功后，依次执行onFulfilled1、onFulfilled2。如果其中某个出错，就执行onRejected错误处理。
+pro.then(onFulfilled1)
+    .then(onFulfilled2)
+    .catch(onRejected)
+```
+
+
+
+```js
+function sendMessage(name) {
+    console.log(`开始给 ${name} 发送消息`);
+    // 模拟请求阻塞
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (Math.random() > 0.5) {
+                resolve('success')
+            } else {
+                reject('failed')
+            }
+        }, 1000)
+    })
+}
+
+// 失败将会重试3次
+const name = 'Lee'
+const reply = (reply) => {
+    // 重试1次
+    console.log('reply')
+    return sendMessage(name)
+}
+sendMessage(name)
+	.catch(reply)
+	.catch(reply)
+	.catch(reply)
+    .then(response => {
+    	console.log('success: ', response)
+	})
+```
+
+
+
+### async
+
+async用于修饰函数。一个函数如果被async修饰过，该函数将会返回一个Promise。
+
+```js
+// 示例1
+async function foo() {
+    return 1
+}
+// Promise{<fulfilled>: 1}
+console.log(foo())
+
+
+// 示例2：如果async修饰的函数执行过程中出错，返回的Promise状态是reject。
+async function foo() {
+	throw 'error 1'
+}
+// Promise{<reject>: 'error 1'}
+console.log(foo())
+```
+
+如果被async修饰过的函数返回值是一个Promise，那么JS会进行特殊处理，函数仍然会返回一个Promise，该Promise的状态和数据最终会和函数内返回的Promise的状态和数据相同。
+
+```js
+async function foo() {
+    // return Promise.resolve(1)
+    return new Promise((resolve) => {
+        return resolve(1)
+    })
+}
+
+const pro = foo();
+
+// Promise{<pending>}
+console.log(pro)
+
+setTimeout(() => {
+    // Promise{<fulfilled>: 1}，最终状态是fulfilled，数据是1
+    console.log(pro)  
+}, 1000)
+```
+
+
+
+### await
+
+await表示等待某个Promise完成，它必须用于async函数中。
+
+```js
+function sendMessage(message) {
+    return new Promise((resolve) => {
+        return resolve(100)
+    })
+}
+
+async function foo() {
+    const result = await sendMessage('hi!')
+    console.log(result)
+}
+```
+
+由于await是等待任务的完成，如果要处理失败的任务，需要使用try catch：
+
+```js
+function sendMessage(message) {
+  return new Promise((resolve, reject) => {
+    return reject('empty data')
+  })
+}
+
+async function foo() {
+  try {
+    const result = await sendMessage('hi!')
+    console.log('result: ', result)
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+foo()
+```
+
+
+
+async和await示例代码：
+
+```js
+function sendMessage(name, content) {
+    return Promise((resolve, reject) => {
+        console.log(`开始向${name}发送消息`)
+        setTimeout(() => {
+            if (Math.random() > 0.5) {
+                resolve('success')
+            } else {
+                reject('failed')
+            }
+        }, 2000)
+    })
+}
+
+const array = [
+    {name: 'a', 'content': 'a1'},
+    {name: 'b', 'content': 'a1'},
+    {name: 'c', 'content': 'a1'},
+    {name: 'd', 'content': 'a1'},
+    // ...
+];
+
+// 使用数组中的元素发送消息，失败重发，如果某个成功了则通知发送消息。
+(async () => {
+    for (const item of array) {
+        try {
+            const result = await sendMessage(item.name, item.content)
+            console.log('success: ', result)
+            break;
+        } catch (err) {
+            console.log('error: ', err)
+        }
+    }
+})()
+```
+
+
+
 
