@@ -412,15 +412,20 @@ const array = [
 ];
 
 // 使用数组中的元素发送消息，失败重发，如果某个成功了则通知发送消息。
+let isSuccess = false;
 (async () => {
     for (const item of array) {
         try {
             const result = await sendMessage(item.name, item.content)
             console.log('success: ', result)
+            isSuccess = true;
             break;
         } catch (err) {
             console.log('error: ', err)
         }
+    }
+    if (isSuccess) {
+        console.log('do something.');
     }
 })()
 ```
