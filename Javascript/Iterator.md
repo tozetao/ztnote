@@ -99,6 +99,10 @@ for-of的原理就是使用Symbol.iterator符号属性获取一个迭代器对�
 
 生成器（Generator）既是一个迭代器（有next方法），同时也是满足迭代协议的对象（可以通过for-of进行迭代）。
 
+> 生成器被设计为，通过生成器可以控制生成器函数内的代码执行时机。yield关键字配合生成器的next()、throw()、return()等方法来控制代码的执行时机。
+
+
+
 ES6使用了一个新的语法来提供生成器。
 
 ```js
@@ -193,11 +197,46 @@ console.log(g.next())
 
 
 
+**thorw方法**
+
+生成器提供了throw方法，一旦在生成器执行过程中调用该方法，可以中断生成器的执行。
+
+```js
+// 生成器的throw方法 可以中断 
+function *createGenerator() {
+    try {
+        console.log('start')
+        yield;
+        console.log(1);
+        yield;
+        console.log(2);
+        yield;    
+        console.log(3);
+        yield;
+        console.log(4);
+    } catch(err) {
+        console.log(err)
+    }
+}
+
+const g = createGenerator()
+
+console.log(g.next())
+g.throw(new Error('not found.'))
+console.log(g.next())
+```
+
+
+
+**return方法**
 
 
 
 
-示例：
+
+
+
+示例：使用生成器来遍历数组。
 
 ```js
 function *createArrayIterator(array) {
@@ -214,6 +253,55 @@ for (const item of iterator) {
 ```
 
 
+
+示例：类似async、awit效果
+
+```js
+function fetchUsers() {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve([
+                { id: 1, name: 'Test Name', rand: Math.random() }
+            ])
+        }, 2000)
+    })
+}
+
+// 实现类似于async、awit的效果
+function *createTask() {
+    console.log('start')
+    const result = yield fetchUsers()
+    console.log('I got a result, ', result)
+
+    const result1 = yield 10
+    console.log('result1: ', result1)
+
+    const result2 = yield fetchUsers()
+    console.log('result2: ', result2)
+}
+
+function run(generatorFn) {
+    const generator = generatorFn()
+
+    function next(nextValue) {
+        const result = generator.next(nextValue)
+        if (result.done) {
+            return;
+        }
+
+        if ((!!result.value) && typeof result.value.then === 'function') {
+            result.value.then(response => next(response))
+        } else {
+            next(result.value)
+        }
+    }
+
+    next()
+}
+
+
+run(createTask);
+```
 
 
 
