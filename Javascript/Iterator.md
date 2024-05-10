@@ -212,8 +212,6 @@ function *createGenerator() {
         console.log(2);
         yield;    
         console.log(3);
-        yield;
-        console.log(4);
     } catch(err) {
         console.log(err)
     }
@@ -230,7 +228,53 @@ console.log(g.next())
 
 **return方法**
 
+```js
+function *createGenerator() {
+    console.log('start')
+    yield 'a';
+    console.log(1);
+    yield 'b';
+    console.log(2);
+    yield 'c';  
+    console.log(3);
+}
 
+const g = createGenerator()
+
+console.log(g.next())
+// 返回{value: undefined, done: true}，在第一个yield 'a'返回。
+console.log(g.return())
+console.log(g.next())
+```
+
+
+
+**多个生成器**
+
+```js
+function *createNumber() {
+    console.log('number generator')
+    yield 1;
+
+    console.log('yield 1')
+    return 'I am a number generator';
+}
+
+function *createLetter() {
+    console.log('letter generator')
+    yield 'a';
+    console.log('X');
+
+    // 这种语法可以让另外一个生成器的代码嵌入到当前生成器中，如果没有*号，相当于创建了number生成器。
+    const result = yield *createNumber()
+    console.log('result: %o', result)
+
+    yield 'b';
+    console.log('Y');
+}
+
+const g = createLetter()
+```
 
 
 
