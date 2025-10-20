@@ -1,0 +1,5 @@
+Go语言圣经（中文版）
+https://golang-china.github.io/gopl-zh/
+
+https://github.com/teivah/100-go-mistakes
+100-go-mistakes
